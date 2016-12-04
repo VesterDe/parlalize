@@ -140,7 +140,7 @@ def setAllSessions():
                              classification=sessions['classification'],
                              id_parladata=sessions['id'],
                              organization=Organization.objects.get(id_parladata=sessions['organization_id']),
-                             in_review=session['is_in_review']
+                             in_review=sessions['is_in_review']
                              ).save()
         else:
             if not Session.objects.filter(name=sessions['name'],
