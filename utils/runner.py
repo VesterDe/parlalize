@@ -963,13 +963,25 @@ def morningCash():
     # allUrls = tryHard("https://glej.parlameter.si/api/cards/getUrls").json()
     theUrl = 'https://glej.parlameter.si/'
     mps = tryHard('https://data.parlameter.si/v1/getMPs').json()
+    session = tryHard('https://data.parlameter.si/v1/getSessions/').json()
+    wb = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    sessionDZ = []
+    for ses in session:
+        if ses['organization_id'] == 95:
+            sessionDZ.append(ses['id'])
+
     for url in allUrls:
         if url['group'] == 's':
             if url['class'] == 'DZ':
-                # SAMO DZ
-                print 'yay!'
+                #seje DZ
+                for ses in sessionDZ:
+                    method = url['group'] + '/' + url['method'] + '/'
+                    print theUrl + method + str(ses) + '?forceRender=true'
+                    requests.get(theUrl + method + str(ses) + '?forceRender=true')
+                    requests.get(theUrl + method + str(ses) + '?forceRender=true&frame=true&altHeader=true')
+                    requests.get(theUrl + method + str(ses) + '?forceRender=true&embed=true&altHeader=true')
             else:
-                # VSE SEJE
+                #VSE SEJE
                 print url['method']
                 for ses in Session.objects.values_list("id_parladata", flat=True):
                     method = url['group'] + '/' + url['method'] + '/'
@@ -980,27 +992,38 @@ def morningCash():
         if url['group'] == 'p':
             if url['class'] == "none":
                 #kličeš brez IDja s končnim slashem
-                print 'yay!'
+                method = url['group'] + '/' + url['method'] + '/'
+                print theUrl + method + str(ses) + '?forceRender=true'
+                requests.get(theUrl + method + '?forceRender=true')
+                requests.get(theUrl + method + '?forceRender=true&frame=true&altHeader=true')
+                requests.get(theUrl + method + '?forceRender=true&embed=true&altHeader=true')
             else:
-                # vsi poslanci
-                print url['method']
+                #vsi poslanci
                 for mp in mps:
                     method = url['group'] + '/' + url['method'] + '/'
-                    print theUrl + method + str(mp.id) + '?forceRender=true'
-                    requests.get(theUrl + method + str(mp.id) + '?forceRender=true')
-                    requests.get(theUrl + method + str(mp.id) + '?forceRender=true&frame=true&altHeader=true')
-                    requests.get(theUrl + method + str(mp.id) + '?forceRender=true&embed=true&altHeader=true')
+                    print theUrl + method + str(mp['id']) + '?forceRender=true'
+                    requests.get(theUrl + method + str(mp['id']) + '?forceRender=true')
+                    requests.get(theUrl + method + str(mp['id']) + '?forceRender=true&frame=true&altHeader=true')
+                    requests.get(theUrl + method + str(mp['id']) + '?forceRender=true&embed=true&altHeader=true')
         if (url['group'] == 'pg') or (url['group'] == 'ps'):
-            print url['method']
-            for pg in Organization.objects.values_list("id_parladata", flat=True):
-                method = url['group'] + '/' + url['method'] + '/'
-                print theUrl + method + str(pg) + '?forceRender=true'
-                requests.get(theUrl + method + str(pg) + '?forceRender=true')
-                requests.get(theUrl + method + str(pg) + '?forceRender=true&frame=true&altHeader=true')
-                requests.get(theUrl + method + str(pg) + '?forceRender=true&embed=true&altHeader=true')
+                for pg in Organization.objects.values_list("id_parladata", flat=True):
+                    method = url['group'] + '/' + url['method'] + '/'
+                    print theUrl + method + str(pg) + '?forceRender=true'
+                    requests.get(theUrl + method + str(pg) + '?forceRender=true')
+                    requests.get(theUrl + method + str(pg) + '?forceRender=true&frame=true&altHeader=true')
+                    requests.get(theUrl + method + str(pg) + '?forceRender=true&embed=true&altHeader=true')
         if (url['group'] == 'c'):
             # kličeš brez IDja s končnim slashem
+            method = url['group'] + '/' + url['method'] + '/'
+            requests.get(theUrl + method + '?forceRender=true')
+            requests.get(theUrl + method + '?forceRender=true&frame=true&altHeader=true')
+            requests.get(theUrl + method + '?forceRender=true&embed=true&altHeader=true')
             print 'yay!'
         if (url['group'] == 'wb'):
-            # kličeš vsa delovna telesa
+            for w in wb['id']:
+                method = url['group'] + '/' + url['method'] + '/'
+                print theUrl + method + str(w) + '?forceRender=true'
+                requests.get(theUrl + method + str(w) + '?forceRender=true')
+                requests.get(theUrl + method + str(w) + '?forceRender=true&frame=true&altHeader=true')
+                requests.get(theUrl + method + str(w) + '?forceRender=true&embed=true&altHeader=true')
             print 'yay!'
