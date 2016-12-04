@@ -453,7 +453,7 @@ def onDateMPCardRunner(date_=None):
         #setLessEqualVoters,
         #setMostEqualVoters,
         #setPercentOFAttendedSession,
-        setTFIDF
+        #setTFIDF
     ]
 
     memberships = tryHard(API_URL + '/getMPs/' + date_).json()
