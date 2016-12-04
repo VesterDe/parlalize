@@ -795,27 +795,28 @@ def updateWB():
 def morningCash():
 
     allUrls = [
+        # {
+        #     "group":"s",
+        #     "method":"seznam-odsotnih-poslancev",
+        #     "class": "DZ"
+        # },{
+        #     "group":"p",
+        #     "method":"osnovne-informacije",
+        #     "class": "all"
+        # },{
+        #     "group":"p",
+        #     "method":"razrez-glasovanj",
+        #     "class": "all"
+        # },{
+        #     "group":"p",
+        #     "method":"stilne-analize",
+        #     "class": "all"
+        # },{
+        #     "group":"s",
+        #     "method":"glasovanje-layered",
+        #     "class": "all"
+        # },
         {
-            "group":"s",
-            "method":"seznam-odsotnih-poslancev",
-            "class": "DZ"
-        },{
-            "group":"p",
-            "method":"osnovne-informacije",
-            "class": "all"
-        },{
-            "group":"p",
-            "method":"razrez-glasovanj",
-            "class": "all"
-        },{
-            "group":"p",
-            "method":"stilne-analize",
-            "class": "all"
-        },{
-            "group":"s",
-            "method":"glasovanje-layered",
-            "class": "all"
-        },{
             "group":"p",
             "method":"najmanjkrat-enako",
             "class": "all"
