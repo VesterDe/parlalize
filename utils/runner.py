@@ -966,6 +966,7 @@ def morningCash():
     mps = tryHard('https://data.parlameter.si/v1/getMPs').json()
     session = tryHard('https://data.parlameter.si/v1/getSessions/').json()
     wb = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []
     for ses in session:
         if ses['organization_id'] == 95:
@@ -973,7 +974,14 @@ def morningCash():
 
     for url in allUrls:
         if url['group'] == 's':
-            if url['class'] == 'DZ':
+            if url['method'] == "glasovanje-layered":
+                # glasovanja
+                method = url['group'] + '/' + url['method'] + '/'
+                for vote in vote_ids:
+                    requests.get(theUrl + method + str(vote) + '?forceRender=true')
+                    requests.get(theUrl + method + str(vote) + '?forceRender=true&frame=true&altHeader=true')
+                    requests.get(theUrl + method + str(vote) + '?forceRender=true&embed=true&altHeader=true')
+            elif url['class'] == 'DZ':
                 #seje DZ
                 for ses in sessionDZ:
                     method = url['group'] + '/' + url['method'] + '/'
