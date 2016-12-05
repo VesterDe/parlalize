@@ -1639,3 +1639,26 @@ def getSlugs(request):
             "base": "https://skoraj.parlameter.si"
             }
     return JsonResponse(obj)
+
+def updatePages():
+    base_url = "https://parlameter.si/"
+    slugs = json.loads(getSlugs(None).content)
+    for person_id, person_slug_obj in slugs["person"]:
+        url = base_url + "poslanec/" + person_slug_obj["slug"]
+        print requests.get(url + "/pregled/&forceRender=true")
+        print requests.get(url + "/glasovanja&forceRender=true")
+        print requests.get(url + "/govori&forceRender=true")
+
+    for party_id, party_slug_obj in slugs["party"]:
+        url = base_url + "poslanska-skupina/" + party_slug_obj["slug"]
+        print requests.get(url + "/pregled/&forceRender=true")
+        print requests.get(url + "/glasovanja&forceRender=true")
+        print requests.get(url + "/govori&forceRender=true")
+
+    for session_id in Session.objects.filter(organization__id_parladata=95).values_list("id_parladata", flat=True):
+        url = base_url + "seja"
+        print url + "/prisotnost/" + str(session_id) + "&forceRender=true"
+        print requests.get(url + "/prisotnost/" + str(session_id) + "&forceRender=true")
+        print requests.get(url + "/transkript/" + str(session_id) + "&forceRender=true")
+        print requests.get(url + "/glasovanja/" + str(session_id) + "&forceRender=true")
+        
