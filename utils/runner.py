@@ -795,27 +795,27 @@ def updateWB():
 def morningCash():
 
     allUrls = [
-        # {
-        #     "group":"s",
-        #     "method":"seznam-odsotnih-poslancev",
-        #     "class": "DZ"
-        # },{
-        #     "group":"p",
-        #     "method":"osnovne-informacije",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"razrez-glasovanj",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"stilne-analize",
-        #     "class": "all"
-        # },{
-        #     "group":"s",
-        #     "method":"glasovanje-layered",
-        #     "class": "all"
-        # },
+        {
+            "group":"s",
+            "method":"seznam-odsotnih-poslancev",
+            "class": "DZ"
+        },{
+            "group":"p",
+            "method":"osnovne-informacije",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"razrez-glasovanj",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"stilne-analize",
+            "class": "all"
+        },{
+            "group":"s",
+            "method":"glasovanje-layered",
+            "class": "all"
+        },
         {
             "group":"p",
             "method":"najmanjkrat-enako",
@@ -1021,13 +1021,10 @@ def morningCash():
             requests.get(theUrl + method + '?forceRender=true&embed=true&altHeader=true')
             print 'yay!'
         if (url['group'] == 'wb'):
-            # kličeš vsa delovna telesa
-            print 'yay!'
-
-            for w in wb['id']:
+            for w in wb:
                 method = url['group'] + '/' + url['method'] + '/'
-                print theUrl + method + str(w) + '?forceRender=true'
-                requests.get(theUrl + method + str(w) + '?forceRender=true')
-                requests.get(theUrl + method + str(w) + '?forceRender=true&frame=true&altHeader=true')
-                requests.get(theUrl + method + str(w) + '?forceRender=true&embed=true&altHeader=true')
+                print theUrl + method + str(w['id']) + '?forceRender=true'
+                requests.get(theUrl + method + str(w['id']) + '?forceRender=true')
+                requests.get(theUrl + method + str(w['id']) + '?forceRender=true&frame=true&altHeader=true')
+                requests.get(theUrl + method + str(w['id']) + '?forceRender=true&embed=true&altHeader=true')
             print 'yay!'
