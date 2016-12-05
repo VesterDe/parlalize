@@ -320,8 +320,8 @@ def getMotionGraph(request, id_mo, date=False):
 
                 if persondata['party']['acronym'] == party['acronym']:
                     mps.append(persondata)
-
-            option_kvor.append({'pg': party, 'mps': mps})
+            if mps:
+                option_kvor.append({'pg': party, 'mps': mps})
 
             mps = []
 
@@ -335,8 +335,8 @@ def getMotionGraph(request, id_mo, date=False):
 
                 if persondata['party']['acronym'] == party['acronym']:
                     mps.append(persondata)
-
-            option_for.append({'pg': party, 'mps': mps})
+            if mps:
+                option_for.append({'pg': party, 'mps': mps})
 
             mps = []
 
@@ -349,8 +349,8 @@ def getMotionGraph(request, id_mo, date=False):
 
                 if persondata['party']['acronym'] == party['acronym']:
                     mps.append(persondata)
-
-            option_against.append({'pg': party, 'mps': mps})
+            if mps:
+                option_against.append({'pg': party, 'mps': mps})
 
             mps = []
 
@@ -363,8 +363,8 @@ def getMotionGraph(request, id_mo, date=False):
 
                 if persondata['party']['acronym'] == party['acronym']:
                     mps.append(persondata)
-
-            option_np.append({'pg': party, 'mps': mps})
+            if mps:
+                option_np.append({'pg': party, 'mps': mps})
 
             mps = []
 
