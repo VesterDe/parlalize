@@ -795,130 +795,130 @@ def updateWB():
 def morningCash():
 
     allUrls = [
-        # {
-        #     "group":"s",
-        #     "method":"seznam-odsotnih-poslancev",
-        #     "class": "DZ"
-        # },{
-        #     "group":"p",
-        #     "method":"osnovne-informacije",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"razrez-glasovanj",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"stilne-analize",
-        #     "class": "all"
-        # },{
-        #     "group":"s",
-        #     "method":"glasovanje-layered",
-        #     "class": "all"
-        # },
-        # {
-        #     "group":"p",
-        #     "method":"najmanjkrat-enako",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"najveckrat-enako",
-        #     "class": "all"
-        # },{
-        #     "group":"s",
-        #     "method":"glasovanja-seja",
-        #     "class": "DZ"
-        # },{
-        #     "group":"pg",
-        #     "method":"razrez-glasovanj",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"izracunana-prisotnost-glasovanja",
-        #     "class": "all"
-        # },{
-        #     "group":"pg",
-        #     "method":"izracunana-prisotnost-seje",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"glasovanja",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"izracunana-prisotnost-seje",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"besedni-zaklad",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"stevilo-izgovorjenih-besed",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"clanstva",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"povezave-do-govorov",
-        #     "class": "all"
-        # },{
-        #     "group":"ps",
-        #     "method":"besedni-zaklad",
-        #     "class": "all"
-        # },{
-        #     "group":"ps",
-        #     "method":"vsi-govori-poslanske-skupine",
-        #     "class": "all"
-        # },{
-        #     "group":"c",
-        #     "method":"kompas",
-        #     "class": "none"
-        # },{
-        #     "group":"pg",
-        #     "method":"glasovanja",
-        #     "class": "all"
-        # },{
-        #     "group":"c",
-        #     "method":"zadnja-seja",
-        #     "class": "none"
-        # },{
-        #     "group":"p",
-        #     "method":"tfidf",
-        #     "class": "all"
-        # },{
-        #     "group":"ps",
-        #     "method":"stilne-analize",
-        #     "class": "all"
-        # },{
-        #     "group":"c",
-        #     "method":"besedni-zaklad-vsi",
-        #     "class": "none"
-        # },{
-        #     "group":"p",
-        #     "method":"povprecno-stevilo-govorov-na-sejo",
-        #     "class": "all"
-        # },{
-        #     "group":"p",
-        #     "method":"zadnje-aktivnosti",
-        #     "class": "all"
-        # },{
-        #     "group" : "ps",
-        #     "method" : "osnovne-informacije-poslanska-skupina",
-        #     "class": "all"
-        # },
-        # {
-        #     "group" : "ps",
-        #     "method" : "izracunana-prisotnost-glasovanja",
-        #     "class": "all"
-        # },
-        # {
-        #     "group" : "ps",
-        #     "method" : "tfidf",
-        #     "class": "all"
-        # },
+        {
+            "group":"s",
+            "method":"seznam-odsotnih-poslancev",
+            "class": "DZ"
+        },{
+            "group":"p",
+            "method":"osnovne-informacije",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"razrez-glasovanj",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"stilne-analize",
+            "class": "all"
+        },{
+            "group":"s",
+            "method":"glasovanje-layered",
+            "class": "all"
+        },
+        {
+            "group":"p",
+            "method":"najmanjkrat-enako",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"najveckrat-enako",
+            "class": "all"
+        },{
+            "group":"s",
+            "method":"glasovanja-seja",
+            "class": "DZ"
+        },{
+            "group":"pg",
+            "method":"razrez-glasovanj",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"izracunana-prisotnost-glasovanja",
+            "class": "all"
+        },{
+            "group":"pg",
+            "method":"izracunana-prisotnost-seje",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"glasovanja",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"izracunana-prisotnost-seje",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"besedni-zaklad",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"stevilo-izgovorjenih-besed",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"clanstva",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"povezave-do-govorov",
+            "class": "all"
+        },{
+            "group":"ps",
+            "method":"besedni-zaklad",
+            "class": "all"
+        },{
+            "group":"ps",
+            "method":"vsi-govori-poslanske-skupine",
+            "class": "all"
+        },{
+            "group":"c",
+            "method":"kompas",
+            "class": "none"
+        },{
+            "group":"pg",
+            "method":"glasovanja",
+            "class": "all"
+        },{
+            "group":"c",
+            "method":"zadnja-seja",
+            "class": "none"
+        },{
+            "group":"p",
+            "method":"tfidf",
+            "class": "all"
+        },{
+            "group":"ps",
+            "method":"stilne-analize",
+            "class": "all"
+        },{
+            "group":"c",
+            "method":"besedni-zaklad-vsi",
+            "class": "none"
+        },{
+            "group":"p",
+            "method":"povprecno-stevilo-govorov-na-sejo",
+            "class": "all"
+        },{
+            "group":"p",
+            "method":"zadnje-aktivnosti",
+            "class": "all"
+        },{
+            "group" : "ps",
+            "method" : "osnovne-informacije-poslanska-skupina",
+            "class": "all"
+        },
+        {
+            "group" : "ps",
+            "method" : "izracunana-prisotnost-glasovanja",
+            "class": "all"
+        },
+        {
+            "group" : "ps",
+            "method" : "tfidf",
+            "class": "all"
+        },
         {
             "group" : "wb",
             "method" : "getWorkingBodies",
