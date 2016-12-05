@@ -14,6 +14,7 @@ from itertools import repeat
 from parlalize.utils import tryHard
 
 import requests
+import csv
 
 def getWords(filename):
     f = open(filename, 'r')
@@ -25,9 +26,9 @@ def getWordsDict(filename):
 
     return wordsdict
 
-problematicno = getWordsDict('kvalifikatorji/problematicno.txt')
-privzdignjeno = getWordsDict('kvalifikatorji/privzdignjeno.txt')
-preprosto = getWordsDict('kvalifikatorji/preprosto.txt')
+problematicno = getWordsDict('kvalifikatorji/problematicno_nase.txt')
+privzdignjeno = getWordsDict('kvalifikatorji/privzdignjeno_nase.txt')
+preprosto = getWordsDict('kvalifikatorji/preprosto_nase.txt')
 
 text = 'Tudi v Poslanski skupini Socialnih demokratov ne bomo podprli proračunov za leti 2013 in 2014. Že v uvodnem nagovoru v imenu poslanske skupine smo opozorili, da ta dva proračuna nista odgovor na dogajanje v Sloveniji. Ljudje pričakujejo, da bosta ta dva proračuna omogočala gospodarski razvoj, da bosta omogočala zagotavljanje novih delovnih mest, da bosta omogočala nadaljnji obstoj in razvoj javnega šolstva, tako osnovnega kot tudi do nivoja univerz, in predvsem da bomo imeli vsi tudi temu primerno socialno varnost. Vseh teh problemov ta dva proračuna ne odpravljata, nasprotno. Kaže se, da vladajoča koalicija razume in sledi samo cilju čimprejšnje razprodaje državnega premoženja in želi pri tem omogočiti vsem tistim, ki imajo te informacije, da se vključijo v ta proces na način, da dajo prioriteto osebnim interesom, ne pa interesom države, ne interesom ljudi, ki pričakujejo, da bomo ravnali po našem mnenju, tudi v Državnem zboru, povsem drugače kot je zapisano v teh dveh proračunih.'
 
@@ -164,3 +165,49 @@ def TFIDF(speeches_grouped, person_id):
 
     return sorted_results
 #    return table.similarities(['delfin', 'tovariš'])
+
+def lematize(filename_in, filename_out):
+    words = getWords(filename_in)
+    lem_words = lemmatizeTokens(words)
+
+    f = open(filename_out, 'w')
+    for lem_word in lem_words:
+        f.write(lem_word+"\n")
+    f.close()
+
+
+def parseCSV(name, out_file, find_word):
+    vulg_words = []
+    
+    with open(name, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in spamreader:
+            if len(row) > 1:
+                start_s = row[1].find(")")
+                if row[1].find(find_word, start_s, start_s + 10) != -1:
+                    if row[0].find(" ")==-1:
+                        vulg_words.append(row[0])
+
+    lem_words = lemmatizeTokens(vulg_words)
+    f = open(out_file, 'w')
+    for lem_word in lem_words:
+        f.write(lem_word+"\n")
+    f.close()
+
+
+def parseCSVoneLine(name, out_file, find_word):
+    vulg_words = []
+    
+    with open(name, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=';', quotechar='"')
+        for row in spamreader:
+            if len(row) > 0:
+                start_s = row[0].find(")")
+                if row[0].find(find_word, start_s, start_s + 10) != -1:
+                    vulg_words.append(row[0].split(" ")[0])
+
+    lem_words = lemmatizeTokens(vulg_words)
+    f = open(out_file, 'w')
+    for lem_word in lem_words:
+        f.write(lem_word+"\n")
+    f.close()
