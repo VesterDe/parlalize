@@ -448,11 +448,11 @@ def onDateMPCardRunner(date_=None):
         date_of = (datetime.now()-timedelta(days=1)).date()
         date_ = date_of.strftime(API_DATE_FORMAT)
     setters = [
-        #setCutVotes,
-        #setMembershipsOfMember,
-        #setLessEqualVoters,
-        #setMostEqualVoters,
-        #setPercentOFAttendedSession,
+        setCutVotes,
+        setMembershipsOfMember,
+        setLessEqualVoters,
+        setMostEqualVoters,
+        setPercentOFAttendedSession,
         #setTFIDF
     ]
 
@@ -469,9 +469,9 @@ def onDateMPCardRunner(date_=None):
 
     # Runner for setters ALL
     all_in_one_setters = [
-        #setAverageNumberOfSpeechesPerSessionAll,
-        #setVocabularySizeAndSpokenWords,
-        #setCompass,
+        setAverageNumberOfSpeechesPerSessionAll,
+        setVocabularySizeAndSpokenWords,
+        setCompass,
     ]
 
     zero = datetime(day=2, month=8, year=2014).date()
@@ -588,13 +588,13 @@ def onDatePGCardRunner(date_=None):
         date_ = date_of.strftime(API_DATE_FORMAT)
     print date_
     setters = [
-        #setCutVotesPG,
+        setCutVotesPG,
         setDeviationInOrg,
-        #setLessMatchingThem,
-        #setMostMatchingThem,
-        #setPercentOFAttendedSessionPG,
-        #setMPsOfPG,
-        #setBasicInfOfPG,
+        setLessMatchingThem,
+        setMostMatchingThem,
+        setPercentOFAttendedSessionPG,
+        setMPsOfPG,
+        setBasicInfOfPG,
     ]
 
     membersOfPGsRanges = tryHard(
@@ -694,7 +694,7 @@ def update():
     updatePersonFunctions()
 
     #print "start update cards"
-    #updateLastDay()
+    updateLastDay()
 
     return 1
 
@@ -714,8 +714,27 @@ def updateCacheforList(date_=None):
 
 def updateLastDay():
     lastVoteDay = Vote.objects.latest("created_for").created_for
-    onDateMPCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
-    onDatePGCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
+
+    try:
+        onDateMPCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
+    except:
+        client.captureException()
+    try:
+        onDatePGCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
+    except:
+        client.captureException()
+
+    lastSpeechDay = Speech.objects.latest("start_time").start_time
+
+    try:
+        onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+    except:
+        client.captureException()
+    try:
+        onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+    except:
+        client.captureException()
+
     return 1
 
 
