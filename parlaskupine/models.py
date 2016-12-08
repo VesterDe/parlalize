@@ -421,6 +421,9 @@ class Tfidf(Timestampable, models.Model):
                                    null=True,
                                    help_text=_('date of analize'))
 
+    is_visible = models.BooleanField(_('is visible'),
+                                     default=True)
+
     data = JSONField(blank=True, null=True)
 
     def __str__(self):

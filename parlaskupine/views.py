@@ -1093,8 +1093,10 @@ def setAllPGsTFIDFsFromSearch(request):
                 date_of = datetime.today()
                 save_statuses.append(saveOrAbortNew(Tfidf, 
                                                     organization=Organization.objects.get(id_parladata=score["party"]["id"]), 
-                                                    created_for=date_of, 
+                                                    created_for=date_of,
+                                                    is_visible=False,
                                                     data=score["results"]))
+
             return JsonResponse({"status": "alliswell", "saved": save_statuses})
         else:
             return JsonResponse({"status": "There's not data"})
@@ -1109,7 +1111,10 @@ def setTFIDF(request, party_id, date_=None):
         date_ = date_of.strftime(API_DATE_FORMAT)
     print "TFIDF", party_id
     data = tryHard("https://isci.parlameter.si/tfidf/ps/"+party_id).json()
-    is_saved = saveOrAbortNew(Tfidf, organization=Organization.objects.get(id_parladata=party_id), created_for=date_of, data=data["results"])
+    is_saved = saveOrAbortNew(Tfidf,
+                              organization=Organization.objects.get(id_parladata=party_id),
+                              created_for=date_of,
+                              data=data["results"])
 
     return JsonResponse({"alliswell": True,
                          "saved": is_saved})
@@ -1117,7 +1122,7 @@ def setTFIDF(request, party_id, date_=None):
 
 def getTFIDF(request, party_id, date_=None):
 
-    card = getPGCardModelNew(Tfidf, int(party_id), date_)
+    card = getPGCardModelNew(Tfidf, int(party_id), is_visible=True, date=date_)
 
     out = {
         'party': card.organization.getOrganizationData(),

@@ -686,7 +686,8 @@ def setTFIDF(request, session_id):
     data = tryHard("https://isci.parlameter.si/tfidf/s/"+str(session_id)).json()
     is_saved = saveOrAbortNew(Tfidf, 
                               session=Session.objects.get(id_parladata=session_id), 
-                              created_for=date_of, 
+                              created_for=date_of,
+                              is_visible=False,
                               data=data["results"])
 
     return JsonResponse({"alliswell": True,
@@ -695,7 +696,7 @@ def setTFIDF(request, session_id):
 
 def getTFIDF(request, session_id):
 
-    card = Tfidf.objects.filter(session__id_parladata=session_id)
+    card = Tfidf.objects.filter(session__id_parladata=session_id, is_visible=True)
     if card:
         card = card.latest("created_at")
         out = {

@@ -210,25 +210,27 @@ def datesGenerator(stDate, toDate):
     dates = [(stDate + timedelta(days=x)) for x in range(0, (toDate-stDate).days)]
     return dates
 
-def getPersonCardModelNew(model, id, date=None):
+def getPersonCardModelNew(model, id, date=None, is_visible=None):
     if date:
         modelObject = model.objects.filter(person__id_parladata=id, created_for__lte=datetime.strptime(date, '%d.%m.%Y'))
     else:
         modelObject = model.objects.filter(person__id_parladata=id, created_for__lte=datetime.now())
+    if is_visible:
+        modelObject = modelObject.filter(is_visible=True)
 
     if not modelObject:
         #if model == LastActivity:
             #return None
         if DEBUG:
-            raise Http404("Nismo našli kartice"+ str(model)+str(id))
+            raise Http404('Nismo našli kartice'+ str(model)+str(id))
         else:
-            raise Http404("Nismo našli kartice")
+            raise Http404('Nismo našli kartice')
     else:
         if model == LastActivity:
             latest_day = modelObject.latest('created_for').created_for
             print latest_day
             if len(modelObject.filter(created_for=latest_day))>1:
-                modelObject = modelObject.filter(created_for=latest_day).latest("created_at")
+                modelObject = modelObject.filter(created_for=latest_day).latest('created_at')
             else:
                 modelObject = modelObject.latest('created_for')
         else:
@@ -253,7 +255,7 @@ def getPersonCardModel(model, id, date=None):
     if not modelObject:
         if model == LastActivity:
             return None
-        raise Http404("Nismo našli kartice")
+        raise Http404('Nismo našli kartice')
     else:
         if model == LastActivity:
             modelObject = modelObject.latest('date')
@@ -270,13 +272,13 @@ def getPGCardModel(model, id, date=None):
         modelObject = model.objects.filter(organization__id_parladata=id,
                                            created_at__lte=datetime.now())
     if not modelObject:
-        raise Http404("Nismo našli kartice")
+        raise Http404('Nismo našli kartice')
     else:
         modelObject = modelObject.latest('created_at')
     return modelObject
 
 
-def getPGCardModelNew(model, id, date=None):
+def getPGCardModelNew(model, id, date=None, is_visible=None):
     if date:
         modelObject = model.objects.filter(organization__id_parladata=id,
                                            created_for__lte=datetime.strptime(date, '%d.%m.%Y'))
@@ -284,14 +286,16 @@ def getPGCardModelNew(model, id, date=None):
         modelObject = model.objects.filter(organization__id_parladata=id,
                                            created_for__lte=datetime.now())
 
+    if is_visible:
+        modelObject = modelObject.filter(is_visible=True)
+
     if not modelObject:
         #if model == LastActivity:
             #return None
-        raise Http404("Nismo našli kartice")
+        raise Http404('Nismo našli kartice')
     else:
         date = modelObject.latest("created_for").created_for
         modelObject = modelObject.filter(created_for=date).latest('created_at')
-        print "get object BUBU", modelObject.created_for
     return modelObject
 
 def getSCardModel(model, id_se, date=None):

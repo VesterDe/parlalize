@@ -1038,14 +1038,18 @@ def setTFIDF(request, person_id, date_=None):
 
     print "TFIDF", person_id
     data = tryHard("https://isci.parlameter.si/tfidf/nodigrams/p/"+person_id).json()
-    is_saved = saveOrAbortNew(Tfidf, person=Person.objects.get(id_parladata=person_id), created_for=date_of, data=data["results"])
+    is_saved = saveOrAbortNew(Tfidf,
+                              person=Person.objects.get(id_parladata=person_id),
+                              created_for=date_of,
+                              is_visible=False,
+                              data=data["results"])
 
     return JsonResponse({"alliswell": True,
                          "saved": is_saved})
 
 def getTFIDF(request, person_id, date_=None):
 
-    card = getPersonCardModelNew(Tfidf, int(person_id), date_)
+    card = getPersonCardModelNew(Tfidf, int(person_id), date=date_, is_visible=True)
 
     out = {
         'person': getPersonData(person_id, date_),
