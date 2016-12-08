@@ -706,12 +706,20 @@ def getTFIDF(request, session_id):
         }
     else:
         date_of = datetime.now().date()
-        out = {
-            'session': Session.objects.get(id_parladata=session_id).getSessionData(),
-            'results': [],
-                                    "created_for": date_of.strftime(API_DATE_FORMAT), 
-            "created_at": date_of.strftime(API_DATE_FORMAT)
-        }
+        if Session.objects.filter(id_parladata=session_id):
+            out = {
+                'session': Session.objects.get(id_parladata=session_id).getSessionData(),
+                'results': [],
+                "created_for": date_of.strftime(API_DATE_FORMAT), 
+                "created_at": date_of.strftime(API_DATE_FORMAT)
+            }
+        else:
+            out = {
+                'session': None,
+                'results': [],
+                "created_for": date_of.strftime(API_DATE_FORMAT), 
+                "created_at": date_of.strftime(API_DATE_FORMAT)
+            }
 
     
 
