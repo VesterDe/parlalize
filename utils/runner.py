@@ -87,7 +87,7 @@ def updateSpeeches():
         else:
             print "adding speech"
             speech = Speech(person=Person.objects.get(id_parladata=int(dic['speaker'])),
-                            organization=Organization.bjects.get(
+                            organization=Organization.objects.get(
                                 id_parladata=int(dic['party'])),
                             content=dic['content'], order=dic['order'],
                             session=Session.objects.get(
