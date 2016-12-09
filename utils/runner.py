@@ -71,20 +71,9 @@ def updateOrganizations():
 
 def updateSpeeches():
     data = tryHard(API_URL + '/getAllSpeeches').json()
+    existingISs = list(Speech.objects.all().values_list("id_parladata", flat=True))
     for dic in data:
-        if Speech.objects.filter(id_parladata=dic['id']):
-            print "updating speech"
-            Speech.objects.filter(id_parladata=dic['id']).update(person=Person.objects.get(
-                                id_parladata=int(dic['speaker'])),
-                            organization=Organization.objects.get(
-                                id_parladata=int(dic['party'])),
-                            content=dic['content'], order=dic['order'],
-                            session=Session.objects.get(
-                                id_parladata=int(dic['session'])),
-                            start_time=dic['start_time'],
-                            end_time=dic['end_time'],
-                            id_parladata=dic['id'])
-        else:
+        if int(dic["id"]) not in existingISs and str(dic["id"]) not in existingISs:
             print "adding speech"
             speech = Speech(person=Person.objects.get(id_parladata=int(dic['speaker'])),
                             organization=Organization.objects.get(
@@ -1056,3 +1045,9 @@ def morningCash():
                 requests.get(theUrl + method + str(w['id']) + '?forceRender=true&frame=true&altHeader=true')
                 requests.get(theUrl + method + str(w['id']) + '?forceRender=true&embed=true&altHeader=true')
             print 'yay!'
+
+
+def deleteUnconnectedSpeeches():
+    data = tryHard(API_URL + '/getAllSpeeches').json()
+    idsInData = [speech['id'] for speech in data]
+    blindSpeeches = Speech.objects.all().exclude(id_parladata__in=idsInData)
