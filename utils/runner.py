@@ -71,11 +71,13 @@ def updateOrganizations():
 
 def updateSpeeches():
     data = tryHard(API_URL + '/getAllSpeeches').json()
-    existingISs = list(Speech.objects.all().values_list("id_parladata", flat=True))
+    existingISs = list(Speech.objects.all().values_list("id_parladata",
+                                                        flat=True))
     for dic in data:
-        if int(dic["id"]) not in existingISs and str(dic["id"]) not in existingISs:
+        if int(dic["id"]) not in existingISs:
             print "adding speech"
-            speech = Speech(person=Person.objects.get(id_parladata=int(dic['speaker'])),
+            person = Person.objects.get(id_parladata=int(dic['speaker']))
+            speech = Speech(person=person,
                             organization=Organization.objects.get(
                                 id_parladata=int(dic['party'])),
                             content=dic['content'], order=dic['order'],
@@ -85,6 +87,9 @@ def updateSpeeches():
                             end_time=dic['end_time'],
                             id_parladata=dic['id'])
             speech.save()
+
+    # delete speeches which was deleted in parladata @dirty fix
+    deleteUnconnectedSpeeches()
     return 1
 
 # treba pofixsat
@@ -107,7 +112,8 @@ def updateBallots():
         if int(dic["id"]) not in existingISs:
             print "adding ballot " + str(dic['vote'])
             vote = Vote.objects.get(id_parladata=dic['vote'])
-            ballots = Ballot(person=Person.objects.get(id_parladata=int(dic['voter'])),
+            person = Person.objects.get(id_parladata=int(dic['voter']))
+            ballots = Ballot(person=person,
                              option=dic['option'],
                              vote=vote,
                              start_time=vote.session.start_time,
@@ -118,8 +124,9 @@ def updateBallots():
 
 
 def setAllSessions():
-    data  = tryHard(API_URL + '/getSessions/').json()
-    session_ids = list(Session.objects.all().values_list("id_parladata", flat=True))
+    data = tryHard(API_URL + '/getSessions/').json()
+    session_ids = list(Session.objects.all().values_list("id_parladata",
+                                                         flat=True))
     for sessions in data:
         if sessions['id'] not in session_ids:
             result = Session(name=sessions['name'],
@@ -1051,3 +1058,4 @@ def deleteUnconnectedSpeeches():
     data = tryHard(API_URL + '/getAllSpeeches').json()
     idsInData = [speech['id'] for speech in data]
     blindSpeeches = Speech.objects.all().exclude(id_parladata__in=idsInData)
+    blindSpeeches.delete()
