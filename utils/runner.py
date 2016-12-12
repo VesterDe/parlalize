@@ -731,6 +731,11 @@ def updateLastDay():
     except:
         client.captureException()
 
+    try:
+        runSettersSessions()
+    except:
+        client.captureException()
+
     return 1
 
 
