@@ -618,21 +618,22 @@ def onDatePGCardRunner(date_=None):
         except:
             print FAIL + "FAIL on: " + str(setter) + ENDC
 
-    #updateWB()
+    # updateWB()
+
 
 def runSettersSessions(date_to=None):
     if not date_to:
-        date_to=datetime.today().strftime(API_DATE_FORMAT)
- 
+        date_to = datetime.today().strftime(API_DATE_FORMAT)
+
     setters_models = {
-        #PresenceOfPG: setPresenceOfPG,
-        #AbsentMPs: setAbsentMPs,
-        #AverageSpeeches: setSpeechesOnSession,
+        PresenceOfPG: setPresenceOfPG,
+        AbsentMPs: setAbsentMPs,
+        AverageSpeeches: setSpeechesOnSession,
         Vote_graph: setMotionOfSessionGraph
     }
     for model, setter in setters_models.items():
         if model != AverageSpeeches:
-            #IDs = getSesIDs(dates[1],dates[-1])
+            # IDs = getSesIDs(dates[1],dates[-1])
             last = idsOfSession(model)
             print last
             print model
@@ -644,8 +645,8 @@ def runSettersSessions(date_to=None):
                     client.captureException()
         else:
             dates = findDatesFromLastCard(model, None, date_to)
-            print model      
-            if dates==[]:
+            print model
+            if dates == []:
                 continue
             datesSes = getSesDates(dates[-1])
             for date in datesSes:
@@ -689,13 +690,14 @@ def update():
     print "update person has_function"
     updatePersonFunctions()
 
-    #print "start update cards"
+    print "start update cards"
     updateLastDay()
 
     return 1
 
+
 def updateCacheforList(date_=None):
-    #refresh cache
+    # refresh cache
     try:
         if not date_:
             date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
@@ -708,7 +710,14 @@ def updateCacheforList(date_=None):
 
     return 1
 
+
 def updateLastDay():
+    try:
+        print "sessions"
+        runSettersSessions()
+    except:
+        client.captureException()
+
     lastVoteDay = Vote.objects.latest("created_for").created_for
 
     try:
@@ -728,11 +737,6 @@ def updateLastDay():
         client.captureException()
     try:
         onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
-    except:
-        client.captureException()
-
-    try:
-        runSettersSessions()
     except:
         client.captureException()
 
