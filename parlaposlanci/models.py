@@ -390,6 +390,8 @@ class MPStaticPL(Timestampable, models.Model):
                               default="f",
                               help_text=_('Gender'))
 
+    working_bodies_functions = JSONField(blank=True, null=True)
+
 class MPStaticGroup(Timestampable, models.Model):
 
     person = models.ForeignKey('MPStaticPL', help_text=_('Person foreign key to MPStaticPL'))

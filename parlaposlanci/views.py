@@ -52,22 +52,25 @@ def getMPsList(request, date_=None):
     return JsonResponse(output, safe=False)
 
 
-##returns MP static data like PoliticalParty, age, ....
+# returns MP static data like PoliticalParty, age, ....
 def setMPStaticPL(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
         data = tryHard(API_URL+'/getMPStatic/' + person_id + "/" + date_).json()
     else:
         date_of = datetime.now().date()
-        data = tryHard(API_URL+'/getMPStatic/'+ person_id).json()
+        data = tryHard(API_URL+'/getMPStatic/' + person_id).json()
 
+    person = Person.objects.get(id_parladata=int(person_id))
     if not data:
-        return JsonResponse({"status":'Nothing iz well', "saved": False})
+        return JsonResponse({"status": 'Nothing iz well', "saved": False})
     dic = dict()
+
+    wbfs = data['working_bodies_functions']
 
     result = saveOrAbortNew(model=MPStaticPL,
                             created_for=date_of,
-                            person=Person.objects.get(id_parladata=int(person_id)),
+                            person=person,
                             voters=data['voters'], age=data['age'],
                             mandates=data['mandates'],
                             party_id=data['party_id'],
@@ -81,7 +84,8 @@ def setMPStaticPL(request, person_id, date_=None):
                             party_name=data['party'],
                             acronym=data['acronym'],
                             gov_id=data['gov_id'],
-                            gender=data['gender'])
+                            gender=data['gender'],
+                            working_bodies_functions=wbfs)
 
     if result:
         for group in data['groups']:
@@ -94,7 +98,15 @@ def setMPStaticPL(request, person_id, date_=None):
 def getMPStaticPL(request, person_id, date_=None):
     card = getPersonCardModelNew(MPStaticPL, person_id, date_)
 
-    if card.twitter == 'False': print card.twitter
+    if card.twitter == 'False':
+        print card.twitter
+
+    wbfs = []
+    for funct in card.working_bodies_functions:
+        org = Organization.objects.filter(id_parladata=funct['org_id'])
+        if org:
+            wbfs.append({'wb': org[0].getOrganizationData(),
+                         'role': funct['role']})
 
     data = {
         'created_at': card.created_at.strftime(API_DATE_FORMAT),
@@ -112,7 +124,8 @@ def getMPStaticPL(request, person_id, date_=None):
             'district': [District.objects.get(id_parladata=dist).name for dist in card.district] if card.district else None,
             'party': card.party_name,
             'social': [{'facebook': card.facebook if card.facebook != 'False' else None, 'twitter': card.twitter if card.twitter != 'False' else None, 'linkedin': card.linkedin if card.linkedin != 'False' else None}],
-            'groups': [{'group_id': group.groupid, 'group_name': group.groupname} for group in card.mpstaticgroup_set.all()]
+            'groups': [{'group_id': group.groupid, 'group_name': group.groupname} for group in card.mpstaticgroup_set.all()],
+            'working_bodies_functions': wbfs,
         }
     }
 
