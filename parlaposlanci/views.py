@@ -132,18 +132,23 @@ def getMPStaticPL(request, person_id, date_=None):
     return JsonResponse(data)
 
 
-#Saves to DB percent of attended sessions of MP and maximum and average of attended sessions
+# Saves to DB percent of attended sessions of MP and
+# maximum and average of attended sessions
 def setPercentOFAttendedSession(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
-        date_of = findDatesFromLastCard(Presence, person_id, datetime.now().date())[0]
+        date_of = findDatesFromLastCard(Presence,
+                                        person_id,
+                                        datetime.now().date())[0]
         date_ = date_of.strftime(API_DATE_FORMAT)
 
-    isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
+    isNewVote = tryHard(API_URL + '/isVoteOnDay/'+date_).json()['isVote']
     print isNewVote
     if not isNewVote:
-        return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
+        return JsonResponse({'alliswell': True,
+                             'status': 'Ni glasovanja na ta dan',
+                             'saved': False})
 
     data = tryHard(API_URL+'/getNumberOfAllMPAttendedSessions/'+date_).json()
 
@@ -153,12 +158,15 @@ def setPercentOFAttendedSession(request, person_id, date_=None):
     if person_id in data["sessions"].keys():
         thisMP = data["sessions"][person_id]
     else:
-        #ta member se ni obstajal
+        # ta member se ni obstajal
         thisMP = 0
-        return JsonResponse({'alliswell': False, "status":'ta member se ni obstajal', "saved": False})
+        return JsonResponse({'alliswell': False,
+                             'status': 'ta member se ni obstajal',
+                             'saved': False})
 
     maximum = max(data["sessions"].values())
-    maximumMP = [pId for pId in data["sessions"] if data["sessions"][pId]==maximum]
+    maximumMP = [pId for pId in data["sessions"]
+                 if data["sessions"][pId] == maximum]
     average = sum(data["sessions"].values()) / len(data["sessions"])
 
     if person_id in data["votes"].keys():
@@ -167,23 +175,27 @@ def setPercentOFAttendedSession(request, person_id, date_=None):
         thisMPVotes = 0
 
     maximumVotes = max(data["votes"].values())
-    maximumMPVotes = [pId for pId in data["votes"] if data["votes"][pId]==maximumVotes]
+    maximumMPVotes = [pId for pId in data["votes"]
+                      if data["votes"][pId] == maximumVotes]
 
     averageVotes = sum(data["votes"].values()) / len(data["votes"])
 
-    result = saveOrAbortNew(model=Presence,
-                         created_for=date_of,
-                         person=Person.objects.get(id_parladata=int(person_id)),
-                         person_value_sessions=thisMP,
-                         maxMP_sessions=maximumMP,
-                         average_sessions=average,
-                         maximum_sessions=maximum,
-                         person_value_votes=thisMPVotes,
-                         maxMP_votes=maximumMPVotes,
-                         average_votes=averageVotes,
-                         maximum_votes=maximumVotes)
+    person = Person.objects.get(id_parladata=int(person_id))
 
-    return JsonResponse({'alliswell': True, "status":'OK', "saved": result})
+    result = saveOrAbortNew(model=Presence,
+                            created_for=date_of,
+                            person=person,
+                            person_value_sessions=thisMP,
+                            maxMP_sessions=maximumMP,
+                            average_sessions=average,
+                            maximum_sessions=maximum,
+                            person_value_votes=thisMPVotes,
+                            maxMP_votes=maximumMPVotes,
+                            average_votes=averageVotes,
+                            maximum_votes=maximumVotes)
+
+    return JsonResponse({'alliswell': True, "status": 'OK', "saved": result})
+
 
 def getPercentOFAttendedSession(request, person_id, date=None):
     equalVoters = getPersonCardModelNew(Presence, person_id, date)
