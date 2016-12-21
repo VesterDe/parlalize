@@ -43,9 +43,8 @@ class Organization(Timestampable, models.Model):
     is_coalition = models.BooleanField(_('coalition'),
                                       default=False)
 
-
     def __str__(self):
-        return unicode(self.name) + " " + str(self.id_parladata) 
+        return unicode(self.name) + " " + str(self.id_parladata)
 
     def getOrganizationData(self):
         return {
@@ -54,6 +53,7 @@ class Organization(Timestampable, models.Model):
                   'acronym': self.acronym,
                   'is_coalition': self.is_coalition,
                }
+
 
 class PGStatic(Timestampable, models.Model):
     organization = models.ForeignKey('Organization', 

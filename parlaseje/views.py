@@ -520,6 +520,7 @@ def getPresenceOfPG(request, id_se, date=False):
                          "session": presence.session.getSessionData()}, 
                         safe=False)
 
+
 def setSpeechesOnSession(request, date=False):
     if date:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.strptime(date, '%d.%m.%Y')))
@@ -531,14 +532,14 @@ def setSpeechesOnSession(request, date=False):
 
     mpsID = {}
     for mp in mps:
-        speech = len(tryHard(API_URL+'/getSpeechesOfMP/'+ str(mp['id'])+'/'+ date).json())
-        if numberOfSessions !=0:
-            mpsID.update({mp['id']:float(float(speech)/float(numberOfSessions))})
+        url = API_URL + '/getSpeechesOfMP/' + str(mp['id'])+'/' + date
+        speech = len(tryHard(url).json())
+        if numberOfSessions != 0:
+            mpsID.update({mp['id']: float(float(speech)/float(numberOfSessions))})
     date = datetime.strptime(date, '%d.%m.%Y')
     result = saveOrAbortNew(model=AverageSpeeches,
-                                created_for=date,
-                                speechesOnSession=mpsID
-                                )
+                            created_for=date,
+                            speechesOnSession=mpsID)
     return JsonResponse({'alliswell': True})
 
 
