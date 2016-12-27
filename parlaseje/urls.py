@@ -51,4 +51,6 @@ urlpatterns = patterns(
     url(r'^getLastSessionLanding(/(?P<date_>[\w].+))?', getLastSessionLanding),
 
     url(r'^getSessionsByClassification/', getSessionsByClassification),
+
+    url(r'^getSessionsList/', getSessionsList),
 )

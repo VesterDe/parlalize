@@ -13,10 +13,13 @@ from math import fabs
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 import re
+from django.db.models import Q
+from django.core.cache import cache
 
 from parlalize.utils import tryHard
 
 # Create your views here.
+
 
 def getSpeech(request, speech_id):
     speech = get_object_or_404(Speech, id_parladata=speech_id)
@@ -677,6 +680,43 @@ def getSessionsByClassification(request):
     for session in out["dz"]:
         session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
                         "speeches": True if Speech.objects.filter(session__id_parladata=session["id"]) else False})
+
+    return JsonResponse(out)
+
+
+def getSessionsList(request, date_=None, force_render=False):
+    COUNCIL_ID = 9
+    DZ = 95
+    working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+        key = date_
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+        key = date_
+
+    out = cache.get("sessions_list_" + key)
+    if out and not force_render:
+        data = out
+    else:
+        orgs = Organization.objects.filter(Q(organization__id_parladata=COUNCIL_ID) |
+                                           Q(organization__id_parladata=DZ) |
+                                           Q(classification__in=working_bodies))
+        sessions = Session.objects.filter(organization__in=orgs)
+        sessions = sessions.order_by("-start_time")
+        out = {'sessions': [session.getSessionData() for session in sessions],
+               'created_for': datetime.now().strftime(API_DATE_FORMAT),
+               'created_at': datetime.now().strftime(API_DATE_FORMAT)}
+
+        for session in out["sessions"]:
+            act = Activity.objects.filter(session__id_parladata=session['id'])
+            if act:
+                last_day = act.latest('updated_at').updated_at.strftime(API_DATE_FORMAT)
+            else:
+                last_day = session['date']
+            session.update({"updated_at": last_day})
+        cache.set("sessions_list_" + key, out, 60 * 60 * 48)
 
     return JsonResponse(out)
 
