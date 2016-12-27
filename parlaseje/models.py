@@ -80,21 +80,23 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                 'date': self.start_time.strftime(API_OUT_DATE_FORMAT),
                 'id': self.id_parladata,
                 'org': self.organization.getOrganizationData(),
-                'in_review': self.in_review,}
+                'in_review': self.in_review}
+
 
 class Activity(Timestampable, models.Model):
     id_parladata = models.IntegerField(_('parladata id'),
-                            blank=True, null=True,help_text=_('id parladata'))
+                                       blank=True,
+                                       null=True,
+                                       help_text=_('id parladata'))
 
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name="%(app_label)s_%(class)s_related",
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name="%(app_label)s_%(class)s_related",
+                                help_text=_('Session '))
 
     person = models.ForeignKey('parlaposlanci.Person',
                                blank=True, null=True,
                                help_text=_('MP'))
-
 
     start_time = PopoloDateTimeField(blank=True, null=True,
                                      help_text='Start time')
@@ -116,11 +118,12 @@ class Speech(Activity):
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
 
+
 class Ballot(Activity):
     vote = models.ForeignKey('Vote',
-                               blank=True, null=True,
-                               related_name='vote',
-                               help_text=_('Vote'))
+                             blank=True, null=True,
+                             related_name='vote',
+                             help_text=_('Vote'))
 
     option = models.CharField(max_length=128,
                               blank=True, null=True,
@@ -129,32 +132,34 @@ class Ballot(Activity):
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
 
+
 class Vote(Timestampable, models.Model):
     created_for = models.DateField(_('date of vote'),
-                                    blank=True,
-                                    null=True,
-                                    help_text=_('date of vote'))
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of vote'))
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name='in_session',
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name='in_session',
+                                help_text=_('Session '))
 
-    motion = models.TextField(blank=True, null=True,
+    motion = models.TextField(blank=True,
+                              null=True,
                               help_text='The motion for which the vote took place')
 
     tags = JSONField(blank=True, null=True)
 
     votes_for = models.IntegerField(blank=True, null=True,
-                                   help_text='Number of votes for')
+                                    help_text='Number of votes for')
 
     against = models.IntegerField(blank=True, null=True,
-                                   help_text='Number votes againt')
+                                  help_text='Number votes againt')
 
     abstain = models.IntegerField(blank=True, null=True,
-                                   help_text='Number votes abstain')
+                                  help_text='Number votes abstain')
 
     not_present = models.IntegerField(blank=True, null=True,
-                                   help_text='Number of MPs that warent on the session')
+                                      help_text='Number of MPs that warent on the session')
 
     result = models.NullBooleanField(blank=True, null=True,
                               default=False,
@@ -218,7 +223,7 @@ class AbsentMPs(Timestampable, models.Model):
                                help_text=_('Session '))
 
     absentMPs = JSONField(blank=True, null=True)
-    
+
     created_for = models.DateField(_('date of vote'),
                                     blank=True,
                                     null=True,

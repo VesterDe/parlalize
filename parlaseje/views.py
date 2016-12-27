@@ -85,8 +85,9 @@ def getSessionSpeeches(request, session_id):
     }
     return JsonResponse(result, safe=False)
 
+
 def setMotionOfSession(request, id_se):
-    motion  = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
+    motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
     tab = []
     yes = 0
@@ -96,7 +97,8 @@ def setMotionOfSession(request, id_se):
     option = ""
     tyes = []
     for mot in motion:
-        votes  = tryHard(API_URL + '/getVotesOfMotion/'+str(mot['vote_id'])+'/').json()
+        url = API_URL + '/getVotesOfMotion/' + str(mot['vote_id']) + '/'
+        votes = tryHard(url).json()
         for vote in votes:
             if vote['option'] == str('za'):
                 yes = yes + 1
@@ -133,16 +135,15 @@ def setMotionOfSession(request, id_se):
                                        id_parladata=mot['vote_id'],
                                        )
 
-
-
         yes = 0
         no = 0
         kvorum = 0
         not_present = 0
     return JsonResponse({'alliswell': True})
 
-def setMotionOfSessionGraph (request, id_se):
-    motion  = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
+
+def setMotionOfSessionGraph(request, id_se):
+    motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
     tab = []
     yes = 0
@@ -160,7 +161,8 @@ def setMotionOfSessionGraph (request, id_se):
     npdic = defaultdict(int)
     tyes = []
     for mot in motion:
-        votes  = tryHard(API_URL + '/getVotesOfMotion/'+str(mot['vote_id'])+'/').json()
+        url = API_URL + '/getVotesOfMotion/'+str(mot['vote_id'])+'/'
+        votes = tryHard(url).json()
         for vote in votes:
             if vote['option'] == str('za'):
                 yes = yes + 1
@@ -630,27 +632,27 @@ def getLastSessionLanding(request, date_=None):
         print presence_index
         presence = presences[presence_index]
         motions = json.loads(getMotionOfSession(None, presence.session.id_parladata).content)
-        if type(motions)==dict:
+        if type(motions) == dict:
             if "results" in motions.keys():
-                #tfidf = tryHard("https://isci.parlameter.si/tfidf/s/"+str(presence.session.id_parladata))
-                #if tfidf.status_code == 200:
+                # tfidf = tryHard("https://isci.parlameter.si/tfidf/s/"+str(presence.session.id_parladata))
+                # if tfidf.status_code == 200:
                 tfidf = json.loads(getTFIDF(None, presence.session.id_parladata).content)
                 if tfidf["results"]:
                     ready = True
                 else:
-                    presence_index += 1                
+                    presence_index += 1
         else:
             presence_index += 1
- 
-    results = [{"org":Organization.objects.get(id_parladata=p).getOrganizationData(), 
+
+    results = [{"org":Organization.objects.get(id_parladata=p).getOrganizationData(),
                                 "percent":presence.presence[0][p],} for p in presence.presence[0]]
     result = sorted(results, key=lambda k: k['percent'], reverse=True)
     session = Session.objects.get(id_parladata=int(presence.session.id_parladata))
     return JsonResponse({"session": session.getSessionData(),
                          "created_for": session.start_time.strftime(API_DATE_FORMAT),
                          "created_at": datetime.today().strftime(API_DATE_FORMAT),
-                         "presence": result, 
-                         "motions": motions["results"], 
+                         "presence": result,
+                         "motions": motions["results"],
                          "tfidf": tfidf}, safe=False)
 
 
@@ -658,10 +660,9 @@ def getSessionsByClassification(request):
     COUNCIL_ID = 9
     DZ = 95
     working_bodies = ["odbor", "komisija", "preiskovalna komisija"]
-    out = {"kolegij": [ session.getSessionData() for session in Session.objects.filter(organization__id_parladata=COUNCIL_ID).order_by("-start_time")],
-           "dz": [ session.getSessionData() for session in Session.objects.filter(organization__id_parladata=DZ).order_by("-start_time")],
-           "dt": [ org.getOrganizationData() for org in Organization.objects.filter(classification__in=working_bodies)],}
-
+    out = {"kolegij": [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=COUNCIL_ID).order_by("-start_time")],
+           "dz": [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=DZ).order_by("-start_time")],
+           "dt": [org.getOrganizationData() for org in Organization.objects.filter(classification__in=working_bodies)],}
 
     for dt in out["dt"]:
         dt["sessions"] = [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=dt["id"]).order_by("-start_time")]
@@ -681,12 +682,12 @@ def getSessionsByClassification(request):
 
 
 def setTFIDF(request, session_id):
-    
     date_of = datetime.now().date()
-
-    data = tryHard("https://isci.parlameter.si/tfidf/s/"+str(session_id)).json()
-    is_saved = saveOrAbortNew(Tfidf, 
-                              session=Session.objects.get(id_parladata=session_id), 
+    url = "https://isci.parlameter.si/tfidf/s/"+str(session_id)
+    data = tryHard(url).json()
+    session = Session.objects.get(id_parladata=session_id)
+    is_saved = saveOrAbortNew(Tfidf,
+                              session=session,
                               created_for=date_of,
                               is_visible=False,
                               data=data["results"])
@@ -696,14 +697,14 @@ def setTFIDF(request, session_id):
 
 
 def getTFIDF(request, session_id):
-
-    card = Tfidf.objects.filter(session__id_parladata=session_id, is_visible=True)
+    card = Tfidf.objects.filter(session__id_parladata=session_id,
+                                is_visible=True)
     if card:
         card = card.latest("created_at")
         out = {
             'session': card.session.getSessionData(),
             'results': card.data,
-            "created_for": card.created_for.strftime(API_DATE_FORMAT), 
+            "created_for": card.created_for.strftime(API_DATE_FORMAT),
             "created_at": card.created_at.strftime(API_DATE_FORMAT)
         }
     else:
@@ -712,17 +713,15 @@ def getTFIDF(request, session_id):
             out = {
                 'session': Session.objects.get(id_parladata=session_id).getSessionData(),
                 'results': [],
-                "created_for": date_of.strftime(API_DATE_FORMAT), 
+                "created_for": date_of.strftime(API_DATE_FORMAT),
                 "created_at": date_of.strftime(API_DATE_FORMAT)
             }
         else:
             out = {
                 'session': None,
                 'results': [],
-                "created_for": date_of.strftime(API_DATE_FORMAT), 
+                "created_for": date_of.strftime(API_DATE_FORMAT),
                 "created_at": date_of.strftime(API_DATE_FORMAT)
             }
-
-    
 
     return JsonResponse(out)

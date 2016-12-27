@@ -41,8 +41,10 @@ def updatePeople():
             person.gov_id = mp['gov_id']
             person.save()
         else:
-            person = Person(name=mp['name'], pg=mp['membership'], id_parladata=int(mp['id']), image=mp[
-                            'image'], actived=True if int(mp['id']) in mps_ids else False, gov_id=mp['gov_id'])
+            person = Person(name=mp['name'], 
+                            pg=mp['membership'], 
+                            id_parladata=int(mp['id']), 
+                            image=mp['image'], actived=True if int(mp['id']) in mps_ids else False, gov_id=mp['gov_id'])
             person.save()
 
     return 1
@@ -627,7 +629,6 @@ def runSettersSessions(date_to=None):
 
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
-        AbsentMPs: setAbsentMPs,
         AverageSpeeches: setSpeechesOnSession,
         Vote_graph: setMotionOfSessionGraph
     }
@@ -1068,3 +1069,15 @@ def deleteUnconnectedSpeeches():
     idsInData = [speech['id'] for speech in data]
     blindSpeeches = Speech.objects.all().exclude(id_parladata__in=idsInData)
     blindSpeeches.delete()
+
+
+def fastUpdate():
+    update_dates = []
+    update_dates.append(Session.objects.latest("updated_at").updated_at)
+    #update_dates.append(Vote.objects.latest("updated_at"))
+    #update_dates.append(Speech.objects.latest("updated_at"))
+    update_dates.append(Person.objects.latest("updated_at").updated_at)
+
+    update_from_date = max(update_dates).strftime(API_DATE_FORMAT + " %H:%M")
+
+    return update_from_date
