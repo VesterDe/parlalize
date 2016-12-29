@@ -10,6 +10,7 @@ from collections import Counter
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, API_OUT_DATE_FORMAT
 import numpy as np
 from scipy.stats.stats import pearsonr
+from scipy.spatial.distance import euclidean
 from parlaposlanci.models import Person
 from parlaposlanci.views import getMPsList
 import math
@@ -287,8 +288,8 @@ def getSpeechesOfPG(request, pg_id, date_=False):
         temp_day_order = [day["sessions"][s_id] for s_id in ses_order_ids]
         day["sessions"] = temp_day_order
 
-    #WORKAROUND: created_at is today.
-    result  = {
+    # WORKAROUND: created_at is today.
+    result = {
         'results': out,
         "created_for": out[-1]["date"],
         "created_at": date_,
@@ -304,28 +305,31 @@ def howMatchingThem(request, pg_id, type_of, date_=None):
         date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
 
-    pg_score, membersInPGs, votes, all_votes = getRangeVotes([pg_id], date_, "logic")
+    pg_score, membersInPGs, votes, all_votes = getRangeVotes([pg_id],
+                                                             date_,
+                                                             'logic')
 
     # most match them
-    if type_of == "match":
+    if type_of == 'match':
         for voter in membersInPGs[str(pg_id)]:
             votes.pop(str(voter))
 
     # deviation in PG
-    if type_of == "deviation":
+    if type_of == 'deviation':
         del membersInPGs[str(pg_id)]
         for pgs in membersInPGs.keys():
             for voter in membersInPGs[str(pgs)]:
-                #WORKAROUND: if one person is in more then one PG
+                # WORKAROUND: if one person is in more then one PG
                 if str(voter) in votes:
                     votes.pop(str(voter))
-
 
     members = getMPsList(request, date_)
     membersDict = {str(mp['id']): mp for mp in json.loads(members.content)}
 
-    #calculate parsonr
-    out = {person: (pearsonr(list(pg_score), [votes[str(person)][str(val)] for val in all_votes])[0]+1)*50 for person in sorted(votes.keys())}
+    # calculate euclidean
+    out = {person: (euclidean(list(pg_score), [votes[str(person)][str(val)]
+                    for val in all_votes]))
+           for person in sorted(votes.keys())}
 
     for person in out.keys():
         if math.isnan(out[person]):
@@ -339,9 +343,10 @@ def howMatchingThem(request, pg_id, type_of, date_=None):
             key4remove.append(key)
             continue
         membersDict[str(key)].update({'ratio': out[str(key)]})
-        membersDict[key].update({'id': key})
+        person = Person.objects.get(id_parladata=int(key))
+        membersDict[key].update({'person': person, 'id': key})
 
-    #remove keys of members which isn't member in this time
+    # remove keys of members which isn't member in this time
     for key in key4remove:
         keys.remove(key)
     return membersDict, keys, date_of
@@ -349,29 +354,37 @@ def howMatchingThem(request, pg_id, type_of, date_=None):
 
 def setMostMatchingThem(request, pg_id, date_=None):
     if date_:
-        isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
+        isNewVote = tryHard(API_URL + '/isVoteOnDay/'+date_).json()['isVote']
         print isNewVote
         if not isNewVote:
-            return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
-        members, keys, date_of = howMatchingThem(request, pg_id, date_=date_, type_of="match")
+            return JsonResponse({'alliswell': True,
+                                 'status': 'Ni glasovanja na ta dan',
+                                 'saved': False})
+        members, keys, date_of = howMatchingThem(request, pg_id,
+                                                 date_=date_,
+                                                 type_of='match')
     else:
-        members, keys, date_of = howMatchingThem(request, pg_id, type_of="match")
+        members, keys, date_of = howMatchingThem(request,
+                                                 pg_id,
+                                                 type_of='match')
 
-    out = {index: members[key] for key, index in zip(keys[-6:-1], [5, 4, 3, 2, 1])}
-    #print out
+    out = {index: members[key]
+           for key, index in zip(keys[:5], [1, 2, 3, 4, 5])}
+
     try:
+        org = Organization.objects.get(id_parladata=int(pg_id))
         result = saveOrAbortNew(model=MostMatchingThem,
                                 created_for=date_of,
-                                organization=Organization.objects.get(id_parladata=int(pg_id)),
-                                person1=Person.objects.get(id_parladata=int(out[1]['id'])),
+                                organization=org,
+                                person1=out[1]['person'],
                                 votes1=out[1]['ratio'],
-                                person2=Person.objects.get(id_parladata=int(out[2]['id'])),
+                                person2=out[2]['person'],
                                 votes2=out[2]['ratio'],
-                                person3=Person.objects.get(id_parladata=int(out[3]['id'])),
+                                person3=out[3]['person'],
                                 votes3=out[3]['ratio'],
-                                person4=Person.objects.get(id_parladata=int(out[4]['id'])),
+                                person4=out[4]['person'],
                                 votes4=out[4]['ratio'],
-                                person5=Person.objects.get(id_parladata=int(out[5]['id'])),
+                                person5=out[5]['person'],
                                 votes5=out[5]['ratio'])
         return JsonResponse({'alliswell': True})
     except:
@@ -380,28 +393,37 @@ def setMostMatchingThem(request, pg_id, date_=None):
 
 def setLessMatchingThem(request, pg_id, date_=None):
     if date_:
-        isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
+        isNewVote = tryHard(API_URL + '/isVoteOnDay/' + date_).json()['isVote']
         print isNewVote
         if not isNewVote:
-            return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
-        members, keys, date_of = howMatchingThem(request, pg_id, date_=date_, type_of="match")
+            return JsonResponse({'alliswell': True,
+                                 'status': 'Ni glasovanja na ta dan',
+                                 'saved': False})
+        members, keys, date_of = howMatchingThem(request,
+                                                 pg_id,
+                                                 date_=date_,
+                                                 type_of='match')
     else:
-        members, keys, date_of = howMatchingThem(request, pg_id, type_of="match")
+        members, keys, date_of = howMatchingThem(request,
+                                                 pg_id,
+                                                 type_of='match')
 
-    out = {index: members[key] for key, index in zip(keys[:5], [1, 2, 3, 4, 5])}
+    out = {index: members[key]
+           for key, index in zip(keys[-6:-1], [5, 4, 3, 2, 1])}
+    org = Organization.objects.get(id_parladata=int(pg_id))
     try:
         result = saveOrAbortNew(model=LessMatchingThem,
                                 created_for=date_of,
-                                organization=Organization.objects.get(id_parladata=int(pg_id)),
-                                person1=Person.objects.get(id_parladata=int(out[1]['id'])),
+                                organization=org,
+                                person1=out[1]['person'],
                                 votes1=out[1]['ratio'],
-                                person2=Person.objects.get(id_parladata=int(out[2]['id'])),
+                                person2=out[2]['person'],
                                 votes2=out[2]['ratio'],
-                                person3=Person.objects.get(id_parladata=int(out[3]['id'])),
+                                person3=out[3]['person'],
                                 votes3=out[3]['ratio'],
-                                person4=Person.objects.get(id_parladata=int(out[4]['id'])),
+                                person4=out[4]['person'],
                                 votes4=out[4]['ratio'],
-                                person5=Person.objects.get(id_parladata=int(out[5]['id'])),
+                                person5=out[5]['person'],
                                 votes5=out[5]['ratio'])
         return JsonResponse({'alliswell': True})
     except:
@@ -410,67 +432,88 @@ def setLessMatchingThem(request, pg_id, date_=None):
 
 def setDeviationInOrg(request, pg_id, date_=None):
     if date_:
-        isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
+        isNewVote = tryHard(API_URL + '/isVoteOnDay/'+date_).json()['isVote']
         print isNewVote
         if not isNewVote:
-            return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
-        members, keys, date_of = howMatchingThem(request, pg_id, date_=date_, type_of="deviation")
+            return JsonResponse({'alliswell': True,
+                                 'status': 'Ni glasovanja na ta dan',
+                                 'saved': False})
+        members, keys, date_of = howMatchingThem(request,
+                                                 pg_id,
+                                                 date_=date_,
+                                                 type_of='deviation')
     else:
-        members, keys, date_of = howMatchingThem(request, pg_id, type_of="deviation")
+        members, keys, date_of = howMatchingThem(request,
+                                                 pg_id,
+                                                 type_of='deviation')
 
     numOfKeys = len(keys)
 
-    #out = {index: members[key] for key, index in zip(keys[:3], [1, 2, 3])}
-    #out.update({index: members[key] for key, index in zip(keys[-3:], [4, 5, 6])})
-    out = [data for member, data in members.items() if member in keys]
-    out = sorted(out, key=lambda k,: k["ratio"], reverse=False)
+    out = []
+    for member, data in members.items():
+        if member in keys:
+            print member, data
+            data.pop('person')
+            out.append(data)
+    out = sorted(out, key=lambda k, : k['ratio'], reverse=True)
+    print 'out', out
     try:
+        org_data = Organization.objects.get(id_parladata=int(pg_id))
         result = saveOrAbortNew(model=DeviationInOrganization,
                                 created_for=date_of,
-                                organization=Organization.objects.get(id_parladata=int(pg_id)),
-                                data = json.dumps(out)
+                                organization=org_data,
+                                data=out
                                 )
 
-        return JsonResponse({'alliswell': True, "status":'OK', "saved": result})
+        return JsonResponse({'alliswell': True,
+                             'status': 'OK',
+                             'saved': result})
     except:
         return JsonResponse({'alliswell': False})
 
 
 def getMPStaticPersonData(id_, date_):
     try:
-        return tryHard(BASE_URL+'/p/getMPStatic/'+str(id_)+"/"+date_).json()["person"]
+        url = BASE_URL + '/p/getMPStatic/' + str(id_) + '/' + date_
+        return tryHard(url).json()['person']
     except:
-        return {"id": id_}
+        return {'id': id_}
 
 
 def getMostMatchingThem(request, pg_id, date_=None):
     mostMatching = getPGCardModelNew(MostMatchingThem, pg_id, date_)
     if not date_:
-        date_=""
+        date_ = ''
+    org = Organization.objects.get(id_parladata=int(pg_id))
     out = {
-        'organization': Organization.objects.get(id_parladata=int(pg_id)).getOrganizationData(),
+        'organization': org.getOrganizationData(),
         'created_at': mostMatching.created_at.strftime(API_DATE_FORMAT),
         'created_for': mostMatching.created_for.strftime(API_DATE_FORMAT),
         'results': [
             {
-                "ratio": mostMatching.votes1,
-                "person": getMPStaticPersonData(mostMatching.person1.id_parladata, date_)
+                'ratio': mostMatching.votes1,
+                'person': getPersonData(mostMatching.person1.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes2,
-                "person": getMPStaticPersonData(mostMatching.person2.id_parladata, date_)
+                'ratio': mostMatching.votes2,
+                'person': getPersonData(mostMatching.person2.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes3,
-                "person": getMPStaticPersonData(mostMatching.person3.id_parladata, date_)
+                'ratio': mostMatching.votes3,
+                'person': getPersonData(mostMatching.person3.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes4,
-                "person": getMPStaticPersonData(mostMatching.person4.id_parladata, date_)
+                'ratio': mostMatching.votes4,
+                'person': getPersonData(mostMatching.person4.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes5,
-                "person": getMPStaticPersonData(mostMatching.person5.id_parladata, date_)
+                'ratio': mostMatching.votes5,
+                'person': getPersonData(mostMatching.person5.id_parladata,
+                                        date_)
             }
         ]
     }
@@ -481,31 +524,38 @@ def getMostMatchingThem(request, pg_id, date_=None):
 def getLessMatchingThem(request, pg_id, date_=None):
     mostMatching = getPGCardModelNew(LessMatchingThem, pg_id, date_)
     if not date_:
-        date_=""
+        date_ = ''
+
+    org = Organization.objects.get(id_parladata=int(pg_id))
     out = {
-        'organization': Organization.objects.get(id_parladata=int(pg_id)).getOrganizationData(),
+        'organization': org.getOrganizationData(),
         'created_at': mostMatching.created_at.strftime(API_DATE_FORMAT),
         'created_for': mostMatching.created_for.strftime(API_DATE_FORMAT),
         'results': [
             {
-                "ratio": mostMatching.votes1,
-                "person": getMPStaticPersonData(mostMatching.person1.id_parladata, date_)
+                'ratio': mostMatching.votes1,
+                'person': getPersonData(mostMatching.person1.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes2,
-                "person": getMPStaticPersonData(mostMatching.person2.id_parladata, date_)
+                'ratio': mostMatching.votes2,
+                'person': getPersonData(mostMatching.person2.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes3,
-                "person": getMPStaticPersonData(mostMatching.person3.id_parladata, date_)
+                'ratio': mostMatching.votes3,
+                'person': getPersonData(mostMatching.person3.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes4,
-                "person": getMPStaticPersonData(mostMatching.person4.id_parladata, date_)
+                'ratio': mostMatching.votes4,
+                'person': getPersonData(mostMatching.person4.id_parladata,
+                                        date_)
             },
             {
-                "ratio": mostMatching.votes5,
-                "person": getMPStaticPersonData(mostMatching.person5.id_parladata, date_)
+                'ratio': mostMatching.votes5,
+                'person': getPersonData(mostMatching.person5.id_parladata,
+                                        date_)
             }
         ]
     }
@@ -515,27 +565,29 @@ def getLessMatchingThem(request, pg_id, date_=None):
 def getDeviationInOrg(request, pg_id, date_=None):
     mostMatching = getPGCardModelNew(DeviationInOrganization, pg_id, date_)
     if not date_:
-        date_=""
+        date_ = ''
     out_r = []
-    for result in json.loads(mostMatching.data):
+    print mostMatching.data
+    for result in mostMatching.data:
         out_r.append({
-            "ratio": result["ratio"],
-            "person": getMPStaticPersonData(int(result["id"]), date_)})
+            'ratio': result['ratio'],
+            'person': getMPStaticPersonData(int(result['id']), date_)})
+    org = Organization.objects.get(id_parladata=int(pg_id))
     out = {
-        'organization': Organization.objects.get(id_parladata=int(pg_id)).getOrganizationData(),
+        'organization': org.getOrganizationData(),
         'created_at': mostMatching.created_at.strftime(API_DATE_FORMAT),
         'created_for': mostMatching.created_for.strftime(API_DATE_FORMAT),
-        'results': out_r 
+        'results': out_r
     }
-    #remove None from list. If PG dont have 6 members.
-    out["results"] = filter(lambda a: a != None, out["results"])
+    # remove None from list. If PG dont have 6 members.
+    out['results'] = filter(lambda a: a is not None, out['results'])
     return JsonResponse(out, safe=False)
 
 
 def setCutVotes(request, pg_id, date_=None):
     def getMaxOrgData(data, ids):
         d = {str(pg): data[pg] for pg in ids}
-        keys =  ",".join([key for key,val in d.iteritems() if val == max(d.values())])
+        keys =  ','.join([key for key,val in d.iteritems() if val == max(d.values())])
         return keys, max(d.values())
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -543,10 +595,10 @@ def setCutVotes(request, pg_id, date_=None):
         date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
 
-    isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
+    isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()['isVote']
     print isNewVote
     if not isNewVote:
-        return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
+        return JsonResponse({'alliswell': True, 'status':'Ni glasovanja na ta dan', 'saved': False})
 
     r = tryHard(API_URL+'/getCoalitionPGs/')
     coalition = r.json()
