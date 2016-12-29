@@ -462,7 +462,7 @@ def setDeviationInOrg(request, pg_id, date_=None):
         result = saveOrAbortNew(model=DeviationInOrganization,
                                 created_for=date_of,
                                 organization=org_data,
-                                data=out
+                                data=json.dumps(out)
                                 )
 
         return JsonResponse({'alliswell': True,
@@ -567,8 +567,7 @@ def getDeviationInOrg(request, pg_id, date_=None):
     if not date_:
         date_ = ''
     out_r = []
-    print mostMatching.data
-    for result in mostMatching.data:
+    for result in json.loads(mostMatching.data):
         out_r.append({
             'ratio': result['ratio'],
             'person': getMPStaticPersonData(int(result['id']), date_)})
