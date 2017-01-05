@@ -16,7 +16,7 @@ from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
 
-from parlaseje.models import Session, Vote, Ballot, Speech, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
+from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
 from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph
 from parlaseje.utils import idsOfSession, getSesDates
 
@@ -92,6 +92,42 @@ def updateSpeeches():
 
     # delete speeches which was deleted in parladata @dirty fix
     deleteUnconnectedSpeeches()
+    return 1
+
+
+def updateQuestions():
+    data = tryHard(API_URL + '/getAllQuestions').json()
+    existingISs = list(Question.objects.all().values_list("id_parladata",
+                                                          flat=True))
+    for dic in data:
+        if int(dic["id"]) not in existingISs:
+            print "adding question"
+            if dic['session_id']:
+                session = Session.objects.get(id_parladata=int(dic['session_id']))
+            else:
+                session = None
+            link = dic['link'] if dic['link'] else None
+            person = Person.objects.get(id_parladata=int(dic['author_id']))
+            if dic['recipient_id']:
+                rec_p = Person.objects.get(id_parladata=int(dic['recipient_id']))
+            else:
+                rec_p = None
+            if dic['recipient_org_id']:
+                rec_org = Organization.objects.get(id_parladata=int(dic['recipient_org_id']))
+            else:
+                rec_org = None
+            question = Question(person=person,
+                                session=session,
+                                start_time=dic['date'],
+                                id_parladata=dic['id'],
+                                recipient_text=dic['recipient_text'],
+                                title=dic['title'],
+                                content_link=link,
+                                recipient_organization=rec_org,
+                                recipient_person=rec_p,
+                                )
+            question.save()
+
     return 1
 
 # treba pofixsat

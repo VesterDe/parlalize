@@ -107,8 +107,11 @@ class Activity(Timestampable, models.Model):
     def get_child(self):
         if Speech.objects.filter(activity_ptr=self.id):
             return Speech.objects.get(activity_ptr=self.id)
-        else:
+        elif Ballot.objects.filter(activity_ptr=self.id):
             return Ballot.objects.get(activity_ptr=self.id)
+        else:
+            return Question.objects.get(activity_ptr=self.id)
+
 
 class Speech(Activity):
     content = models.TextField(help_text='Words spoken')
@@ -117,6 +120,30 @@ class Speech(Activity):
     organization = models.ForeignKey('parlaskupine.Organization', blank=True, null=True, help_text=_('Organization'))
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
+
+class Question(Versionable, Activity):
+    content_link = models.URLField(help_text='Words spoken',
+                                   max_length=350)
+    title = models.TextField(help_text='Words spoken')
+    recipient_person = models.ForeignKey('parlaposlanci.Person',
+                                         blank=True,
+                                         null=True,
+                                         help_text='Recipient person (if it\'s a person).',
+                                         related_name='questions')
+    recipient_organization = models.ForeignKey('parlaskupine.Organization',
+                                               blank=True,
+                                               null=True,
+                                               help_text='Recipient organization (if it\'s an organization).',
+                                               related_name='questions_org')
+    recipient_text = models.TextField(blank=True,
+                                      null=True,
+                                      help_text='Recipient name as written on dz-rs.si')
+
+    def getQuestionData(self):
+        return {'title': self.title,
+                'recipient_text': self.recipient_text,
+                'url': self.content_link,
+                'id': self.id_parladata}
 
 
 class Ballot(Activity):

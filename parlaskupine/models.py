@@ -429,3 +429,28 @@ class Tfidf(Timestampable, models.Model):
     def __str__(self):
         return unicode(self.organization.name) + " --> " + unicode(self.created_for)
 
+
+class NumberOfQuestions(Timestampable, models.Model):
+    organization = models.ForeignKey('Organization',
+                                     blank=True, null=True,
+                                     related_name='numOfQuestions',
+                                     help_text=_('Org'))
+
+    created_for = models.DateField(_('date of activity'),
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of analize'))
+
+    score = models.FloatField(blank=True,
+                              null=True,
+                              help_text=_('MP score'))
+
+    average = models.FloatField(blank=True,
+                                null=True,
+                                help_text=_('Average score'))
+
+    maximum = models.FloatField(blank=True,
+                                null=True,
+                                help_text=_('Maximum score'))
+
+    maxOrgs = JSONField(blank=True, null=True)
