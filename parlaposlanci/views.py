@@ -389,13 +389,18 @@ def getLastActivity(request, person_id, date_=None):
         }
     return JsonResponse(result, safe=False)
 
-#TODO date
+
+# TODO date
 def getAllSpeeches(request, person_id, date_=None):
-    speeches = Speech.objects.filter(person__id_parladata=person_id)
     if date_:
-        print date_
-        speeches = [[speech for speech in speeches.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in speeches.filter(start_time__lte=datetime.strptime(date_, '%d.%m.%Y')).order_by("start_time").datetimes('start_time', 'day')]
+        fdate = datetime.strptime(date_, '%d.%m.%Y')
+        speeches = Speech.getValidSpeeches(fdate)
+        speeches = speeches.objects.filter(person__id_parladata=person_id)
+        speeches = [[speech for speech in speeches.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in speeches.filter(start_time__lte=fdate).order_by("start_time").datetimes('start_time', 'day')]
     else:
+        fdate = datetime.strptime(datetime.now(), '%d.%m.%Y')
+        speeches = Speech.getValidSpeeches(datetime.now())
+        speeches = speeches.objects.filter(person__id_parladata=person_id)
         speeches = [[speech for speech in speeches.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in speeches.order_by("start_time").datetimes('start_time', 'day')]
     out = []
     lastDay = None
@@ -411,9 +416,7 @@ def getAllSpeeches(request, person_id, date_=None):
                 "session_id": speech.session.id_parladata})
         out.append(dayData)
 
-
-
-    result  = {
+    result = {
         'person': getPersonData(person_id, date_),
         'created_at': max(created_at).strftime(API_OUT_DATE_FORMAT) if created_at else datetime.today().strftime("API_DATE_FORMAT"),
         'created_for': lastDay if lastDay else datetime.today().strftime("API_DATE_FORMAT"),

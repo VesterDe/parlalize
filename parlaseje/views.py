@@ -23,16 +23,17 @@ from parlalize.utils import tryHard
 
 def getSpeech(request, speech_id):
     speech = get_object_or_404(Speech, id_parladata=speech_id)
-    out={"speech_id":speech.id_parladata, 
-         "content":speech.content, 
-         "session": speech.session.getSessionData(), 
-         "quoted_text": None, 
-         "end_idx": None, 
-         "start_idx": None,
-         'quote_id': None}
+    out = {"speech_id": speech.id_parladata,
+           "content": speech.content,
+           "session": speech.session.getSessionData(),
+           "quoted_text": None,
+           "end_idx": None,
+           "start_idx": None,
+           'quote_id': None}
 
     result = {
-        'person': getPersonData(speech.person.id_parladata, speech.session.start_time.strftime(API_DATE_FORMAT)),
+        'person': getPersonData(speech.person.id_parladata,
+                                speech.session.start_time.strftime(API_DATE_FORMAT)),
         'created_for': speech.start_time.strftime(API_DATE_FORMAT),
         'created_at': speech.created_at.strftime(API_DATE_FORMAT),
         'results': out
@@ -42,19 +43,22 @@ def getSpeech(request, speech_id):
 
 def getSpeechesOfSession(request, session_id):
     session = get_object_or_404(Session, id_parladata=session_id)
-    speeches = Speech.objects.filter(session=session).order_by("start_time")
+    speeches_queryset = Speech.getValidSpeeches(datetime.now())
+    speeches = speeches_queryset.filter(session=session).order_by("start_time",
+                                                                  "order")
 
     data = []
     for speech in speeches:
-        out={"speech_id":speech.id_parladata,
-             "content":speech.content,
-             "session": speech.session.getSessionData(),
-             "quoted_text": None,
-             "end_idx": None,
-             "start_idx": None}
+        out = {"speech_id": speech.id_parladata,
+               "content": speech.content,
+               "session": speech.session.getSessionData(),
+               "quoted_text": None,
+               "end_idx": None,
+               "start_idx": None}
 
         result = {
-            'person': getPersonData(speech.person.id_parladata, speech.session.start_time.strftime(API_DATE_FORMAT)),
+            'person': getPersonData(speech.person.id_parladata,
+                                    speech.session.start_time.strftime(API_DATE_FORMAT)),
             'results': out
         }
         data.append(result)
@@ -67,19 +71,30 @@ def getSpeechesOfSession(request, session_id):
 
 def getSpeechesIDsOfSession(request, session_id):
     session = get_object_or_404(Session, id_parladata=session_id)
-    speeches_ids = list(Speech.objects.filter(session=session).order_by("start_time").values_list("id_parladata", flat=True))
+
+    speeches = Speech.getValidSpeeches(datetime.now())
+    speeches = speeches.filter(session=session).order_by("start_time",
+                                                         "order")
+    speeches_ids = list(speeches.values_list("id_parladata", flat=True))
+
+    created_for = session.start_time.strftime(API_DATE_FORMAT)
+    created_at = datetime.today().strftime(API_DATE_FORMAT)
 
     return JsonResponse({"session": session.getSessionData(),
-                         "created_for": session.start_time.strftime(API_DATE_FORMAT),
-                         "created_at": datetime.today().strftime(API_DATE_FORMAT),
+                         "created_for": created_for,
+                         "created_at": created_at,
                          "results": speeches_ids})
 
 
 def getSessionSpeeches(request, session_id):
     out = []
     session = Session.objects.get(id_parladata=session_id)
-    for speech in Speech.objects.filter(session=session).order_by("-start_time"):
-        out.append({"speech_id": speech.id_parladata, "content": speech.content, "person_id": speech.person.id_parladata})
+    speeches = Speech.getValidSpeeches(datetime.now())
+    for speech in speeches.filter(session=session).order_by("start_time",
+                                                            "order"):
+        out.append({"speech_id": speech.id_parladata,
+                    "content": speech.content,
+                    "person_id": speech.person.id_parladata})
     result = {
         'session': session.getSessionData(),
         'created_for': session.start_time.strftime(API_DATE_FORMAT),
@@ -609,9 +624,9 @@ def getQuote(request, quote_id):
     return JsonResponse({"person": getPersonData(quote.speech.person.id_parladata, quote.speech.session.start_time.strftime(API_DATE_FORMAT)),
                          "created_for": quote.created_at.strftime(API_DATE_FORMAT),
                          "created_at": quote.created_at.strftime(API_DATE_FORMAT),
-                         "results": {"quoted_text": quote.quoted_text, 
-                                     "start_idx": quote.first_char, 
-                                     "end_idx": quote.last_char, 
+                         "results": {"quoted_text": quote.quoted_text,
+                                     "start_idx": quote.first_char,
+                                     "end_idx": quote.last_char,
                                      "speech_id": quote.speech.id_parladata,
                                      "content": quote.speech.content,
                                      'session': quote.speech.session.getSessionData(),
