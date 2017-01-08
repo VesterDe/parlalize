@@ -128,6 +128,8 @@ class Speech(Versionable, Activity):
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
+
+
 class Question(Activity):
     content_link = models.URLField(help_text='Words spoken',
                                    max_length=350)
@@ -145,8 +147,6 @@ class Question(Activity):
     recipient_text = models.TextField(blank=True,
                                       null=True,
                                       help_text='Recipient name as written on dz-rs.si')
-
-
 
     def getQuestionData(self):
         return {'title': self.title,
