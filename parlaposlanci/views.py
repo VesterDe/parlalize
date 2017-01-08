@@ -388,6 +388,7 @@ def getLastActivity(request, person_id, date_=None):
                     'session': sesData,
                     'title': question.title,
                     'recipient_text': question.recipient_text,
+                    'content_url': question.content_link
                     })
         return {'date': day_activites.created_for.strftime(API_OUT_DATE_FORMAT), 'events': data}
 

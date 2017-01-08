@@ -17,7 +17,7 @@ from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, 
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
 
 from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
-from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph
+from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList
 from parlaseje.utils import idsOfSession, getSesDates
 
 from multiprocessing import Pool
@@ -743,6 +743,7 @@ def updateCacheforList(date_=None):
             date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
         getListOfMembers(None, date_, force_render=True)
         getListOfPGs(None, date_, force_render=True)
+        getSessionsList(None, date_, force_render=True)
     except:
         client.captureException()
 
@@ -1111,15 +1112,16 @@ def deleteUnconnectedSpeeches():
 
 
 def fastUpdate():
+    client.captureMessage('Start fast update at: ' + str(datetime.now()))
     update_dates = []
     update_dates.append(Session.objects.latest('updated_at').updated_at)
     update_dates.append(Vote.objects.latest('updated_at').updated_at)
-    update_dates.append(Speech.objects.latest('updated_at').updated_at)
+    update_dates.append(Speech.objects.latest('created_at').created_at)
     update_dates.append(Person.objects.latest('updated_at').updated_at)
 
     update_from_date = max(update_dates).strftime(API_DATE_FORMAT + '_%H:%M')
 
-    update_from_date = "30.12.2016_16:19"
+    # update_from_date = "30.12.2016_16:19"
 
     data = tryHard(API_URL + '/getAllChangesAfter/'+update_from_date).json()
 
@@ -1241,3 +1243,5 @@ def fastUpdate():
 
     print "update person status"
     updatePersonStatus()"""
+
+    client.captureMessage('End fast update at: ' + str(datetime.now()))
