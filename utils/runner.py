@@ -1111,7 +1111,7 @@ def deleteUnconnectedSpeeches():
     blindSpeeches.delete()
 
 
-def fastUpdate():
+def fastUpdate(date_=None):
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
     update_dates = []
     update_dates.append(Session.objects.latest('updated_at').updated_at)
@@ -1121,7 +1121,8 @@ def fastUpdate():
 
     update_from_date = max(update_dates).strftime(API_DATE_FORMAT + '_%H:%M')
 
-    # update_from_date = "30.12.2016_16:19"
+    if date_:
+        update_from_date = date_ + "_00:00"
 
     data = tryHard(API_URL + '/getAllChangesAfter/'+update_from_date).json()
 
