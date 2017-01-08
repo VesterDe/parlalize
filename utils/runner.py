@@ -1125,8 +1125,6 @@ def fastUpdate():
 
     data = tryHard(API_URL + '/getAllChangesAfter/'+update_from_date).json()
 
-    print data
-
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
     # Persons
