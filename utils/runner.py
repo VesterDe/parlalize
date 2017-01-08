@@ -1191,7 +1191,6 @@ def fastUpdate(date_=None):
     existingISs = list(Speech.objects.all().values_list("id_parladata",
                                                         flat=True))
     for dic in data['speeches']:
-        print dic['content']
         if int(dic["id"]) not in existingISs:
             print "adding speech"
             person = Person.objects.get(id_parladata=int(dic['speaker']))
