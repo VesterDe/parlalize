@@ -715,8 +715,8 @@ def getSessionsList(request, date_=None, force_render=False):
     if out and not force_render:
         data = out
     else:
-        orgs = Organization.objects.filter(Q(organization__id_parladata=COUNCIL_ID) |
-                                           Q(organization__id_parladata=DZ) |
+        orgs = Organization.objects.filter(Q(id_parladata=COUNCIL_ID) |
+                                           Q(id_parladata=DZ) |
                                            Q(classification__in=working_bodies))
         sessions = Session.objects.filter(organization__in=orgs)
         sessions = sessions.order_by("-start_time")
@@ -727,10 +727,11 @@ def getSessionsList(request, date_=None, force_render=False):
         for session in out["sessions"]:
             act = Activity.objects.filter(session__id_parladata=session['id'])
             if act:
-                last_day = act.latest('updated_at').updated_at.strftime(API_DATE_FORMAT)
+                last_day = act.latest('updated_at').updated_at#.strftime(API_DATE_FORMAT)
             else:
-                last_day = session['date']
-            session.update({"updated_at": last_day})
+                last_day = session['date_ts']
+            session.update({"updated_at": last_day.strftime(API_DATE_FORMAT)})
+            session.update({"updated_at_ts": last_day})
         cache.set("sessions_list_" + key, out, 60 * 60 * 48)
 
     return JsonResponse(out)
