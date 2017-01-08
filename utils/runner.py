@@ -78,6 +78,7 @@ def updateSpeeches():
     for dic in data:
         if int(dic["id"]) not in existingISs:
             print "adding speech"
+            print dic['valid_to']
             person = Person.objects.get(id_parladata=int(dic['speaker']))
             speech = Speech(person=person,
                             organization=Organization.objects.get(
@@ -87,6 +88,8 @@ def updateSpeeches():
                                 id_parladata=int(dic['session'])),
                             start_time=dic['start_time'],
                             end_time=dic['end_time'],
+                            valid_from=dic['valid_from'],
+                            valid_to=dic['valid_to'],
                             id_parladata=dic['id'])
             speech.save()
 
@@ -1109,11 +1112,132 @@ def deleteUnconnectedSpeeches():
 
 def fastUpdate():
     update_dates = []
-    update_dates.append(Session.objects.latest("updated_at").updated_at)
-    #update_dates.append(Vote.objects.latest("updated_at"))
-    #update_dates.append(Speech.objects.latest("updated_at"))
-    update_dates.append(Person.objects.latest("updated_at").updated_at)
+    update_dates.append(Session.objects.latest('updated_at').updated_at)
+    update_dates.append(Vote.objects.latest('updated_at').updated_at)
+    update_dates.append(Speech.objects.latest('updated_at').updated_at)
+    update_dates.append(Person.objects.latest('updated_at').updated_at)
 
-    update_from_date = max(update_dates).strftime(API_DATE_FORMAT + " %H:%M")
+    update_from_date = max(update_dates).strftime(API_DATE_FORMAT + '_%H:%M')
 
-    return update_from_date
+    update_from_date = "30.12.2016_16:19"
+
+    data = tryHard(API_URL + '/getAllChangesAfter/'+update_from_date).json()
+
+    print data
+
+    sdate = datetime.now().strftime(API_DATE_FORMAT)
+
+    # Persons
+    mps = tryHard(API_URL + '/getMPs/'+sdate).json()
+    mps_ids = [mp['id'] for mp in mps]
+    for mp in data['persons']:
+        if Person.objects.filter(id_parladata=mp['id']):
+            person = Person.objects.get(id_parladata=mp['id'])
+            person.name = mp['name']
+            person.pg = mp['membership']
+            person.id_parladata = int(mp['id'])
+            person.image = mp['image']
+            person.actived = True if int(mp['id']) in mps_ids else False
+            person.gov_id = mp['gov_id']
+            person.save()
+        else:
+            person = Person(name=mp['name'],
+                            pg=mp['membership'],
+                            id_parladata=int(mp['id']),
+                            image=mp['image'],
+                            actived=True if int(mp['id']) in mps_ids else False,
+                            gov_id=mp['gov_id'])
+            person.save()
+
+    session_ids = list(Session.objects.all().values_list("id_parladata",
+                                                         flat=True))
+
+    # sessions
+    for sessions in data['sessions']:
+        org = Organization.objects.get(id_parladata=sessions['organization_id'])
+        if sessions['id'] not in session_ids:
+            result = Session(name=sessions['name'],
+                             gov_id=sessions['gov_id'],
+                             start_time=sessions['start_time'],
+                             end_time=sessions['end_time'],
+                             classification=sessions['classification'],
+                             id_parladata=sessions['id'],
+                             organization=org,
+                             in_review=sessions['is_in_review']
+                             ).save()
+        else:
+            if not Session.objects.filter(name=sessions['name'],
+                                          gov_id=sessions['gov_id'],
+                                          start_time=sessions['start_time'],
+                                          end_time=sessions['end_time'],
+                                          classification=sessions['classification'],
+                                          id_parladata=sessions['id'],
+                                          organization=org,
+                                          in_review=sessions['is_in_review']):
+                # save changes
+                session = Session.objects.get(id_parladata=sessions['id'])
+                session.name = sessions['name']
+                session.gov_id = sessions['gov_id']
+                session.start_time = sessions['start_time']
+                session.end_time = sessions['end_time']
+                session.classification = sessions['classification']
+                session.id_parladata = sessions['id']
+                session.organization = org
+                session.in_review = sessions['is_in_review']
+                session.save()
+
+    # update speeches
+    existingISs = list(Speech.objects.all().values_list("id_parladata",
+                                                        flat=True))
+    for dic in data['speeches']:
+        print dic['content']
+        if int(dic["id"]) not in existingISs:
+            print "adding speech"
+            person = Person.objects.get(id_parladata=int(dic['speaker']))
+            speech = Speech(person=person,
+                            organization=Organization.objects.get(
+                                id_parladata=int(dic['party'])),
+                            content=dic['content'], order=dic['order'],
+                            session=Session.objects.get(
+                                id_parladata=int(dic['session'])),
+                            start_time=dic['start_time'],
+                            end_time=dic['end_time'],
+                            valid_from=dic['valid_from'],
+                            valid_to=dic['valid_to'],
+                            id_parladata=dic['id'])
+            speech.save()
+        else:
+            print "update speech"
+            speech = Speech.objects.filter(id_parladata=dic["id"])
+            speech.update(content=dic['content'],
+                          valid_from=dic['valid_from'],
+                          valid_to=dic['valid_to'])
+
+    # update Votes
+    # TODO make it faster
+    """updateMotionOfSession()
+
+    # update ballots
+    existingISs = Ballot.objects.all().values_list("id_parladata", flat=True)
+    for dic in data['ballots']:
+        if int(dic["id"]) not in existingISs:
+            print "adding ballot " + str(dic['vote'])
+            vote = Vote.objects.get(id_parladata=dic['vote'])
+            person = Person.objects.get(id_parladata=int(dic['voter']))
+            ballots = Ballot(person=person,
+                             option=dic['option'],
+                             vote=vote,
+                             start_time=vote.session.start_time,
+                             end_time=None,
+                             id_parladata=dic['id'])
+            ballots.save()
+
+    updateDistricts()
+
+    updateTags()
+
+    print "mp static"
+    updateMPStatic()
+
+    print "update person status"
+    updatePersonStatus()"""
