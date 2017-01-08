@@ -121,7 +121,7 @@ class Speech(Activity):
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
 
-class Question(Versionable, Activity):
+class Question(Activity):
     content_link = models.URLField(help_text='Words spoken',
                                    max_length=350)
     title = models.TextField(help_text='Words spoken')

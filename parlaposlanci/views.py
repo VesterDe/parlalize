@@ -1662,7 +1662,7 @@ def getNumberOfQuestions(request, person_id, date_=None):
 def getQuestions(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y')
-        questions = Question.objects.objects.filter(person__id_parladata=person_id)
+        questions = Question.objects.filter(person__id_parladata=person_id)
         questions = [[question for question in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
     else:
         fdate = datetime.now()

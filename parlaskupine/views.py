@@ -1259,7 +1259,7 @@ def getNumberOfQuestions(request, pg_id, date_=None):
         'results': {
             'max': {
                 'score': card.maximum,
-                'mps': max_orgs
+                'parties': max_orgs
             },
             'average': card.average,
             'score': card.score
