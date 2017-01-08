@@ -214,12 +214,15 @@ def getSpeechesOfPG(request, pg_id, date_=False):
         date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
 
+    speeches = Speech.getValidSpeeches(date_of + timedelta(hours=23,
+                                                           minutes=59))
+
     membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
     out = []
     for pgMembersRange in membersOfPGRanges:
         startTime = datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT)
         endTime = datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT)
-        speeches = [[speech for speech in Speech.objects.filter(person__id_parladata__in = pgMembersRange["members"][pg_id], start_time__range=[t_date, t_date+timedelta(days=1)]).order_by("-id_parladata")] for t_date in Speech.objects.filter(start_time__lte=endTime, start_time__gte=startTime, person__id_parladata__in = pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
+        speeches = [[speech for speech in speeches.filter(person__id_parladata__in = pgMembersRange["members"][pg_id], start_time__range=[t_date, t_date+timedelta(days=1)]).order_by("-id_parladata")] for t_date in speeches.filter(start_time__lte=endTime, start_time__gte=startTime, person__id_parladata__in = pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
         for day in reversed(speeches):
             #dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":[]}
             dayDataDict = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":{}}
@@ -1183,6 +1186,195 @@ def getTFIDF(request, party_id, date_=None):
     }
 
     return JsonResponse(out)
+
+
+def setNumberOfQuestionsAll(request, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT)
+    else:
+        date_of = datetime.now().date()
+
+    date_s = date_of.strftime(API_DATE_FORMAT)
+
+    url = API_URL + '/getAllQuestions/' + date_s
+    data = tryHard(url).json()
+
+    url_pgs = API_URL + '/getMembersOfPGsOnDate/' + date_s
+    pgs_on_date = tryHard(url_pgs).json()
+
+    allPGs = tryHard(API_URL+'/getAllPGsExt/').json().keys()
+
+    pg_ids = [int(pg_id) for pg_id in pgs_on_date.keys() if pg_id in allPGs]
+    authors = []
+    for question in data:
+        qDate = datetime.strptime(question['date'], "%Y-%m-%dT%X")
+        qDate = qDate.strftime(API_DATE_FORMAT)
+        person_data = getPersonData(question['author_id'], qDate)
+        if person_data and person_data['party'] and person_data['party']['id']:
+            if person_data['party']['id'] in pg_ids:
+                authors.append(person_data['party']['id'])
+            else:
+                print "ta pg ne obstaja zdj: ", person_data['party']['name']
+        else:
+            print "person nima mpstatic: ", question['author_id']
+
+    avg = len(authors)/float(len(pg_ids))
+    question_count = Counter(authors)
+    max_value = 0
+    max_orgs = []
+    for maxi in question_count.most_common(90):
+        if max_value == 0:
+            max_value = maxi[1]
+        if maxi[1] == max_value:
+            max_orgs.append(maxi[0])
+        else:
+            break
+    is_saved = []
+    for pg_id in pg_ids:
+        org = Organization.objects.get(id_parladata=pg_id)
+        is_saved.append(saveOrAbortNew(model=NumberOfQuestions,
+                                       created_for=date_of,
+                                       organization=org,
+                                       score=question_count[pg_id],
+                                       average=avg,
+                                       maximum=max_value,
+                                       maxOrgs=max_orgs))
+
+    return JsonResponse({"alliswell": True,
+                         "saved": is_saved})
+
+
+def getNumberOfQuestions(request, pg_id, date_=None):
+    card = getPGCardModelNew(NumberOfQuestions,
+                             pg_id,
+                             date_)
+    card_date = card.created_for.strftime(API_DATE_FORMAT)
+
+    max_orgs = []
+    for m_org in card.maxOrgs:
+        org = Organization.objects.get(id_parladata=m_org)
+        max_orgs.append(org.getOrganizationData())
+
+    out = {
+        'party': card.organization.getOrganizationData(),
+        'created_at': card.created_at.strftime(API_DATE_FORMAT),
+        'created_for': card_date,
+        'results': {
+            'max': {
+                'score': card.maximum,
+                'parties': max_orgs
+            },
+            'average': card.average,
+            'score': card.score
+        }
+    }
+
+    return JsonResponse(out, safe=False)
+
+
+def getQuestions(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, '%d.%m.%Y')
+        questions = Question.objects.objects.filter(person__id_parladata=person_id)
+        questions = [[question for question in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
+    else:
+        fdate = datetime.now()
+        questions = Question.objects.filter(person__id_parladata=person_id)
+        questions = [[question
+                      for question
+                      in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])
+                      ]
+                     for t_date
+                     in questions.order_by('start_time').datetimes('start_time', 'day')]
+    out = []
+    lastDay = None
+    created_at = []
+    for day in questions:
+        dayData = {'date': day[0].start_time.strftime(API_OUT_DATE_FORMAT),
+                   'questions':[]}
+        lastDay = day[0].start_time.strftime(API_OUT_DATE_FORMAT)
+        for question in day:
+            created_at.append(question.created_at)
+            dayData['questions'].append({
+                'session_name': question.session.name if question.session else 'Unknown',
+                'question_id': question.id_parladata,
+                'title': question.title,
+                'recipient_text': question.recipient_text,
+                'url': question.content_link,
+                'session_id': question.session.id_parladata if question.session else 'Unknown'})
+        out.append(dayData)
+
+    result = {
+        'person': getPersonData(person_id, date_),
+        'created_at': max(created_at).strftime(API_OUT_DATE_FORMAT) if created_at else datetime.today().strftime('API_DATE_FORMAT'),
+        'created_for': lastDay if lastDay else datetime.today().strftime('API_DATE_FORMAT'),
+        'results': list(reversed(out))
+        }
+    return JsonResponse(result, safe=False)
+
+
+def getQuestionsOfPG(request, pg_id, date_=False):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+
+    end_of_day = date_of + timedelta(days=1)
+    questions = Question.objects.filter(start_time__lt=end_of_day)
+
+    membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
+    out = []
+    for pgMembersRange in membersOfPGRanges:
+        startTime = datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT)
+        endTime = datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT)+timedelta(hours=23, minutes=59)
+        questionz = [[question
+                      for question
+                      in questions.filter(person__id_parladata__in=pgMembersRange["members"][pg_id],
+                                          start_time__range=[t_date, t_date+timedelta(days=1)]).order_by("-id_parladata")
+                      ]
+                     for t_date
+                     in questions.filter(start_time__lte=endTime,
+                                         start_time__gte=startTime,
+                                         person__id_parladata__in = pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
+        for day in reversed(questionz):
+            #dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":[]}
+            dayDataDict = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "authors":{}}
+            addedPersons = []
+            addedSessions = []
+            for question in day:
+                if question.person.id_parladata in dayDataDict["authors"].keys():
+                    author = dayDataDict["authors"][question.person.id_parladata]
+                    author["questions"].append(question.getQuestionData())
+                else:
+                    dayDataDict["authors"][question.person.id_parladata] = {
+                        "questions": [question.getQuestionData()],
+                        "person": getPersonData(question.person.id_parladata, startTime.strftime(API_DATE_FORMAT))
+                    }
+
+            out.append(dayDataDict)
+            if len(out) > 14:
+                break
+        if len(out)>14:
+            break
+
+    #dict to list for sorting in front
+    """for day in out:
+        ses_ids = day["sessions"].keys()
+        for session in ses_ids:
+            day["sessions"][session]["author"] = sorted(day["sessions"][session]["author"].values(), key=lambda k,: k["person"]["name"], reverse=False)
+        ses_order_ids = Session.objects.filter(id_parladata__in=ses_ids).order_by("-start_time").values_list("id_parladata", flat=True)
+        temp_day_order = [day["sessions"][s_id] for s_id in ses_order_ids]
+        day["sessions"] = temp_day_order"""
+
+    # WORKAROUND: created_at is today.
+    result = {
+        'results': out,
+        "created_for": out[-1]["date"] if out else date_,
+        "created_at": date_,
+        "party": Organization.objects.get(id_parladata=pg_id).getOrganizationData()
+        }
+    return JsonResponse(result, safe=False)
 
 
 def getListOfPGs(request, date_=None, force_render=False):

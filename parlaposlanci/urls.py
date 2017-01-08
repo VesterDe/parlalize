@@ -47,6 +47,9 @@ urlpatterns = patterns(
     url(r'^setVocabularySizeAndSpokenWords/(?P<date_>[\w].+)', setVocabularySizeAndSpokenWords),
     url(r'^setVocabularySizeAndSpokenWords/', setVocabularySizeAndSpokenWords),
 
+    url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
+    url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
+
 
     ####################################################################################
 
@@ -91,6 +94,10 @@ urlpatterns = patterns(
     url(r'^getAllSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getAllSpeeches),
     url(r'^getAllSpeeches/(?P<person_id>\d+)', getAllSpeeches),
 
+    url(r'^getQuestions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getQuestions),
+    url(r'^getQuestions/(?P<person_id>\d+)', getQuestions),
+    
+
     url(r'^getMPsIDs', getMPsIDs),
 
     url(r'^getCompass/(?P<date_>[\w].+)', getCompass),
@@ -101,6 +108,9 @@ urlpatterns = patterns(
 
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+)', getMembershipsOfMember),
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)', getMembershipsOfMember),
+
+    url(r'^getNumberOfQuestions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfQuestions),
+    url(r'^getNumberOfQuestions/(?P<person_id>\d+)/', getNumberOfQuestions),
 
     url(r'^getListOfMembers/(?P<date_>[\w].+)', getListOfMembers),
     url(r'^getListOfMembers/', getListOfMembers),

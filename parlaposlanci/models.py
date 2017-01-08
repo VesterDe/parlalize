@@ -604,3 +604,28 @@ class District(models.Model):
     name =  models.CharField(_('name of district'),
                             null=True, max_length=128,
                             help_text=_('District name'))
+
+
+class NumberOfQuestions(Timestampable, models.Model):
+    person = models.ForeignKey('Person',
+                               blank=True, null=True,
+                               help_text=_('MP'))
+
+    created_for = models.DateField(_('date of activity'),
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of analize'))
+
+    score = models.FloatField(blank=True,
+                              null=True,
+                              help_text=_('MP score'))
+
+    average = models.FloatField(blank=True,
+                                null=True,
+                                help_text=_('Average score'))
+
+    maximum = models.FloatField(blank=True,
+                                null=True,
+                                help_text=_('Maximum score'))
+
+    maxMPs = JSONField(blank=True, null=True)

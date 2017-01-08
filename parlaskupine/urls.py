@@ -41,6 +41,9 @@ urlpatterns = patterns('',
     url(r'^setTFIDF/(?P<party_id>\d+)/(?P<date_>[\w].+)', setTFIDF),
     url(r'^setTFIDF/(?P<party_id>\d+)', setTFIDF),
 
+    url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
+    url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
+
 
 
     # getters
@@ -86,6 +89,12 @@ urlpatterns = patterns('',
 
     url(r'^getTFIDF/(?P<party_id>\d+)/(?P<date_>[\w].+)', getTFIDF),
     url(r'^getTFIDF/(?P<party_id>\d+)', getTFIDF),
+
+    url(r'^getNumberOfQuestions/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getNumberOfQuestions),
+    url(r'^getNumberOfQuestions/(?P<pg_id>\d+)/', getNumberOfQuestions),
+
+    url(r'^getQuestionsOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getQuestionsOfPG),
+    url(r'^getQuestionsOfPG/(?P<pg_id>\d+)/', getQuestionsOfPG),
 
     url(r'^getPGsIDs', getPGsIDs),
 
