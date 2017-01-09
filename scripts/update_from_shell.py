@@ -1,5 +1,6 @@
-from utils.runner import update
+from utils.runner import update, fastUpdate
 
 
 def run():
-    update()
+    #update()
+    fastUpdate()

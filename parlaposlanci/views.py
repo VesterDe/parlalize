@@ -1808,37 +1808,3 @@ def getSlugs(request):
             "base": "https://parlameter.si"
             }
     return JsonResponse(obj)
-
-def updatePages():
-    base_url = "https://parlameter.si/"
-    slugs = json.loads(getSlugs(None).content)
-    for person_id, person_slug_obj in slugs["person"].items():
-        url = base_url + "poslanec/" + person_slug_obj["slug"]
-        print url + "/pregled/?forceRender=true"
-        print requests.get(url + "/pregled/?forceRender=true")
-        print url + "/glasovanja?forceRender=true"
-        print requests.get(url + "/glasovanja?forceRender=true")
-        print url + "/govori?forceRender=true"
-        print requests.get(url + "/govori?forceRender=true")
-
-def updatePagesPG():
-    base_url = "https://parlameter.si/"
-    slugs = json.loads(getSlugs(None).content)
-    for party_id, party_slug_obj in slugs["party"].items():
-        if party_slug_obj["acronym"]:
-            url = base_url + "poslanska-skupina/" + party_slug_obj["slug"]
-            print url + "/pregled/?forceRender=true"
-            print requests.get(url + "/pregled/?forceRender=true")
-            print requests.get(url + "/glasovanja?forceRender=true")
-            print requests.get(url + "/govori?forceRender=true")
-
-def updatePagesS():
-    base_url = "https://parlameter.si/"
-    slugs = json.loads(getSlugs(None).content)
-    for session_id in Session.objects.all().values_list("id_parladata", flat=True):
-        url = base_url + "seja"
-        print url + "/prisotnost/" + str(session_id) + "?forceRender=true"
-        print requests.get(url + "/prisotnost/" + str(session_id) + "?forceRender=true")
-        print requests.get(url + "/transkript/" + str(session_id) + "?forceRender=true")
-        print requests.get(url + "/glasovanja/" + str(session_id) + "?forceRender=true")
-        
