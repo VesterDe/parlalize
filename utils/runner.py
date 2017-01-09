@@ -1240,6 +1240,6 @@ def fastUpdate(date_=None):
     updateMPStatic()
 
     print "update person status"
-    updatePersonStatus()"""
+    updatePersonStatus()
 
     client.captureMessage('End fast update at: ' + str(datetime.now()))
