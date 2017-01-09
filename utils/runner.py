@@ -1129,7 +1129,7 @@ def fastUpdate(date_=None):
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
     # Persons
-    """mps = tryHard(API_URL + '/getMPs/'+sdate).json()
+    mps = tryHard(API_URL + '/getMPs/'+sdate).json()
     mps_ids = [mp['id'] for mp in mps]
     for mp in data['persons']:
         if Person.objects.filter(id_parladata=mp['id']):
@@ -1211,7 +1211,7 @@ def fastUpdate(date_=None):
             speech = Speech.objects.filter(id_parladata=dic["id"])
             speech.update(content=dic['content'],
                           valid_from=dic['valid_from'],
-                          valid_to=dic['valid_to'])"""
+                          valid_to=dic['valid_to'])
 
     # update Votes
     for session_id in data['sessions_of_updated_votes']:
