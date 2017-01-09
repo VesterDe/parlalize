@@ -1211,10 +1211,10 @@ def setNumberOfQuestionsAll(request, date_=None):
         qDate = qDate.strftime(API_DATE_FORMAT)
         person_data = getPersonData(question['author_id'], qDate)
         if person_data and person_data['party'] and person_data['party']['id']:
-            if person_data['party']['id'] in pg_ids:
-                authors.append(person_data['party']['id'])
-            else:
-                print "ta pg ne obstaja zdj: ", person_data['party']['name']
+            #if person_data['party']['id'] in pg_ids:
+            authors.append(person_data['party']['id'])
+            #else:
+            #    print "ta pg ne obstaja zdj: ", person_data['party']['name']
         else:
             print "person nima mpstatic: ", question['author_id']
 
