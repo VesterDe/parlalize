@@ -1116,7 +1116,7 @@ def fastUpdate(date_=None):
     update_dates = []
     update_dates.append(Session.objects.latest('updated_at').updated_at)
     update_dates.append(Vote.objects.latest('updated_at').updated_at)
-    update_dates.append(Speech.objects.latest('created_at').created_at)
+    update_dates.append(Speech.objects.latest('updated_at').updated_at)
     update_dates.append(Person.objects.latest('updated_at').updated_at)
 
     update_from_date = max(update_dates).strftime(API_DATE_FORMAT + '_%H:%M')
