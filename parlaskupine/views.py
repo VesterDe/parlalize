@@ -1410,6 +1410,10 @@ def getListOfPGs(request, date_=None, force_render=False):
                     pg_obj["results"]["vocabulary_size"] = json.loads(getVocabularySize(None, pg_id, date_).content)["results"]["score"]
                 except:
                     pg_obj["results"]["vocabulary_size"] = None
+                try:
+                    pg_obj["results"]["number_of_questions"] = json.loads(getNumberOfQuestions(None, pg_id, date_).content)["results"]["score"]
+                except:
+                    pg_obj["results"]["number_of_questions"] = None
 
                 try:
                     styleScores = json.loads(getStyleScoresPG(None, pg_id, date_).content)

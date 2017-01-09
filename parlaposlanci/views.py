@@ -1745,6 +1745,10 @@ def getListOfMembers(request, date_=None, force_render=False):
             except:
                 person_obj["results"]["speeches_per_session"] = None
             try:
+                person_obj["results"]["number_of_questions"] = getPersonCardModelNew(NumberOfQuestions, person_id, date_).score
+            except:
+                person_obj["results"]["number_of_questions"] = None
+            try:
                 styleScores = getPersonCardModelNew(StyleScores, int(person_id), date_)
             except:
                 styleScores = None
