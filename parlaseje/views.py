@@ -781,3 +781,12 @@ def getTFIDF(request, session_id):
             }
 
     return JsonResponse(out)
+
+
+def getWorkingBodies(request):
+    working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
+    orgs = Organization.objects.filter(classification__in=working_bodies)
+    data = []
+    for org in orgs:
+        data.append({'id': org.id_parladata, 'name': org.name})
+    return JsonResponse(data, safe=False)
