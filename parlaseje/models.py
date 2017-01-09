@@ -132,7 +132,9 @@ class Speech(Versionable, Activity):
 
 class Question(Activity):
     content_link = models.URLField(help_text='Words spoken',
-                                   max_length=350)
+                                   max_length=350,
+                                   blank=True,
+                                   null=True,)
     title = models.TextField(help_text='Words spoken')
     recipient_person = models.ForeignKey('parlaposlanci.Person',
                                          blank=True,
