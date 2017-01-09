@@ -17,7 +17,7 @@ from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, 
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
 
 from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
-from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList
+from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 
 from multiprocessing import Pool
@@ -1129,7 +1129,7 @@ def fastUpdate(date_=None):
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
     # Persons
-    mps = tryHard(API_URL + '/getMPs/'+sdate).json()
+    """mps = tryHard(API_URL + '/getMPs/'+sdate).json()
     mps_ids = [mp['id'] for mp in mps]
     for mp in data['persons']:
         if Person.objects.filter(id_parladata=mp['id']):
@@ -1211,11 +1211,11 @@ def fastUpdate(date_=None):
             speech = Speech.objects.filter(id_parladata=dic["id"])
             speech.update(content=dic['content'],
                           valid_from=dic['valid_from'],
-                          valid_to=dic['valid_to'])
+                          valid_to=dic['valid_to'])"""
 
     # update Votes
-    # TODO make it faster
-    """updateMotionOfSession()
+    for session_id in data['sessions_of_updated_votes']:
+        setMotionOfSession(None, str(session_id))
 
     # update ballots
     existingISs = Ballot.objects.all().values_list("id_parladata", flat=True)
