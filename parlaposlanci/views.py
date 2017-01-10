@@ -426,7 +426,7 @@ def getAllSpeeches(request, person_id, date_=None):
         speeches = speeches.filter(person__id_parladata=person_id)
         speeches = [[speech for speech in speeches.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in speeches.filter(start_time__lte=fdate).order_by("start_time").datetimes('start_time', 'day')]
     else:
-        fdate = datetime.strptime(datetime.now(), '%d.%m.%Y')
+        fdate = datetime.now()
         speeches = Speech.getValidSpeeches(datetime.now())
         speeches = speeches.filter(person__id_parladata=person_id)
         speeches = [[speech for speech in speeches.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in speeches.order_by("start_time").datetimes('start_time', 'day')]
