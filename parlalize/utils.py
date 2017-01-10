@@ -13,6 +13,7 @@ import json
 import numpy as np
 import time
 import csv
+from django.core.cache import cache
 
 def tryHard(url):
     data = None
@@ -564,6 +565,38 @@ def modelsData(request):
                     "Ime modela":m.__name__,
                     "st:":m._default_manager.count()})
     return JsonResponse(out, safe=False)
+
+
+def getAllStaticData(request, force_render=False):
+
+    date_of = datetime.now().date()
+    date_=date_of.strftime(API_DATE_FORMAT)
+    key = date_
+
+    c_data = cache.get("all_statics_" + key)
+    if c_data and not force_render:
+        out = c_data
+    else:
+
+        PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+        date_ = datetime.now().strftime(API_DATE_FORMAT)
+
+        out = {'persons': {}, 'partys': {}, 'wbs': {}}
+        for person in Person.objects.all():
+            out['persons'][person.id_parladata] = getPersonData(person.id_parladata,
+                                                               date_)
+
+        parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+        for party in parliamentary_group:
+            out['partys'][party.id_parladata] = party.getOrganizationData()
+
+        working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
+        orgs = Organization.objects.filter(classification__in=working_bodies)
+        out['wbs'] = [{'id': org.id_parladata, 'name': org.name} for org in orgs]
+
+        cache.set("all_statics_" + key, out, 60 * 60 * 48)
+
+    return JsonResponse(out)
 
 
 def checkSessions():
