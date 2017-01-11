@@ -3,7 +3,7 @@
 import requests
 from parlaposlanci.views import setMPStaticPL
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
-from parlalize.utils import getPGIDs, findDatesFromLastCard
+from parlalize.utils import getPGIDs, findDatesFromLastCard, getAllStaticData
 from datetime import datetime, timedelta
 from django.apps import apps
 from parlaposlanci.models import District
@@ -1139,10 +1139,14 @@ def updatePagesPG():
             print requests.get(url + "/govori?forceRender=true")
 
 
-def updatePagesS():
+def updatePagesS(ses_list=None):
     base_url = "https://parlameter.si/"
     slugs = json.loads(getSlugs(None).content)
-    for session_id in Session.objects.all().values_list("id_parladata", flat=True):
+    if ses_list:
+        ses_ids = ses_list
+    else:
+        ses_ids = Session.objects.all().values_list("id_parladata", flat=True)
+    for session_id in ses_ids:
         url = base_url + "seja"
         print url + "/prisotnost/" + str(session_id) + "?forceRender=true"
         print requests.get(url + "/prisotnost/" + str(session_id) + "?forceRender=true")
@@ -1278,6 +1282,8 @@ def fastUpdate(date_=None):
     print "mp static"
     updateMPStatic()
 
+    getAllStaticData(None, forceRender=True)
+
     print "update person status"
     updatePersonStatus()
 
@@ -1293,6 +1299,7 @@ def fastUpdate(date_=None):
     s_update += list(ballots.values_list("session__id_parladata", flat=True))
     speeches = Speech.objects.filter(updated_at__gte=datetime.now().date)
     s_update += list(speeches.values_list("session__id_parladata", flat=True))
+
     runSettersSessions(sessions_ids=list(set(s_update)))
 
     client.captureMessage('End creating cards and start creating recache: ' + str(datetime.now()))
@@ -1301,6 +1308,6 @@ def fastUpdate(date_=None):
 
     #updatePagesPG()
 
-    updatePagesS()
+    updatePagesS(list(set(s_update)))
 
     client.captureMessage('End fastUpdate everything: ' + str(datetime.now()))
