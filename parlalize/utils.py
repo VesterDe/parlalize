@@ -603,7 +603,7 @@ def getAllSpeechesStatic(request, force_render=False):
     if c_data and not force_render:
         out = c_data
     else:
-        out = tryHard(API_URL + '/getDataOfAllSpeeches')
+        out = tryHard(API_URL + '/getDataOfAllSpeeches').json()
         cache.set("all_speeches_static", out, 60 * 60 * 48)
     return JsonResponse(out)
 
