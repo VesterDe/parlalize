@@ -5,7 +5,7 @@ from django.contrib import admin
 from utils import getPersonDataAPI
 from parlaseje.utils import getSessionDataAPI
 from parlaskupine.utils_ import getPgDataAPI
-from parlalize.utils import modelsData, getPersonsCardDates, getOrgsCardDates, getAllStaticData
+from parlalize.utils import modelsData, getPersonsCardDates, getOrgsCardDates, getAllStaticData, getAllSpeechesStatic
 
 # admin.autodiscover()
 
@@ -22,5 +22,6 @@ urlpatterns = patterns('',
     (r'^v1/utils/getPersonCardDates/(?P<person_id>\d+)', getPersonsCardDates),
     (r'^v1/utils/getOrgsCardDates/(?P<org_id>\d+)', getOrgsCardDates),
     (r'^v1/utils/getAllStaticData/', getAllStaticData),
+    (r'^v1/utils/getAllSpeechesStatic/', getAllSpeechesStatic),
 
 )

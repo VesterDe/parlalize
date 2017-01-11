@@ -571,9 +571,8 @@ def getAllStaticData(request, force_render=False):
 
     date_of = datetime.now().date()
     date_=date_of.strftime(API_DATE_FORMAT)
-    key = date_
 
-    c_data = cache.get("all_statics_" + key)
+    c_data = cache.get("all_statics")
     if c_data and not force_render:
         out = c_data
     else:
@@ -594,8 +593,18 @@ def getAllStaticData(request, force_render=False):
         orgs = Organization.objects.filter(classification__in=working_bodies)
         out['wbs'] = [{'id': org.id_parladata, 'name': org.name} for org in orgs]
 
-        cache.set("all_statics_" + key, out, 60 * 60 * 48)
+        cache.set("all_statics", out, 60 * 60 * 48)
 
+    return JsonResponse(out)
+
+
+def getAllSpeechesStatic(request, force_render=False):
+    c_data = cache.get("all_speeches_static")
+    if c_data and not force_render:
+        out = c_data
+    else:
+        out = tryHard(API_URL + '/getDataOfAllSpeeches')
+        cache.set("all_speeches_static", out, 60 * 60 * 48)
     return JsonResponse(out)
 
 
