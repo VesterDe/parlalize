@@ -598,16 +598,6 @@ def getAllStaticData(request, force_render=False):
     return JsonResponse(out)
 
 
-def getAllSpeechesStatic(request, force_render=False):
-    c_data = cache.get("all_speeches_static")
-    if c_data and not force_render:
-        out = c_data
-    else:
-        out = tryHard(API_URL + '/getDataOfAllSpeeches').json()
-        cache.set("all_speeches_static", out, 60 * 60 * 48)
-    return JsonResponse(out)
-
-
 def checkSessions():
     ses = tryHard(API_URL + '/getSessions/').json()
     sessions  = [s['id'] for s in ses]
