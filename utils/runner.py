@@ -23,6 +23,7 @@ from parlaseje.utils import idsOfSession, getSesDates
 from multiprocessing import Pool
 
 from parlalize.utils import tryHard, datesGenerator
+import json
 
 ## parlalize initial runner methods ##
 
@@ -662,7 +663,7 @@ def onDatePGCardRunner(date_=None):
     # updateWB()
 
 
-def runSettersSessions(date_to=None):
+def runSettersSessions(date_to=None, sessions_ids=None):
     if not date_to:
         date_to = datetime.today().strftime(API_DATE_FORMAT)
 
@@ -674,7 +675,10 @@ def runSettersSessions(date_to=None):
     for model, setter in setters_models.items():
         if model != AverageSpeeches:
             # IDs = getSesIDs(dates[1],dates[-1])
-            last = idsOfSession(model)
+            if sessions_ids:
+                last = sessions_ids
+            else:
+                last = idsOfSession(model)
             print last
             print model
             for ID in last:
@@ -760,6 +764,7 @@ def updateLastDay():
         client.captureException()
 
     lastVoteDay = Vote.objects.latest("created_for").created_for
+    lastSpeechDay = Speech.objects.latest("start_time").start_time
 
     try:
         onDateMPCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
@@ -769,8 +774,6 @@ def updateLastDay():
         onDatePGCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
     except:
         client.captureException()
-
-    lastSpeechDay = Speech.objects.latest("start_time").start_time
 
     try:
         onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
@@ -1278,15 +1281,25 @@ def fastUpdate(date_=None):
     print "update person status"
     updatePersonStatus()
 
-    client.captureMessage('End fast update and start creating cards at: ' + str(datetime.now()))
+    client.captureMessage('End fast update and start update sessions cards at: ' + str(datetime.now()))
 
-    updateLastDay()
+    print "sessions"
+    s_update = []
+    sessions = Session.objects.filter(updated_at__gte=datetime.now().date)
+    s_update += list(sessions.values_list("id_parladata", flat=True))
+    votes = Vote.objects.filter(updated_at__gte=datetime.now().date)
+    s_update += list(votes.values_list("session__id_parladata", flat=True))
+    ballots = Ballot.objects.filter(updated_at__gte=datetime.now().date)
+    s_update += list(ballots.values_list("session__id_parladata", flat=True))
+    speeches = Speech.objects.filter(updated_at__gte=datetime.now().date)
+    s_update += list(speeches.values_list("session__id_parladata", flat=True))
+    runSettersSessions(sessions_ids=list(set(s_update)))
 
     client.captureMessage('End creating cards and start creating recache: ' + str(datetime.now()))
 
-    updatePages()
+    #updatePages()
 
-    updatePagesPG()
+    #updatePagesPG()
 
     updatePagesS()
 
