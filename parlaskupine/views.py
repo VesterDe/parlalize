@@ -214,15 +214,22 @@ def getSpeechesOfPG(request, pg_id, date_=False):
         date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
 
-    speeches = Speech.getValidSpeeches(date_of + timedelta(hours=23,
-                                                           minutes=59))
+    speeches_q = Speech.getValidSpeeches(date_of + timedelta(hours=23,
+                                                             minutes=59))
 
     membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
     out = []
     for pgMembersRange in membersOfPGRanges:
         startTime = datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT)
         endTime = datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT)
-        speeches = [[speech for speech in speeches.filter(person__id_parladata__in = pgMembersRange["members"][pg_id], start_time__range=[t_date, t_date+timedelta(days=1)]).order_by("-id_parladata")] for t_date in speeches.filter(start_time__lte=endTime, start_time__gte=startTime, person__id_parladata__in = pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
+        speeches = [[speech
+                    for speech
+                    in speeches_q.filter(person__id_parladata__in=pgMembersRange["members"][pg_id],
+                                         start_time__range=[t_date, t_date+timedelta(days=1)]).order_by("-id_parladata")]
+                    for t_date
+                    in speeches_q.filter(start_time__lte=endTime,
+                                         start_time__gte=startTime,
+                                         person__id_parladata__in=pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
         for day in reversed(speeches):
             #dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":[]}
             dayDataDict = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":{}}
