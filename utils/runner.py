@@ -669,7 +669,7 @@ def runSettersSessions(date_to=None, sessions_ids=None):
 
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
-        AverageSpeeches: setSpeechesOnSession,
+        #AverageSpeeches: setSpeechesOnSession,
         Vote_graph: setMotionOfSessionGraph
     }
     for model, setter in setters_models.items():
