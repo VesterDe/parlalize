@@ -1282,7 +1282,7 @@ def fastUpdate(date_=None):
     print "mp static"
     updateMPStatic()
 
-    getAllStaticData(None, forceRender=True)
+    getAllStaticData(None, force_render=True)
 
     print "update person status"
     updatePersonStatus()
