@@ -1781,24 +1781,29 @@ def getListOfMembers(request, date_=None, force_render=False):
 def getAllActiveMembers(request):
     return JsonResponse([getPersonData(person.id_parladata) for person in Person.objects.filter(actived="Yes")], safe=False)
 
+
 def getSlugs(request):
-    obj =  {"person": { person.id_parladata: {"slug": slugify(person.name)}for person in Person.objects.all().exclude(pg__isnull=True)},
+    obj = {"person": {person.id_parladata: {"slug": slugify(person.name)}
+                      for person
+                      in Person.objects.all().exclude(pg__isnull=True)},
             "personLink": {
                     "base": "/poslanec/",
                     "govori": "/govori/",
                     "glasovanja": "/glasovanja/",
-                    "pregled": "/pregled/"                 
+                    "pregled": "/pregled/"
                 },
-            "party": { org.id_parladata: {"slug": slugify(org.name),
-                                          "acronym": slugify(org.acronym),
-                                          "realAcronym": org.acronym}for org in  Organization.objects.all()},
+            "party": {org.id_parladata: {"slug": slugify(org.name),
+                                         "acronym": slugify(org.acronym),
+                                         "realAcronym": org.acronym}
+                      for org
+                      in Organization.objects.all()},
             "partyLink": {
                     "base": "/poslanska-skupina/",
                     "govori": "/govori/",
                     "glasovanja": "/glasovanja/",
                     "pregled": "/pregled/"
                 },
-            
+
             "sessionLink": {
                     "glasovanje": "/seja/glasovanje/",
                     "glasovanja": "/seja/glasovanja/",
