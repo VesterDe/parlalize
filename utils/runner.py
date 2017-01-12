@@ -1120,11 +1120,23 @@ def updatePages():
     for person_id, person_slug_obj in slugs["person"].items():
         url = base_url + "poslanec/" + person_slug_obj["slug"]
         print url + "/pregled/?forceRender=true"
-        print requests.get(url + "/pregled/?forceRender=true")
+
+        try:
+            print requests.get(url + "/pregled/?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
         print url + "/glasovanja?forceRender=true"
-        print requests.get(url + "/glasovanja?forceRender=true")
+
+        try:
+            print requests.get(url + "/glasovanja?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
         print url + "/govori?forceRender=true"
-        print requests.get(url + "/govori?forceRender=true")
+
+        try:
+            print requests.get(url + "/govori?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
 
 
 def updatePagesPG():
@@ -1134,9 +1146,18 @@ def updatePagesPG():
         if party_slug_obj["acronym"]:
             url = base_url + "poslanska-skupina/" + party_slug_obj["slug"]
             print url + "/pregled/?forceRender=true"
-            print requests.get(url + "/pregled/?forceRender=true")
-            print requests.get(url + "/glasovanja?forceRender=true")
-            print requests.get(url + "/govori?forceRender=true")
+            try:
+                print requests.get(url + "/pregled/?forceRender=true", timeout=10)
+            except:
+                print "Timeout"
+            try:
+                print requests.get(url + "/glasovanja?forceRender=true", timeout=10)
+            except:
+                print "Timeout"
+            try:
+                print requests.get(url + "/govori?forceRender=true", timeout=10)
+            except:
+                print "Timeout"
 
 
 def updatePagesS(ses_list=None):
@@ -1149,9 +1170,18 @@ def updatePagesS(ses_list=None):
     for session_id in ses_ids:
         url = base_url + "seja"
         print url + "/prisotnost/" + str(session_id) + "?forceRender=true"
-        print requests.get(url + "/prisotnost/" + str(session_id) + "?forceRender=true")
-        print requests.get(url + "/transkript/" + str(session_id) + "?forceRender=true")
-        print requests.get(url + "/glasovanja/" + str(session_id) + "?forceRender=true")
+        try:
+            print requests.get(url + "/prisotnost/" + str(session_id) + "?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
+        try:
+            print requests.get(url + "/transkript/" + str(session_id) + "?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
+        try:
+            print requests.get(url + "/glasovanja/" + str(session_id) + "?forceRender=true", timeout=10)
+        except:
+            print "Timeout"
 
 
 def fastUpdate(date_=None):
