@@ -879,7 +879,7 @@ def getOrgsCardDates(request, org_id):
 
 def monitorMe(request):
 
-    r = requests.get('https://data.parlameter.si/v1/getMPs')
+    r = requests.get('https://analize.parlameter.si/v1/p/getMPStatic/2/')
     if r.status_code == 200:
         return HttpResponse('All iz well.')
     else:
