@@ -876,3 +876,11 @@ def getOrgsCardDates(request, org_id):
         date = date + timedelta(days=1)
 
     return response
+
+def monitorMe(request):
+
+    r = requests.get('https://data.parlameter.si/v1/getMPs')
+    if r.status_code == 200:
+        return HttpResponse('All iz well.')
+    else:
+        return HttpResponse('PANIC!')
