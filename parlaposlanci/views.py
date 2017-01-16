@@ -1569,31 +1569,39 @@ def getTaggedBallots(request, person_id, date_=None):
     else:
         date_of = datetime.now().date()
     out = []
-    ballots = Ballot.objects.filter(person__id_parladata=person_id, start_time__lte=date_of)
-    created_at = ballots.latest("created_at").created_at
-    ballots = [[ballot for ballot in ballots.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in ballots.order_by("start_time").datetimes('start_time', 'day')]
-    
+    ballots = Ballot.objects.filter(person__id_parladata=person_id,
+                                    start_time__lte=date_of)
+    if ballots:
+        created_at = ballots.latest('created_at').created_at
+    else:
+        created_at = datetime.now()
+    b_list = [[ballot for ballot in ballots.filter(start_time__range=[t_date,
+                                                                      t_date+timedelta(days=1)])]
+              for t_date in ballots.order_by('start_time').datetimes('start_time',
+                                                                     'day')]
+
     lastDay = None
-    for day in ballots:
-        dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "ballots":[]}
+    for day in b_list:
+        dayData = {'date': day[0].start_time.strftime(API_OUT_DATE_FORMAT),
+                   'ballots': []}
         lastDay = day[0].start_time.strftime(API_OUT_DATE_FORMAT)
         for ballot in day:
-            dayData["ballots"].append({
-                "motion": ballot.vote.motion,
-                "vote_id": ballot.vote.id_parladata,
-                "ballot_id": ballot.id_parladata,
-                "session_id": ballot.vote.session.id_parladata if ballot.vote.session else None,
-                "option": ballot.option,
-                "tags": ballot.vote.tags})
+            dayData['ballots'].append({
+                'motion': ballot.vote.motion,
+                'vote_id': ballot.vote.id_parladata,
+                'result': ballot.vote.result,
+                'ballot_id': ballot.id_parladata,
+                'session_id': ballot.vote.session.id_parladata if ballot.vote.session else None,
+                'option': ballot.option,
+                'tags': ballot.vote.tags})
         out.append(dayData)
 
-
-    tags = list(Tag.objects.all().values_list("name", flat=True))
-    result  = {
+    tags = list(Tag.objects.all().values_list('name', flat=True))
+    result = {
         'person': getPersonData(person_id, date_),
         'all_tags': tags,
         'created_at': created_at.strftime(API_OUT_DATE_FORMAT),
-        'created_for': lastDay,
+        'created_for': lastDay if lastDay else created_at.strftime(API_OUT_DATE_FORMAT),
         'results': list(reversed(out))
         }
     return JsonResponse(result, safe=False)
