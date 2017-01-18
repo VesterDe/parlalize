@@ -171,15 +171,18 @@ def setAllSessions():
                                                          flat=True))
     for sessions in data:
         if sessions['id'] not in session_ids:
+            orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
             result = Session(name=sessions['name'],
                              gov_id=sessions['gov_id'],
                              start_time=sessions['start_time'],
                              end_time=sessions['end_time'],
                              classification=sessions['classification'],
                              id_parladata=sessions['id'],
-                             organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                              in_review=sessions['is_in_review']
-                             ).save()
+                             )
+            result.save()
+            orgs = list(orgs)
+            result.organizations.add(*orgs)
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -187,7 +190,6 @@ def setAllSessions():
                                           end_time=sessions['end_time'],
                                           classification=sessions['classification'],
                                           id_parladata=sessions['id'],
-                                          organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                                           in_review=sessions['is_in_review']):
                 #save changes
                 session = Session.objects.get(id_parladata=sessions['id'])
@@ -196,8 +198,6 @@ def setAllSessions():
                 session.start_time = sessions['start_time']
                 session.end_time = sessions['end_time']
                 session.classification = sessions['classification']
-                session.id_parladata = sessions['id']
-                session.organization = Organization.objects.get(id_parladata=sessions['organization_id'])
                 session.in_review = sessions['is_in_review']
                 session.save()
 
@@ -1228,7 +1228,7 @@ def fastUpdate(date_=None):
 
     # sessions
     for sessions in data['sessions']:
-        org = Organization.objects.get(id_parladata=sessions['organization_id'])
+        orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
         if sessions['id'] not in session_ids:
             result = Session(name=sessions['name'],
                              gov_id=sessions['gov_id'],
@@ -1238,7 +1238,10 @@ def fastUpdate(date_=None):
                              id_parladata=sessions['id'],
                              organization=org,
                              in_review=sessions['is_in_review']
-                             ).save()
+                             )
+            result.save()
+            orgs = list(orgs)
+            result.organizations.add(*orgs)
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1255,16 +1258,14 @@ def fastUpdate(date_=None):
                 session.start_time = sessions['start_time']
                 session.end_time = sessions['end_time']
                 session.classification = sessions['classification']
-                session.id_parladata = sessions['id']
-                session.organization = org
                 session.in_review = sessions['is_in_review']
                 session.save()
 
     # update speeches
-    existingISs = list(Speech.objects.all().values_list("id_parladata",
+    existingIDs = list(Speech.objects.all().values_list("id_parladata",
                                                         flat=True))
     for dic in data['speeches']:
-        if int(dic["id"]) not in existingISs:
+        if int(dic["id"]) not in existingIDs:
             print "adding speech"
             person = Person.objects.get(id_parladata=int(dic['speaker']))
             speech = Speech(person=person,

@@ -822,7 +822,10 @@ def getWorkingBodies(request, org_id, date_=None):
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
         date_of = datetime.now().date()
-    sessions = [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=org_id, start_time__lte=date_of).order_by("-start_time")]
+    sessions = [session.getSessionData()
+                for session
+                in Session.objects.filter(organizations__id_parladata=org_id,
+                                          start_time__lte=date_of).order_by("-start_time")]
 
     for session in sessions:
         session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
