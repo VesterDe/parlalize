@@ -1833,7 +1833,8 @@ def setPresenceThroughTime(request, person_id, date_=None):
         presence = float(stats-month['ni']) / month['total'] if stats else 0
         data_for_save.append({'date_ts': month['date_ts'],
                               'presence': presence * 100,
-                              'not_member': not_member * 100})
+                              'not_member': not_member * 100,
+                              'vote_count': month['total']})
 
     saved = saveOrAbortNew(model=PresenceThroughTime,
                            person=Person.objects.get(id_parladata=person_id),
