@@ -1334,9 +1334,12 @@ def fastUpdate(date_=None):
 
     client.captureMessage('End creating cards and start creating recache: ' + str(datetime.now()))
 
-    #updatePages()
+    # updatePages()
 
-    #updatePagesPG()
+    # updatePagesPG()
+
+    date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
+    getSessionsList(None, date_, force_render=True)
 
     updatePagesS(list(set(s_update)))
 
