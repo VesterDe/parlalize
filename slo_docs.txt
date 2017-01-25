@@ -1,0 +1,239 @@
+getMPStatic
+/p/getMPStatic/:person_id/:date
+
+Klic vrne osnovne podatke poslanca {person_id}.
+
+{
+	person: {
+		is_active: false,		//ali je trenutno poslanec
+		district: [				//id-ji okolišev kjer je bil izvoljen
+			77
+		],
+		name: "Bojan Dobovšek",	//ime in priimek
+		gov_id: "P248",			//id na staneh DZ
+		gender: "m",			//spol 
+		party: {				//podatki poslanse skupine
+			acronym: "PS NP",
+			is_coalition: false,
+			id: 109,
+			name: "PS nepovezanih poslancev "
+		},
+		type: "mp",
+		id: 18,
+		has_function: false
+	},
+	created_at: "23.01.2017",
+	created_for: "29.01.2016",
+	results: {
+	voters: 5479,
+	acronym: "PS NP",
+	mandates: 1,
+	party_id: 109,
+	groups: [
+		{
+			group_id: 74,
+			group_name: "Skupina prijateljstva s Španijo"
+		},
+		{
+			group_id: 75,
+			group_name: "Skupina prijateljstva s Švedsko"
+		},
+	],
+	education: "doktor znanosti",
+	working_bodies_functions: [
+		{
+			role: "vice_president",
+			wb: {
+				acronym: "",
+				is_coalition: false,
+				id: 13,
+				name: "Komisija za peticije ter za človekove pravice in enake možnosti"
+			}
+		}
+	],
+	previous_occupation: "univerzitetni profesor",
+	name: "Bojan Dobovšek",
+	district: [
+		"Ljubljana Bežigrad I"
+	],
+	age: 54,
+	social: [
+		{
+		twitter: null,
+		facebook: "https://www.facebook.com/bojan.dobovsek/",
+		linkedin: null
+		}
+	],
+	party: "PS nepovezanih poslancev "
+	}
+}
+
+________________________________________________________________________________________________
+
+getMostEqualVoters
+/p/getMostEqualVoters/:person_id/:date
+
+Klic vrne pet najbol podobnih volilcev. Algoritem za računanje podobnosti je evklidska razdalja.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+_________
+
+getLessEqualVoters
+/p/getLessEqualVoters/:person_id/:date
+
+Klic vrne pet najbol drugačnih volilcev. Algoritem za računanje podobnosti je evklidska razdalja.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+
+{
+	person: {
+		is_active: false,
+		district: [
+			71
+		],
+		name: "Janez Janša",
+		gov_id: "P025",
+		gender: "m",
+		party: {
+			acronym: "SDS",
+			is_coalition: false,
+			id: 5,
+			name: "PS Slovenska Demokratska Stranka"
+		},
+		type: "mp",
+		id: 36,
+		has_function: false
+	},
+	created_at: "10.01.2017",
+	created_for: "22.12.2016",
+	results: [
+	{
+		person: {
+			is_active: false,
+			district: [
+				85
+			],
+			name: "Teja Ljubič",
+			gov_id: "P304",
+			gender: "f",
+			party: {
+				acronym: "SMC",
+				is_coalition: true,
+				id: 1,
+				name: "PS Stranka modernega centra"
+			},
+			type: "mp",
+			id: 2933,
+			has_function: false
+		},
+		ratio: 28.6530975637888
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				84
+			],
+			name: "Vlasta Počkaj",
+			gov_id: "P303",
+			gender: "f",
+			party: {
+				acronym: "SMC",
+				is_coalition: true,
+				id: 1,
+				name: "PS Stranka modernega centra"
+			},
+			type: "mp",
+			id: 2934,
+			has_function: false
+		},
+		ratio: 28.6879765755621
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				30
+			],
+			name: "Jelka Godec",
+			gov_id: "P252",
+			gender: "f",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 23,
+			has_function: false
+		},
+		ratio: 29.2916370317536
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				24
+			],
+			name: "Franc Breznik",
+			gov_id: "P167",
+			gender: "m",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 10,
+			has_function: false
+		},
+		ratio: 31.1929479209644
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				60
+			],
+			name: "Branko Grims",
+			gov_id: "P016",
+			gender: "m",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 26,
+			has_function: false
+		},
+		ratio: 31.224989991992
+	}
+	]
+}
+
+________________________________________________________________________________________________
+getPresence
+/p/getPresence/:person_id/:date
+Klic vrne prisotnost poslanca na sejah ni na glasovanjih državnega zbora.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+________________________________________________________________________________________________
+getCutVotes
+________________________________________________________________________________________________
+getTaggedBallots
+________________________________________________________________________________________________
+getMotionOfSession
+________________________________________________________________________________________________
+getMotionOfSessionVotes
+________________________________________________________________________________________________
+getSessionsList
+________________________________________________________________________________________________
+getSessionsByClassification
+________________________________________________________________________________________________
+
+
+
+

@@ -25,6 +25,8 @@ from multiprocessing import Pool
 from parlalize.utils import tryHard, datesGenerator
 import json
 
+DZ = 95
+
 ## parlalize initial runner methods ##
 
 def updatePeople():
@@ -180,9 +182,10 @@ def setAllSessions():
                              organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                              in_review=sessions['is_in_review']
                              ).save()
-            if 'redna seja' in sessions['name'].lower():
-                # call method for create new list of members
-                setListOfMembers(sessions['start_time'])
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    setListOfMembers(sessions['start_time'])
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1041,7 +1044,7 @@ def morningCash():
     vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []
     for ses in session:
-        if ses['organization_id'] == 95:
+        if ses['organization_id'] == DZ:
             sessionDZ.append(ses['id'])
 
     for url in allUrls:
@@ -1242,9 +1245,10 @@ def fastUpdate(date_=None):
                              organization=org,
                              in_review=sessions['is_in_review']
                              ).save()
-            if 'redna seja' in sessions['name'].lower():
-                # call method for create new list of members
-                setListOfMembers(sessions['start_time'])
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    setListOfMembers(sessions['start_time'])
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
