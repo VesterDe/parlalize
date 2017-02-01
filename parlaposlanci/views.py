@@ -1508,30 +1508,6 @@ def getCompass(request, date_=None): # TODO make propper setters and getters
                          "data": data}, 
                         safe=False)
 
-def setTaggedBallots(request, person_id):
-
-    person = Person.objects.get(id_parladata=int(person_id))
-    data = tryHard(API_URL + '/getTaggedVotes/' + str(person_id)).json()
-
-    tagged_ballots = TaggedBallots(person=person, data=data)
-    tagged_ballots.save()
-
-    return HttpResponse('All iz well')
-
-def getTaggedBallots_(request, person_id, date=None):
-
-    card = getPersonCardModel(TaggedBallots, person_id, date)
-    static = getPersonCardModelNew(MPStaticPL, person_id, date)
-
-    out = {
-        'person': getPersonData(person_id, date),
-        'created_at': card.created_at.strftime(API_DATE_FORMAT),
-        'created_for': card.created_for.strftime(API_DATE_FORMAT),
-        'ballots': card.data
-    }
-
-    return JsonResponse(out, safe=False)
-
 
 def setMembershipsOfMember(request, person_id, date=None):
     if date:

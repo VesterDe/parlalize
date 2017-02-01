@@ -39,8 +39,6 @@ urlpatterns = patterns(
     url(r'^setCompass/(?P<date_>[\w].+)', setCompass),
     url(r'^setCompass', setCompass),
 
-    url(r'^setTaggedBallots/(?P<person_id>\d+)', setTaggedBallots),
-
     url(r'^setMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+)', setMembershipsOfMember),
     url(r'^setMembershipsOfMember/(?P<person_id>\d+)', setMembershipsOfMember),
 
