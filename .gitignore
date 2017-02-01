@@ -66,3 +66,5 @@ target/
 # Static
 static/
 .vscode/.ropeproject/config.py
+
+*.db
