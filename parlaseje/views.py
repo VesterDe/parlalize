@@ -390,16 +390,17 @@ def getMotionGraph(request, id_mo, date=False):
 
         out_np = {'option':'not_present','total_votes': model[0].not_present, 'breakdown':option_np}
 
-        out = {'id':id_mo,
+        out = {'id': id_mo,
                'created_for': model[0].vote.created_for.strftime(API_DATE_FORMAT),
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
-               'name': model[0].motion, 
-               'result':model[0].result, 
-               'required':'62', #TODO: naji pravo stvar za ta 62 :D
-               'all': {'kvorum': out_kvor, 
-                       'for': out_for, 
-                       'against': out_against, 
-                       'not_present': out_np}}
+               'name': model[0].motion,
+               'result': model[0].result,
+               'required': '62', #TODO: naji pravo stvar za ta 62 :D
+               'all': {'kvorum': out_kvor,
+                       'for': out_for,
+                       'against': out_against,
+                       'not_present': out_np},
+               'session': model[0].session.getSessionData()}
         return JsonResponse(out, safe=False)
     else:
         raise Http404("Nismo našli kartice")
