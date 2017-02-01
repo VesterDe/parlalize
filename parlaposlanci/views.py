@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from django.http import JsonResponse
 from scipy.stats.stats import pearsonr
+from scipy.stats import rankdata
 from scipy.spatial.distance import euclidean
 from datetime import date, datetime, timedelta
 from django.core.cache import cache
@@ -1813,3 +1814,200 @@ def getSlugs(request):
             "base": "https://parlameter.si"
             }
     return JsonResponse(obj)
+
+
+def setListOfMembersTickers(request, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+
+    mps = tryHard(API_URL+'/getMPs/'+date_).json()
+
+    prevCard = getListOfMembersTickers(request, (date_of-timedelta(days=1)).strftime(API_DATE_FORMAT)).content
+    prevData = json.loads(prevCard)['data']
+
+    rank_data = {'presence_sessions': [],
+                 'presence_votes': [],
+                 'vocabulary_size': [],
+                 'spoken_words': [],
+                 'speeches_per_session': [],
+                 'number_of_questions': [],
+                 'privzdignjeno': [],
+                 'preprosto': [],
+                 'problematicno': [],
+                 }
+
+    data = []
+    for mp in mps:
+        person_obj = {}
+        person_obj['results'] = {}
+        person_id = mp['id']
+        person_obj['person'] = getPersonData(person_id, date_)
+
+        try:
+            value = getPersonCardModelNew(Presence,
+                                          person_id,
+                                          date_).person_value_sessions
+        except:
+            value = 0
+        person_obj['results']['presence_sessions'] = {}
+        person_obj['results']['presence_sessions']['score'] = value
+        rank_data['presence_sessions'].append(value)
+
+        try:
+            value = getPersonCardModelNew(Presence,
+                                          person_id,
+                                          date_).person_value_votes
+        except:
+            value = 0
+        person_obj['results']['presence_votes'] = {}
+        person_obj['results']['presence_votes']['score'] = value
+        rank_data['presence_votes'].append(value)
+
+        try:
+            value = getPersonCardModelNew(VocabularySize,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['vocabulary_size'] = {}
+        person_obj['results']['vocabulary_size']['score'] = value
+        rank_data['vocabulary_size'].append(value)
+
+        try:
+            value = getPersonCardModelNew(SpokenWords,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['spoken_words'] = {}
+        person_obj['results']['spoken_words']['score'] = value
+        rank_data['spoken_words'].append(value)
+
+        try:
+            value = getPersonCardModelNew(AverageNumberOfSpeechesPerSession,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['speeches_per_session'] = {}
+        person_obj['results']['speeches_per_session']['score'] = value
+        rank_data['speeches_per_session'].append(value)
+
+        try:
+            value = getPersonCardModelNew(NumberOfQuestions,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['number_of_questions'] = {}
+        person_obj['results']['number_of_questions']['score'] = value
+        rank_data['number_of_questions'].append(value)
+
+        try:
+            styleScores = getPersonCardModelNew(StyleScores,
+                                                int(person_id),
+                                                date_)
+        except:
+            styleScores = None
+
+        privzdignjeno = 0
+        problematicno = 0
+        preprosto = 0
+        try:
+            if (styleScores.privzdignjeno != 0 and
+               styleScores.privzdignjeno_average != 0):
+                privzdignjeno = styleScores.privzdignjeno / styleScores.privzdignjeno_average
+
+            if (styleScores.problematicno != 0 and
+               styleScores.problematicno_average != 0):
+                problematicno = styleScores.problematicno / styleScores.problematicno_average
+
+            if (styleScores.preprosto != 0 and
+               styleScores.preprosto_average != 0):
+                preprosto = styleScores.preprosto / styleScores.preprosto_average
+        except:
+            preprosto = 0
+            privzdignjeno = 0
+            problematicno = 0
+
+        person_obj['results']['privzdignjeno'] = {}
+        person_obj['results']['privzdignjeno']['score'] = privzdignjeno
+        rank_data['privzdignjeno'].append(value)
+
+        person_obj['results']['preprosto'] = {}
+        person_obj['results']['preprosto']['score'] = preprosto
+        rank_data['preprosto'].append(value)
+
+        person_obj['results']['problematicno'] = {}
+        person_obj['results']['problematicno']['score'] = problematicno
+        rank_data['problematicno'].append(value)
+
+        data.append(person_obj)
+
+    ranking = {}
+    for key in rank_data.keys():
+        ranks = rank_data[key]
+        inverse = len(ranks) + 1
+        ranking[key] = inverse - rankdata(ranks, method='max').astype(int)
+
+    print ranking
+
+    # set rankings to persons data
+    for idx, cPerson in enumerate(data):
+        # get persons data in previous list
+        is_prev = True
+        if prevData:
+            prevPerson = prevData[idx]
+            if prevPerson['person']['id'] == cPerson['person']['id']:
+                pass
+            else:
+                # if person isn't in the same place in the list
+                prevPerson = None
+                for person in prevData:
+                    if person['person']['id'] == cPerson['person']['id']:
+                        prevPerson = person
+                        continue
+                # if person isn't member in the previous list
+                if not prevPerson:
+                    is_prev = False
+        else:
+            is_prev = False
+        for key in rank_data.keys():
+            cPerson['results'][key]['rank'] = ranking[key][idx]
+            if is_prev:
+                prevSocre = prevPerson['results'][key]['score']
+                currentScore = cPerson['results'][key]['score']
+                diff = currentScore - prevSocre
+                cPerson['results'][key]['diff'] = diff
+            else:
+                cPerson['results'][key]['diff'] = 0
+
+    data = sorted(data, key=lambda k: k['person']['name'])
+
+    MembersList(created_for=date_of,
+                data=data).save()
+    return JsonResponse(data, safe=False)
+
+
+def getListOfMembersTickers(request, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+    lists = MembersList.objects.filter(created_for__lte=date_of)
+    if not lists:
+        return JsonResponse({'created_at': date_,
+                             'created_for': date_,
+                             'data': []},
+                            safe=False)
+    last_day = lists.latest('created_for').created_for
+    cards = MembersList.objects.filter(created_for=last_day)
+    card = cards.latest('created_at')
+    return JsonResponse({'created_at': card.created_at,
+                         'created_for': card.created_for,
+                         'data': card.data},
+                        safe=False)

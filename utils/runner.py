@@ -10,7 +10,7 @@ from parlaposlanci.models import District
 from raven.contrib.django.raven_compat.models import client
 
 
-from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs
+from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers
 from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass
 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
@@ -24,6 +24,8 @@ from multiprocessing import Pool
 
 from parlalize.utils import tryHard, datesGenerator
 import json
+
+DZ = 95
 
 ## parlalize initial runner methods ##
 
@@ -180,6 +182,10 @@ def setAllSessions():
                              organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                              in_review=sessions['is_in_review']
                              ).save()
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    setListOfMembers(sessions['start_time'])
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1038,7 +1044,7 @@ def morningCash():
     vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []
     for ses in session:
-        if ses['organization_id'] == 95:
+        if ses['organization_id'] == DZ:
             sessionDZ.append(ses['id'])
 
     for url in allUrls:
@@ -1239,6 +1245,10 @@ def fastUpdate(date_=None):
                              organization=org,
                              in_review=sessions['is_in_review']
                              ).save()
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    setListOfMembers(sessions['start_time'])
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1344,3 +1354,9 @@ def fastUpdate(date_=None):
     updatePagesS(list(set(s_update)))
 
     client.captureMessage('End fastUpdate everything: ' + str(datetime.now()))
+
+
+def setListOfMembers(date_time):
+    start_date = datetime.strptime(date_time, "%Y-%m-%dT%X")
+    start_date = start_date - timedelta(days=1)
+    setListOfMembersTickers(None, start_time.strftime(API_DATE_FORMAT))

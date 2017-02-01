@@ -50,6 +50,10 @@ urlpatterns = patterns(
     url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
     url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
 
+    url(r'^setListOfMembersTickers/(?P<date_>[\w].+)', setListOfMembersTickers),
+    url(r'^setListOfMembersTickers/', setListOfMembersTickers),
+    
+
 
     ####################################################################################
 
@@ -96,6 +100,9 @@ urlpatterns = patterns(
 
     url(r'^getQuestions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getQuestions),
     url(r'^getQuestions/(?P<person_id>\d+)', getQuestions),
+
+    url(r'^getListOfMembersTickers/(?P<date_>[\w].+)', getListOfMembersTickers),
+    url(r'^getListOfMembersTickers/', getListOfMembersTickers),
     
 
     url(r'^getMPsIDs', getMPsIDs),
