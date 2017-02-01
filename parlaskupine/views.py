@@ -877,34 +877,47 @@ def getTaggedBallots(request, pg_id, date_=None):
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
     else:
         date_of = datetime.now().date()
-    membersOfPGRanges = tryHard(API_URL+'/getMembersOfPGRanges/'+ pg_id + ("/"+date_ if date_ else "/")).json()
+        date_ = ''
+    url = API_URL + '/getMembersOfPGRanges/' + pg_id + '/' + date_
+    membersOfPGRanges = tryHard(url).json()
     out = []
     latest = []
     for pgMembersRange in membersOfPGRanges:
-        ballots = Ballot.objects.filter(person__id_parladata__in=pgMembersRange["members"], start_time__lte=datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT), start_time__gte=datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT))
+        ballots = Ballot.objects.filter(person__id_parladata__in=pgMembersRange['members'],
+                                        start_time__lte=datetime.strptime(pgMembersRange['end_date'],
+                                                                          API_DATE_FORMAT),
+                                        start_time__gte=datetime.strptime(pgMembersRange['start_date'],
+                                                                          API_DATE_FORMAT))
         if ballots:
-            latest.append(ballots.latest("created_at").created_at)
-        ballots = [ballots.filter(start_time__range=[t_date, t_date+timedelta(days=1)])for t_date in ballots.order_by("start_time").datetimes('start_time', 'day')]
+            latest.append(ballots.latest('created_at').created_at)
+        ballots = [ballots.filter(start_time__range=[t_date,
+                                                     t_date+timedelta(days=1)])
+                   for t_date
+                   in ballots.order_by('start_time').datetimes('start_time',
+                                                               'day')]
+
         for day in ballots:
-            dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "ballots":[]}
-            votes = list(set(day.order_by("start_time").values_list("vote_id", flat=True)))
+            dayData = {'date': day[0].start_time.strftime(API_OUT_DATE_FORMAT),
+                       'ballots': []}
+            votes = list(set(day.order_by('start_time').values_list('vote_id',
+                                                                    flat=True)))
             for vote in votes:
                 vote_balots = day.filter(vote_id=vote)
-                counter = Counter(vote_balots.values_list("option", flat=True))
-                dayData["ballots"].append({
-                    "motion": vote_balots[0].vote.motion,
-                    "vote_id": vote_balots[0].vote.id_parladata,
-                    "session_id": vote_balots[0].vote.session.id_parladata if vote_balots[0].vote.session else None,
-                    "option": max(counter, key=counter.get),
-                    "tags": vote_balots[0].vote.tags})
+                counter = Counter(vote_balots.values_list('option', flat=True))
+                dayData['ballots'].append({
+                    'motion': vote_balots[0].vote.motion,
+                    'vote_id': vote_balots[0].vote.id_parladata,
+                    'result': ballot.vote.result,
+                    'session_id': vote_balots[0].vote.session.id_parladata if vote_balots[0].vote.session else None,
+                    'option': max(counter, key=counter.get),
+                    'tags': vote_balots[0].vote.tags})
             out.append(dayData)
 
-
-    tags = list(Tag.objects.all().values_list("name", flat=True))
-    result  = {
-        'party':Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
+    tags = list(Tag.objects.all().values_list('name', flat=True))
+    result = {
+        'party': Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
         'created_at': max(latest).strftime(API_DATE_FORMAT) if latest else None,
-        'created_for': out[-1]["date"] if out else None,
+        'created_for': out[-1]['date'] if out else None,
         'all_tags': tags,
         'results': list(reversed(out))
         }
