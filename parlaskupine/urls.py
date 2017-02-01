@@ -44,6 +44,8 @@ urlpatterns = patterns('',
     url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
     url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
 
+    url(r'^setPresenceThroughTime/(?P<party_id>\d+)/(?P<date_>[\w].+)', setPresenceThroughTime),
+    url(r'^setPresenceThroughTime/(?P<party_id>\d+)', setPresenceThroughTime),
 
 
     # getters
@@ -95,6 +97,9 @@ urlpatterns = patterns('',
 
     url(r'^getQuestionsOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getQuestionsOfPG),
     url(r'^getQuestionsOfPG/(?P<pg_id>\d+)/', getQuestionsOfPG),
+
+    url(r'^getPresenceThroughTime/(?P<party_id>\d+)/(?P<date_>[\w].+)', getPresenceThroughTime),
+    url(r'^getPresenceThroughTime/(?P<party_id>\d+)', getPresenceThroughTime),
 
     url(r'^getPGsIDs', getPGsIDs),
 

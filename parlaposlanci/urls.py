@@ -101,9 +101,14 @@ urlpatterns = patterns(
     url(r'^getQuestions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getQuestions),
     url(r'^getQuestions/(?P<person_id>\d+)', getQuestions),
 
+    url(r'^setPresenceThroughTime/(?P<person_id>\d+)/(?P<date_>[\w].+)', setPresenceThroughTime),
+    url(r'^setPresenceThroughTime/(?P<person_id>\d+)', setPresenceThroughTime),
+
+    url(r'^getPresenceThroughTime/(?P<person_id>\d+)/(?P<date_>[\w].+)', getPresenceThroughTime),
+    url(r'^getPresenceThroughTime/(?P<person_id>\d+)', getPresenceThroughTime),
+
     url(r'^getListOfMembersTickers/(?P<date_>[\w].+)', getListOfMembersTickers),
     url(r'^getListOfMembersTickers/', getListOfMembersTickers),
-    
 
     url(r'^getMPsIDs', getMPsIDs),
 

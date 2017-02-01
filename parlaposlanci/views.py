@@ -1816,6 +1816,51 @@ def getSlugs(request):
     return JsonResponse(obj)
 
 
+def setPresenceThroughTime(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, '%d.%m.%Y').date()
+    else:
+        fdate = datetime.now().date()
+
+    url = API_URL + '/getBallotsCounterOfPerson/' + person_id + '/' + fdate.strftime(API_DATE_FORMAT)
+    data = tryHard(url).json()
+
+    data_for_save = []
+
+    for month in data:
+        stats = month['ni'] + month['za'] + month['proti'] + month['kvorum']
+        not_member = month['total'] - stats
+        not_member = float(not_member) / month['total'] if not_member else 0
+        presence = float(stats-month['ni']) / month['total'] if stats else 0
+        data_for_save.append({'date_ts': month['date_ts'],
+                              'presence': presence * 100,
+                              'not_member': not_member * 100,
+                              'vote_count': month['total']})
+
+    saved = saveOrAbortNew(model=PresenceThroughTime,
+                           person=Person.objects.get(id_parladata=person_id),
+                           created_for=fdate,
+                           data=data_for_save)
+
+    return JsonResponse({'alliswell': True, "status": 'OK', "saved": saved})
+
+
+def getPresenceThroughTime(request, person_id, date_=None):
+    card = getPersonCardModelNew(PresenceThroughTime,
+                                 person_id,
+                                 date_)
+    card_date = card.created_for.strftime(API_DATE_FORMAT)
+
+    out = {
+        'person': getPersonData(person_id, card_date),
+        'created_at': card.created_at.strftime(API_DATE_FORMAT),
+        'created_for': card_date,
+        'results': card.data
+    }
+
+    return JsonResponse(out, safe=False)
+
+
 def setListOfMembersTickers(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
