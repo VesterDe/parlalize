@@ -16,7 +16,7 @@ class PopoloDateTimeField(models.DateTimeField):
 
 # Create your models here.
 
-#@python_2_unicode_compatible
+# @python_2_unicode_compatible
 class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz etc.
 
     name = models.CharField(_('name'),
@@ -25,17 +25,19 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                             help_text=_('Session name'))
 
     date = PopoloDateTimeField(_('date of session'),
-                                     blank=True,
-                                     null=True,
-                                     help_text=_('date of session'))
+                               blank=True,
+                               null=True,
+                               help_text=_('date of session'))
 
     id_parladata = models.IntegerField(_('parladata id'),
-                            blank=True, null=True,help_text=_('id parladata'))
+                                       blank=True,
+                                       null=True,
+                                       help_text=_('id parladata'))
 
     mandate = models.CharField(_('mandate name'),
-                            blank=True, null=True,
-                            max_length=128,
-                            help_text=_('Mandate name'))
+                               blank=True, null=True,
+                               max_length=128,
+                               help_text=_('Mandate name'))
 
     start_time = PopoloDateTimeField(_('start time of session'),
                                      blank=True, null=True,

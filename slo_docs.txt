@@ -1,0 +1,811 @@
+getMPStatic
+/p/getMPStatic/:person_id/:date
+
+Klic vrne osnovne podatke poslanca {person_id}.
+
+{
+	person: {
+		is_active: false,		//ali je trenutno poslanec
+		district: [				//id-ji okolišev kjer je bil izvoljen
+			77
+		],
+		name: "Bojan Dobovšek",	//ime in priimek
+		gov_id: "P248",			//id na staneh DZ
+		gender: "m",			//spol 
+		party: {				//podatki poslanse skupine
+			acronym: "PS NP",
+			is_coalition: false,
+			id: 109,
+			name: "PS nepovezanih poslancev "
+		},
+		type: "mp",
+		id: 18,
+		has_function: false
+	},
+	created_at: "23.01.2017",
+	created_for: "29.01.2016",
+	results: {
+	voters: 5479,
+	acronym: "PS NP",
+	mandates: 1,
+	party_id: 109,
+	groups: [
+		{
+			group_id: 74,
+			group_name: "Skupina prijateljstva s Španijo"
+		},
+		{
+			group_id: 75,
+			group_name: "Skupina prijateljstva s Švedsko"
+		},
+	],
+	education: "doktor znanosti",
+	working_bodies_functions: [
+		{
+			role: "vice_president",
+			wb: {
+				acronym: "",
+				is_coalition: false,
+				id: 13,
+				name: "Komisija za peticije ter za človekove pravice in enake možnosti"
+			}
+		}
+	],
+	previous_occupation: "univerzitetni profesor",
+	name: "Bojan Dobovšek",
+	district: [
+		"Ljubljana Bežigrad I"
+	],
+	age: 54,
+	social: [
+		{
+		twitter: null,
+		facebook: "https://www.facebook.com/bojan.dobovsek/",
+		linkedin: null
+		}
+	],
+	party: "PS nepovezanih poslancev "
+	}
+}
+
+________________________________________________________________________________________________
+
+getMostEqualVoters
+/p/getMostEqualVoters/:person_id/:date
+
+Klic vrne pet najbol podobnih volilcev. Algoritem za računanje podobnosti je evklidska razdalja.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+_________
+
+getLessEqualVoters
+/p/getLessEqualVoters/:person_id/:date
+
+Klic vrne pet najbol drugačnih volilcev. Algoritem za računanje podobnosti je evklidska razdalja.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+
+{
+	person: {
+		is_active: false,
+		district: [
+			71
+		],
+		name: "Janez Janša",
+		gov_id: "P025",
+		gender: "m",
+		party: {
+			acronym: "SDS",
+			is_coalition: false,
+			id: 5,
+			name: "PS Slovenska Demokratska Stranka"
+		},
+		type: "mp",
+		id: 36,
+		has_function: false
+	},
+	created_at: "10.01.2017",
+	created_for: "22.12.2016",
+	results: [
+	{
+		person: {
+			is_active: false,
+			district: [
+				85
+			],
+			name: "Teja Ljubič",
+			gov_id: "P304",
+			gender: "f",
+			party: {
+				acronym: "SMC",
+				is_coalition: true,
+				id: 1,
+				name: "PS Stranka modernega centra"
+			},
+			type: "mp",
+			id: 2933,
+			has_function: false
+		},
+		ratio: 28.6530975637888
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				84
+			],
+			name: "Vlasta Počkaj",
+			gov_id: "P303",
+			gender: "f",
+			party: {
+				acronym: "SMC",
+				is_coalition: true,
+				id: 1,
+				name: "PS Stranka modernega centra"
+			},
+			type: "mp",
+			id: 2934,
+			has_function: false
+		},
+		ratio: 28.6879765755621
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				30
+			],
+			name: "Jelka Godec",
+			gov_id: "P252",
+			gender: "f",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 23,
+			has_function: false
+		},
+		ratio: 29.2916370317536
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				24
+			],
+			name: "Franc Breznik",
+			gov_id: "P167",
+			gender: "m",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 10,
+			has_function: false
+		},
+		ratio: 31.1929479209644
+	},
+	{
+		person: {
+			is_active: false,
+			district: [
+				60
+			],
+			name: "Branko Grims",
+			gov_id: "P016",
+			gender: "m",
+			party: {
+				acronym: "SDS",
+				is_coalition: false,
+				id: 5,
+				name: "PS Slovenska Demokratska Stranka"
+			},
+			type: "mp",
+			id: 26,
+			has_function: false
+		},
+		ratio: 31.224989991992
+	}
+	]
+}
+
+________________________________________________________________________________________________
+getPresence
+/p/getPresence/:person_id/:date
+Klic vrne prisotnost poslanca na sejah ni na glasovanjih državnega zbora.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+{
+	person: {
+		is_active: false,
+		district: [
+			28
+		],
+		name: "Andrej Čuš",
+		gov_id: "P225",
+		gender: "m",
+		party: {
+			acronym: "NeP - AČ",
+			is_coalition: false,
+			id: 108,
+			name: "Nepovezani poslanec Andrej Čuš"
+		},
+		type: "mp",
+		id: 15,
+		has_function: false
+	},
+	created_at: "11.01.2017",
+	created_for: "22.12.2016",
+	results: {
+		votes: {
+			max: {
+				score: 98.7215119510839,
+				mps: [
+					{
+						is_active: false,
+						district: [
+						8
+						],
+						name: "Urška Ban",
+						gov_id: "P240",
+						gender: "f",
+						party: {
+						acronym: "SMC",
+						is_coalition: true,
+						id: 1,
+						name: "PS Stranka modernega centra"
+						},
+						type: "mp",
+						id: 3,
+						has_function: false
+					}
+				]
+			},
+			average: 80.5258038373264,
+			score: 55.8087826570317
+		},
+		sessions: {
+			max: {
+				score: 100,
+				mps: [
+					{
+						is_active: false,
+						district: [
+						84
+						],
+						name: "Vlasta Počkaj",
+						gov_id: "P303",
+						gender: "f",
+						party: {
+						acronym: "SMC",
+						is_coalition: true,
+						id: 1,
+						name: "PS Stranka modernega centra"
+						},
+						type: "mp",
+						id: 2934,
+						has_function: false
+					},
+				]
+			},
+			average: 88.617621241032,
+			score: 68.1818181818182
+		}
+	}
+}
+________________________________________________________________________________________________
+getCutVotes
+/p/getCutVotes/:person_id/:date
+
+Poslanec
+Klic vrne razrez glasovanja. Razrez glasovanj je analiza, ki prikazuje odstotke odločitev na glasovanjih.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+{
+  "person": {
+    "is_active": false,
+    "district": [
+      101
+    ],
+    "name": "Tanja Cink",
+    "gov_id": "P246",
+    "gender": "f",
+    "party": {
+      "acronym": "SMC",
+      "is_coalition": true,
+      "id": 1,
+      "name": "PS Stranka modernega centra"
+    },
+    "type": "mp",
+    "id": 14,
+    "has_function": false
+  },
+  "created_at": "10.01.2017",
+  "created_for": "22.12.2016",
+  "results": {
+    "absent": {
+      "avgCoalition": {
+        "score": 8.30503936164516
+      },
+      "avgOpposition": {
+        "score": 34.8382668894724
+      },
+      "score": 17.7876598110061,
+      "maxCoalition": {
+        "score": 28.1823235130628,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              76
+            ],
+            "name": "Jani Möderndorfer",
+            "gov_id": "P191",
+            "gender": "m",
+            "party": {
+              "acronym": "SMC",
+              "is_coalition": true,
+              "id": 1,
+              "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 59,
+            "has_function": false
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 59.9771949828962,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              71
+            ],
+            "name": "Janez Janša",
+            "gov_id": "P025",
+            "gender": "m",
+            "party": {
+              "acronym": "SDS",
+              "is_coalition": false,
+              "id": 5,
+              "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 36,
+            "has_function": false
+          }
+        ]
+      }
+    },
+    "abstain": {
+      "avgCoalition": {
+        "score": 0.744390296149521
+      },
+      "avgOpposition": {
+        "score": 15.2154452136548
+      },
+      "score": 0.222345747637576,
+      "maxCoalition": {
+        "score": 5.83657587548638,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              76
+            ],
+            "name": "Jani Möderndorfer",
+            "gov_id": "P191",
+            "gender": "m",
+            "party": {
+              "acronym": "SMC",
+              "is_coalition": true,
+              "id": 1,
+              "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 59,
+            "has_function": false
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 48.9160644802668,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              91
+            ],
+            "name": "László Göncz",
+            "gov_id": "P117",
+            "gender": "m",
+            "party": {
+              "acronym": "IMNS",
+              "is_coalition": false,
+              "id": 2,
+              "name": "PS italijanske in madžarske narodne skupnosti"
+            },
+            "type": "mp",
+            "id": 24,
+            "has_function": false
+          }
+        ]
+      }
+    },
+    "for": {
+      "avgCoalition": {
+        "score": 44.5027579928239
+      },
+      "avgOpposition": {
+        "score": 37.6999283838625
+      },
+      "score": 38.2990550305725,
+      "maxCoalition": {
+        "score": 48.0266814897165,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              52
+            ],
+            "name": "Ivan Prelog",
+            "gov_id": "P279",
+            "gender": "m",
+            "party": {
+              "acronym": "SMC",
+              "is_coalition": true,
+              "id": 1,
+              "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 68,
+            "has_function": false
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 49.4163424124514,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              70
+            ],
+            "name": "Jože Tanko",
+            "gov_id": "P077",
+            "gender": "m",
+            "party": {
+              "acronym": "SDS",
+              "is_coalition": false,
+              "id": 5,
+              "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 78,
+            "has_function": false
+          }
+        ]
+      }
+    },
+    "against": {
+      "avgCoalition": {
+        "score": 46.4478123493815
+      },
+      "avgOpposition": {
+        "score": 12.2463595130103
+      },
+      "score": 43.6909394107838,
+      "maxCoalition": {
+        "score": 58.3333333333333,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              84
+            ],
+            "name": "Vlasta Počkaj",
+            "gov_id": "P303",
+            "gender": "f",
+            "party": {
+              "acronym": "SMC",
+              "is_coalition": true,
+              "id": 1,
+              "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 2934,
+            "has_function": false
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 30.2390216787104,
+        "mps": [
+          {
+            "is_active": false,
+            "district": [
+              17
+            ],
+            "name": "Franc Laj",
+            "gov_id": "P267",
+            "gender": "m",
+            "party": {
+              "acronym": "PS NP",
+              "is_coalition": false,
+              "id": 109,
+              "name": "PS nepovezanih poslancev "
+            },
+            "type": "mp",
+            "id": 50,
+            "has_function": false
+          }
+        ]
+      }
+    }
+  }
+}
+
+________________________________________________________________________________________________
+getCutVotes
+
+/pg/getCutVotes/:party_id/:date
+
+Poslanska skupina
+Klic vrne razrez glasovanja. Razrez glasovanj je analiza, ki prikazuje odstotke odločitev na glasovanjih.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+{
+  "organization": {
+    "acronym": "SDS",
+    "is_coalition": false,
+    "id": 5,
+    "name": "PS Slovenska Demokratska Stranka"
+  },
+  "created_at": "10.01.2017",
+  "created_for": "22.12.2016",
+  "results": {
+    "absent": {
+      "avgCoalition": {
+        "score": 8.30503936164516
+      },
+      "avgOpposition": {
+        "score": 34.8382668894724
+      },
+      "score": 34.7170142957581,
+      "maxCoalition": {
+        "score": 12.0243613237038,
+        "parties": [
+          {
+            "acronym": "DeSUS",
+            "is_coalition": true,
+            "id": 3,
+            "name": "PS Demokratska Stranka Upokojencev Slovenije"
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 37.1734296831573,
+        "parties": [
+          {
+            "acronym": "PS NP",
+            "is_coalition": false,
+            "id": 109,
+            "name": "PS nepovezanih poslancev "
+          }
+        ]
+      }
+    },
+    "abstain": {
+      "avgCoalition": {
+        "score": 0.744390296149521
+      },
+      "avgOpposition": {
+        "score": 15.2154452136548
+      },
+      "score": 13.4139910944457,
+      "maxCoalition": {
+        "score": 2.16367825303015,
+        "parties": [
+          {
+            "acronym": "SD",
+            "is_coalition": true,
+            "id": 7,
+            "name": "PS Socialni Demokrati"
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 35.9922178988327,
+        "parties": [
+          {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "id": 2,
+            "name": "PS italijanske in madžarske narodne skupnosti"
+          }
+        ]
+      }
+    },
+    "for": {
+      "avgCoalition": {
+        "score": 44.5027579928239
+      },
+      "avgOpposition": {
+        "score": 37.6999283838625
+      },
+      "score": 38.6395594094211,
+      "maxCoalition": {
+        "score": 44.6649659863946,
+        "parties": [
+          {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 40.9227348526959,
+        "parties": [
+          {
+            "acronym": "NSI",
+            "is_coalition": false,
+            "id": 6,
+            "name": "PS Nova Slovenija"
+          }
+        ]
+      }
+    },
+    "against": {
+      "avgCoalition": {
+        "score": 46.4478123493815
+      },
+      "avgOpposition": {
+        "score": 12.2463595130103
+      },
+      "score": 13.229435200375,
+      "maxCoalition": {
+        "score": 47.5255102040816,
+        "parties": [
+          {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+          }
+        ]
+      },
+      "maxOpposition": {
+        "score": 16.4535853251807,
+        "parties": [
+          {
+            "acronym": "PS NP",
+            "is_coalition": false,
+            "id": 109,
+            "name": "PS nepovezanih poslancev "
+          }
+        ]
+      }
+    }
+  }
+}
+________________________________________________________________________________________________
+getTaggedBallots
+/pg/getTaggedBallots/:party_id/:date
+
+Klic vrne seznam objektov označenih glasovanj od poslanske skupine {party_id}.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+{
+  "party": {
+    "acronym": "SDS",
+    "is_coalition": false,
+    "id": 5,
+    "name": "PS Slovenska Demokratska Stranka"
+  },
+  "created_at": "24.01.2017",
+  "created_for": "23. 1. 2017",
+  "results": [
+    {
+      "date": "23. 1. 2017",
+      "ballots": [
+        {
+          "motion": "",
+          "vote_id": 6765,
+          "option": "ni",
+          "session_id": 8940,
+          "tags": []
+        }...
+      ]
+    }
+  ]
+}
+________________________________________________________________________________________________
+getTaggedBallots
+/p/getTaggedBallots/:person_id/:date
+
+Klic vrne seznam objektov označenih glasovanj od poslanca {person_id}.
+{date} je opcijski parameter in vrne analizo primerno za ta dan.
+
+{
+  "person": {
+    "is_active": false,
+    "district": [
+      66
+    ],
+    "name": "Julijana Bizjak Mlakar",
+    "gov_id": "P158",
+    "gender": "f",
+    "party": {
+      "acronym": "DeSUS",
+      "is_coalition": true,
+      "id": 3,
+      "name": "PS Demokratska Stranka Upokojencev Slovenije"
+    },
+    "type": "mp",
+    "id": 5,
+    "has_function": false
+  },
+  "created_at": "24. 1. 2017",
+  "created_for": "23. 1. 2017",
+  "results": [
+    {
+      "date": "23. 1. 2017",
+      "ballots": [
+        {
+          "ballot_id": 608119,
+          "option": "za",
+          "tags": [],
+          "session_id": 8940,
+          "motion": "",
+          "vote_id": 6760
+        },
+        {
+          "ballot_id": 608209,
+          "option": "za",
+          "tags": [],
+          "session_id": 8940,
+          "motion": "",
+          "vote_id": 6761
+        },
+        {
+          "ballot_id": 608299,
+          "option": "za",
+          "tags": [],
+          "session_id": 8940,
+          "motion": "",
+          "vote_id": 6762
+        },
+        {
+          "ballot_id": 608389,
+          "option": "proti",
+          "tags": [],
+          "session_id": 8940,
+          "motion": "",
+          "vote_id": 6763
+        }
+      ]
+    }
+  ]
+}
+________________________________________________________________________________________________
+getMotionOfSession
+________________________________________________________________________________________________
+getMotionOfSessionVotes
+________________________________________________________________________________________________
+getSessionsList
+________________________________________________________________________________________________
+getSessionsByClassification
+________________________________________________________________________________________________
+
+
+
+
