@@ -2038,5 +2038,7 @@ def getListOfMembersTickers(request, date_=None):
     card = cards.latest('created_at')
     return JsonResponse({'created_at': card.created_at,
                          'created_for': card.created_for,
-                         'data': card.data},
+                         'data': card.data,
+                         'districts': [{dist.id_parladata: dist.name}
+                                       for dist in District.objects.all()]},
                         safe=False)

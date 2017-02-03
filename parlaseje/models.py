@@ -220,10 +220,7 @@ class Vote(Timestampable, models.Model):
                                        blank=True,
                                        null=True,
                                        help_text=_('id parladata'))
-    document_url = models.URLField(blank=True,
-                                   null=True,
-                                   max_length=515,
-                                   help_text='"document" url for this vote')
+    document_url = JSONField(blank=True, null=True)
 
 
 class Vote_graph(Timestampable, models.Model):
