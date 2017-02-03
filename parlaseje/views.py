@@ -137,7 +137,7 @@ def setMotionOfSession(request, id_se):
 
         if Vote.objects.filter(id_parladata=mot['vote_id']):
             vote = Vote.objects.filter(id_parladata=mot['vote_id'])
-            urls = json.loads(mot['doc_url'])
+            urls = mot['doc_url']
             if not urls:
                 urls = None
             vote.update(created_for=session.start_time,
