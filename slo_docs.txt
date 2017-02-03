@@ -798,12 +798,170 @@ Klic vrne seznam objektov označenih glasovanj od poslanca {person_id}.
 }
 ________________________________________________________________________________________________
 getMotionOfSession
+
+/s/getMotionOfSession/:session_id
+
+Klic vrne seznam vseh glasovanj na seji. Vsak objekt ima števce opcij(za/proti/ni/vzdržal). In
+podatek ali je bil predlog sprejel/zavrnjen.
+
+{
+  "created_at": null,
+  "created_for": "02.02.2017",
+  "session": {
+    "name": "17. redna seja",
+    "date_ts": "2017-02-02T01:00:00",
+    "date": "2. 2. 2017",
+    "org": {
+      "acronym": "",
+      "is_coalition": false,
+      "id": 22,
+      "name": "Odbor za kulturo"
+    },
+    "id": 8973,
+    "in_review": true
+  },
+  "results": [
+    {
+      "results": {
+        "abstain": 2,
+        "text": "Proračun Republike Slovenije za leto 2018 - Amandma: 3330 Ministrstvo za izobraževanje, znanost in šport (190902) 9.11.2016 [SDS - Poslanska skupina Slovenske demokratske stranke]",
+        "against": 50,
+        "votes_for": 0,
+        "motion_id": 4602,
+        "not_present": 38,
+        "result": false
+      }
+    },...
+  ]
+}
 ________________________________________________________________________________________________
 getMotionOfSessionVotes
+
+se ne uporabla (vrjetn je samo experiment :)
 ________________________________________________________________________________________________
 getSessionsList
+
+/s/getSessionsList
+
+Klic vrne seznam objektov vseh sej. Vsak objekt vsebuje datum zadnje spremembe (datum glasovanja/govora).
+
+{
+  "created_at": "03.02.2017",
+  "created_for": "03.02.2017",
+  "sessions": [
+    {
+      "updated_at_ts": "2017-02-03T05:19:56.352",
+      "name": "17. redna seja",
+      "date_ts": "2017-02-02T01:00:00",
+      "updated_at": "03.02.2017",
+      "date": "2. 2. 2017",
+      "org": {
+        "acronym": "",
+        "is_coalition": false,
+        "name": "Odbor za kulturo",
+        "id": 22
+      },
+      "id": 8973,
+      "in_review": true
+    },
+    {
+      "updated_at_ts": "2017-01-26T02:54:04.958",
+      "name": "26. redna seja",
+      "date_ts": "2017-01-23T01:00:00",
+      "updated_at": "26.01.2017",
+      "date": "23. 1. 2017",
+      "org": {
+        "acronym": "DZ",
+        "is_coalition": false,
+        "name": "Državni zbor",
+        "id": 95
+      },
+      "id": 8940,
+      "in_review": true
+    },
+    {
+      "updated_at_ts": "2017-02-03T06:54:53.262",
+      "name": "50. nujna seja",
+      "date_ts": "2017-01-20T01:00:00",
+      "updated_at": "03.02.2017",
+      "date": "20. 1. 2017",
+      "org": {
+        "acronym": "",
+        "is_coalition": false,
+        "name": "Odbor za notranje zadeve, javno upravo in lokalno samoupravo",
+        "id": 23
+      },
+      "id": 8941,
+      "in_review": true
+    },...
+  ]
+}
 ________________________________________________________________________________________________
 getSessionsByClassification
+
+/s/getSessionsByClassification
+
+Klic vrne seznam vseh sej grupirane po v skupine(DZ, delovna telesa, kolegij predsednika DZ).
+Seje delovnih teles so grupirane še po imenih delovnih teles.
+
+{
+  "kolegij": [
+    {
+      "votes": false,
+      "name": "85. redna seja",
+      "date_ts": "2017-01-20T01:00:00",
+      "speeches": true,
+      "date": "20. 1. 2017",
+      "org": {
+        "acronym": "",
+        "is_coalition": false,
+        "id": 9,
+        "name": "Kolegij predsednika državnega zbora"
+      },
+      "id": 8937,
+      "in_review": true
+    },...]
+    "dt": [
+      {
+        "acronym": "",
+        "is_coalition": false,
+        "id": 105,
+        "name": "Komisija za nadzor obveščevalnih in varnostnih služb",
+        "sessions": [
+          {
+            "votes": false,
+            "name": "25. nujna seja",
+            "date_ts": "2016-11-17T01:00:00",
+            "speeches": true,
+            "date": "17. 11. 2016",
+            "org": {
+              "acronym": "",
+              "is_coalition": false,
+              "id": 105,
+              "name": "Komisija za nadzor obveščevalnih in varnostnih služb"
+            },
+            "id": 7611,
+            "in_review": true
+          },...]},
+          ],
+    "dz": [
+      {
+        "votes": false,
+        "name": "42. izredna seja",
+        "date_ts": "2017-02-02T01:00:00",
+        "speeches": false,
+        "date": "2. 2. 2017",
+        "org": {
+          "acronym": "DZ",
+          "is_coalition": false,
+          "id": 95,
+          "name": "Državni zbor"
+        },
+        "id": 8972,
+        "in_review": false
+      },...
+    ],
+  }
 ________________________________________________________________________________________________
 
 
