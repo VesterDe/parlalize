@@ -762,15 +762,26 @@ def updateCacheforList(date_=None):
     return 1
 
 
-def updateLastDay():
+def updateLastDay(date_=None):
+    if not date_:
+        to_date = datetime.now()
+    else:
+        to_date = date_
     try:
         print "sessions"
         runSettersSessions()
     except:
         client.captureException()
 
-    lastVoteDay = Vote.objects.latest("created_for").created_for
-    lastSpeechDay = Speech.objects.latest("start_time").start_time
+    votes = Vote.objects.filter(session_date__lte=to_date)
+    lastVoteDay = votes.latest("created_for").created_for
+    speeches = Speech.objects.filter(session_date__lte=to_date)
+    lastSpeechDay = speeches.latest("start_time").start_time
+
+    runForTwoDays = True
+
+    if lastVoteDay.date() == lastSpeechDay.date():
+        runForTwoDays = False
 
     try:
         onDateMPCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
@@ -781,14 +792,16 @@ def updateLastDay():
     except:
         client.captureException()
 
-    try:
-        onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
-    except:
-        client.captureException()
-    try:
-        onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
-    except:
-        client.captureException()
+    # if last vote and speech isn't in the same day
+    if runForTwoDays:
+        try:
+            onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+        except:
+            client.captureException()
+        try:
+            onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+        except:
+            client.captureException()
 
     return 1
 
@@ -1191,6 +1204,8 @@ def updatePagesS(ses_list=None):
 
 
 def fastUpdate(date_=None):
+    new_redna_seja = []
+
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
     update_dates = []
     update_dates.append(Session.objects.latest('updated_at').updated_at)
@@ -1251,7 +1266,7 @@ def fastUpdate(date_=None):
             if sessions['organization_id'] == DZ:
                 if 'redna seja' in sessions['name'].lower():
                     # call method for create new list of members
-                    setListOfMembers(sessions['start_time'])
+                    new_redna_seja.append(sessions)
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1355,6 +1370,13 @@ def fastUpdate(date_=None):
     updatePagesS(list(set(s_update)))
 
     client.captureMessage('End fastUpdate everything: ' + str(datetime.now()))
+
+    for session in new_redna_seja:
+        # run cards
+        client.captureMessage('New redna seja: ' + session.name + ' Start creating cards')
+        updateLastDay(session.date)
+        setListOfMembers(sessions['start_time'])
+        client.captureMessage('New P and PG cards was created.')
 
 
 def setListOfMembers(date_time):
