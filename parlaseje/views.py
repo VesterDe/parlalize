@@ -137,9 +137,6 @@ def setMotionOfSession(request, id_se):
 
         if Vote.objects.filter(id_parladata=mot['vote_id']):
             vote = Vote.objects.filter(id_parladata=mot['vote_id'])
-            urls = mot['doc_url']
-            if not urls:
-                urls = None
             vote.update(created_for=session.start_time,
                         session=session,
                         motion=mot['text'],
@@ -150,7 +147,7 @@ def setMotionOfSession(request, id_se):
                         not_present=not_present,
                         result=result,
                         id_parladata=mot['vote_id'],
-                        document_url=urls,
+                        document_url=mot['doc_url'],
                         )
         else:
             result = saveOrAbortNew(model=Vote,
@@ -419,7 +416,7 @@ def getMotionGraph(request, id_mo, date=False):
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
                'name': model[0].motion,
                'result': model[0].result,
-               'document_url': model[0].vote.document_url,
+               'documents': model[0].vote.document_url,
                'required': '62', #TODO: naji pravo stvar za ta 62 :D
                'all': {'kvorum': out_kvor,
                        'for': out_for,
