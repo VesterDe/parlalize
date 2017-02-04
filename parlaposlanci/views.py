@@ -21,6 +21,7 @@ from parlaseje.models import Session, Tag, Question
 from utils.speech import WordAnalysis
 from raven.contrib.django.raven_compat.models import client
 from slugify import slugify
+from django.views.decorators.csrf import csrf_exempt
 
 from kompas2 import notes
 
@@ -1813,3 +1814,34 @@ def getSlugs(request):
             "base": "https://parlameter.si"
             }
     return JsonResponse(obj)
+
+
+@csrf_exempt
+def setAllMPsTFIDFsFromSearch(request):
+    """
+    API endpoint for saveing TFIDF. TFIDF is generated in parlasearch and sent
+    with a POST request.
+
+    """
+    if request.method == 'POST':
+        print request.body
+        print type(request.body)
+        post_data = json.loads(request.body)
+        print type(post_data)
+        if post_data:
+            print post_data
+            save_statuses = []
+            date_of = datetime.today()
+            person = Person.objects.get(id_parladata=post_data['person']['id'])
+            save_statuses.append(saveOrAbortNew(Tfidf,
+                                                person=person,
+                                                created_for=date_of,
+                                                is_visible=False,
+                                                data=post_data['results']))
+
+            return JsonResponse({'status': 'alliswell',
+                                 'saved': save_statuses})
+        else:
+            return JsonResponse({'status': 'There is not data'})
+    else:
+        return JsonResponse({'status': 'It wasnt POST'})

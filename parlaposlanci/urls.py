@@ -119,7 +119,11 @@ urlpatterns = patterns(
 
     url(r'^getSlugs/', getSlugs),
 
-    ####################################################################################
+    ###########################################################################
+    # POST setters
+    url(r'^setAllMPsTFIDFsFromSearch/', setAllMPsTFIDFsFromSearch),
+
+    ###########################################################################
 
     #runenr
     #url(r'^runSetters/(?P<date_to>[\w].+)', runSetters),
