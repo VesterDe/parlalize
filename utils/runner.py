@@ -185,10 +185,11 @@ def setAllSessions():
             result.save()
             orgs = list(orgs)
             result.organizations.add(*orgs)
-            if sessions['organization_id'] == DZ:
+            if sessions['id'] == DZ:
                 if 'redna seja' in sessions['name'].lower():
                     # call method for create new list of members
-                    setListOfMembers(sessions['start_time'])
+                    # setListOfMembers(sessions['start_time'])
+                    pass
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
