@@ -629,3 +629,23 @@ class NumberOfQuestions(Timestampable, models.Model):
                                 help_text=_('Maximum score'))
 
     maxMPs = JSONField(blank=True, null=True)
+
+
+class PresenceThroughTime(Timestampable, models.Model):
+    person = models.ForeignKey('Person',
+                               blank=True, null=True,
+                               help_text=_('MP'))
+    created_for = models.DateField(_('date of activity'),
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of analize'))
+    data = JSONField(blank=True, null=True)
+
+
+class MembersList(Timestampable, models.Model):
+    created_for = models.DateField(_('date of activity'),
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of analize'))
+
+    data = JSONField(blank=True, null=True)

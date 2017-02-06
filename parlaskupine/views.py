@@ -822,7 +822,10 @@ def getWorkingBodies(request, org_id, date_=None):
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
         date_of = datetime.now().date()
-    sessions = [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=org_id, start_time__lte=date_of).order_by("-start_time")]
+    sessions = [session.getSessionData()
+                for session
+                in Session.objects.filter(organizations__id_parladata=org_id,
+                                          start_time__lte=date_of).order_by("-start_time")]
 
     for session in sessions:
         session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
@@ -874,34 +877,47 @@ def getTaggedBallots(request, pg_id, date_=None):
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
     else:
         date_of = datetime.now().date()
-    membersOfPGRanges = tryHard(API_URL+'/getMembersOfPGRanges/'+ pg_id + ("/"+date_ if date_ else "/")).json()
+        date_ = ''
+    url = API_URL + '/getMembersOfPGRanges/' + pg_id + '/' + date_
+    membersOfPGRanges = tryHard(url).json()
     out = []
     latest = []
     for pgMembersRange in membersOfPGRanges:
-        ballots = Ballot.objects.filter(person__id_parladata__in=pgMembersRange["members"], start_time__lte=datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT), start_time__gte=datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT))
+        ballots = Ballot.objects.filter(person__id_parladata__in=pgMembersRange['members'],
+                                        start_time__lte=datetime.strptime(pgMembersRange['end_date'],
+                                                                          API_DATE_FORMAT),
+                                        start_time__gte=datetime.strptime(pgMembersRange['start_date'],
+                                                                          API_DATE_FORMAT))
         if ballots:
-            latest.append(ballots.latest("created_at").created_at)
-        ballots = [ballots.filter(start_time__range=[t_date, t_date+timedelta(days=1)])for t_date in ballots.order_by("start_time").datetimes('start_time', 'day')]
+            latest.append(ballots.latest('created_at').created_at)
+        ballots = [ballots.filter(start_time__range=[t_date,
+                                                     t_date+timedelta(days=1)])
+                   for t_date
+                   in ballots.order_by('start_time').datetimes('start_time',
+                                                               'day')]
+
         for day in ballots:
-            dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "ballots":[]}
-            votes = list(set(day.order_by("start_time").values_list("vote_id", flat=True)))
+            dayData = {'date': day[0].start_time.strftime(API_OUT_DATE_FORMAT),
+                       'ballots': []}
+            votes = list(set(day.order_by('start_time').values_list('vote_id',
+                                                                    flat=True)))
             for vote in votes:
                 vote_balots = day.filter(vote_id=vote)
-                counter = Counter(vote_balots.values_list("option", flat=True))
-                dayData["ballots"].append({
-                    "motion": vote_balots[0].vote.motion,
-                    "vote_id": vote_balots[0].vote.id_parladata,
-                    "session_id": vote_balots[0].vote.session.id_parladata if vote_balots[0].vote.session else None,
-                    "option": max(counter, key=counter.get),
-                    "tags": vote_balots[0].vote.tags})
+                counter = Counter(vote_balots.values_list('option', flat=True))
+                dayData['ballots'].append({
+                    'motion': vote_balots[0].vote.motion,
+                    'vote_id': vote_balots[0].vote.id_parladata,
+                    'result': ballot.vote.result,
+                    'session_id': vote_balots[0].vote.session.id_parladata if vote_balots[0].vote.session else None,
+                    'option': max(counter, key=counter.get),
+                    'tags': vote_balots[0].vote.tags})
             out.append(dayData)
 
-
-    tags = list(Tag.objects.all().values_list("name", flat=True))
-    result  = {
-        'party':Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
+    tags = list(Tag.objects.all().values_list('name', flat=True))
+    result = {
+        'party': Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
         'created_at': max(latest).strftime(API_DATE_FORMAT) if latest else None,
-        'created_for': out[-1]["date"] if out else None,
+        'created_for': out[-1]['date'] if out else None,
         'all_tags': tags,
         'results': list(reversed(out))
         }
@@ -1438,3 +1454,47 @@ def getListOfPGs(request, date_=None, force_render=False):
         cache.set("pg_list_" + key, data, 60 * 60 * 48) 
 
     return JsonResponse({"data": data})
+
+
+def setPresenceThroughTime(request, party_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, '%d.%m.%Y').date()
+    else:
+        fdate = datetime.now().date()
+
+    url = API_URL + '/getBallotsCounterOfParty/' + party_id + '/' + fdate.strftime(API_DATE_FORMAT)
+    data = tryHard(url).json()
+
+    data_for_save = []
+
+    for month in data:
+        stats = month['ni'] + month['za'] + month['proti'] + month['kvorum']
+        not_member = month['total'] - stats
+        presence = float(stats-month['ni']) / stats if stats else 0
+        data_for_save.append({'date_ts': month['date_ts'],
+                              'presence': presence * 100,
+                              })
+
+    org = Organization.objects.get(id_parladata=party_id)
+    saved = saveOrAbortNew(model=PresenceThroughTime,
+                           organization=org,
+                           created_for=fdate,
+                           data=data_for_save)
+
+    return JsonResponse({'alliswell': True, "status": 'OK', "saved": saved})
+
+
+def getPresenceThroughTime(request, party_id, date_=None):
+    card = getPGCardModelNew(PresenceThroughTime,
+                             party_id,
+                             date_)
+    card_date = card.created_for.strftime(API_DATE_FORMAT)
+
+    out = {
+        'party': card.organization.getOrganizationData(),
+        'created_at': card.created_at.strftime(API_DATE_FORMAT),
+        'created_for': card_date,
+        'results': card.data
+    }
+
+    return JsonResponse(out, safe=False)

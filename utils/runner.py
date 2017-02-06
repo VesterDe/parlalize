@@ -10,7 +10,7 @@ from parlaposlanci.models import District
 from raven.contrib.django.raven_compat.models import client
 
 
-from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs
+from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers
 from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass
 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
@@ -24,6 +24,8 @@ from multiprocessing import Pool
 
 from parlalize.utils import tryHard, datesGenerator
 import json
+
+DZ = 95
 
 ## parlalize initial runner methods ##
 
@@ -171,15 +173,22 @@ def setAllSessions():
                                                          flat=True))
     for sessions in data:
         if sessions['id'] not in session_ids:
+            orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
             result = Session(name=sessions['name'],
                              gov_id=sessions['gov_id'],
                              start_time=sessions['start_time'],
                              end_time=sessions['end_time'],
                              classification=sessions['classification'],
                              id_parladata=sessions['id'],
-                             organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                              in_review=sessions['is_in_review']
-                             ).save()
+                             )
+            result.save()
+            orgs = list(orgs)
+            result.organizations.add(*orgs)
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    setListOfMembers(sessions['start_time'])
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -187,7 +196,6 @@ def setAllSessions():
                                           end_time=sessions['end_time'],
                                           classification=sessions['classification'],
                                           id_parladata=sessions['id'],
-                                          organization=Organization.objects.get(id_parladata=sessions['organization_id']),
                                           in_review=sessions['is_in_review']):
                 #save changes
                 session = Session.objects.get(id_parladata=sessions['id'])
@@ -196,8 +204,6 @@ def setAllSessions():
                 session.start_time = sessions['start_time']
                 session.end_time = sessions['end_time']
                 session.classification = sessions['classification']
-                session.id_parladata = sessions['id']
-                session.organization = Organization.objects.get(id_parladata=sessions['organization_id'])
                 session.in_review = sessions['is_in_review']
                 session.save()
 
@@ -756,15 +762,26 @@ def updateCacheforList(date_=None):
     return 1
 
 
-def updateLastDay():
+def updateLastDay(date_=None):
+    if not date_:
+        to_date = datetime.now()
+    else:
+        to_date = date_
     try:
         print "sessions"
         runSettersSessions()
     except:
         client.captureException()
 
-    lastVoteDay = Vote.objects.latest("created_for").created_for
-    lastSpeechDay = Speech.objects.latest("start_time").start_time
+    votes = Vote.objects.filter(session_date__lte=to_date)
+    lastVoteDay = votes.latest("created_for").created_for
+    speeches = Speech.objects.filter(session_date__lte=to_date)
+    lastSpeechDay = speeches.latest("start_time").start_time
+
+    runForTwoDays = True
+
+    if lastVoteDay.date() == lastSpeechDay.date():
+        runForTwoDays = False
 
     try:
         onDateMPCardRunner(lastVoteDay.strftime(API_DATE_FORMAT))
@@ -775,14 +792,16 @@ def updateLastDay():
     except:
         client.captureException()
 
-    try:
-        onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
-    except:
-        client.captureException()
-    try:
-        onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
-    except:
-        client.captureException()
+    # if last vote and speech isn't in the same day
+    if runForTwoDays:
+        try:
+            onDateMPCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+        except:
+            client.captureException()
+        try:
+            onDatePGCardRunner(lastSpeechDay.strftime(API_DATE_FORMAT))
+        except:
+            client.captureException()
 
     return 1
 
@@ -1038,7 +1057,7 @@ def morningCash():
     vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []
     for ses in session:
-        if ses['organization_id'] == 95:
+        if ses['organization_id'] == DZ:
             sessionDZ.append(ses['id'])
 
     for url in allUrls:
@@ -1185,6 +1204,8 @@ def updatePagesS(ses_list=None):
 
 
 def fastUpdate(date_=None):
+    new_redna_seja = []
+
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
     update_dates = []
     update_dates.append(Session.objects.latest('updated_at').updated_at)
@@ -1228,7 +1249,7 @@ def fastUpdate(date_=None):
 
     # sessions
     for sessions in data['sessions']:
-        org = Organization.objects.get(id_parladata=sessions['organization_id'])
+        orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
         if sessions['id'] not in session_ids:
             result = Session(name=sessions['name'],
                              gov_id=sessions['gov_id'],
@@ -1238,7 +1259,14 @@ def fastUpdate(date_=None):
                              id_parladata=sessions['id'],
                              organization=org,
                              in_review=sessions['is_in_review']
-                             ).save()
+                             )
+            result.save()
+            orgs = list(orgs)
+            result.organizations.add(*orgs)
+            if sessions['organization_id'] == DZ:
+                if 'redna seja' in sessions['name'].lower():
+                    # call method for create new list of members
+                    new_redna_seja.append(sessions)
         else:
             if not Session.objects.filter(name=sessions['name'],
                                           gov_id=sessions['gov_id'],
@@ -1255,16 +1283,14 @@ def fastUpdate(date_=None):
                 session.start_time = sessions['start_time']
                 session.end_time = sessions['end_time']
                 session.classification = sessions['classification']
-                session.id_parladata = sessions['id']
-                session.organization = org
                 session.in_review = sessions['is_in_review']
                 session.save()
 
     # update speeches
-    existingISs = list(Speech.objects.all().values_list("id_parladata",
+    existingIDs = list(Speech.objects.all().values_list("id_parladata",
                                                         flat=True))
     for dic in data['speeches']:
-        if int(dic["id"]) not in existingISs:
+        if int(dic["id"]) not in existingIDs:
             print "adding speech"
             person = Person.objects.get(id_parladata=int(dic['speaker']))
             speech = Speech(person=person,
@@ -1344,3 +1370,16 @@ def fastUpdate(date_=None):
     updatePagesS(list(set(s_update)))
 
     client.captureMessage('End fastUpdate everything: ' + str(datetime.now()))
+
+    for session in new_redna_seja:
+        # run cards
+        client.captureMessage('New redna seja: ' + session.name + ' Start creating cards')
+        updateLastDay(session.date)
+        setListOfMembers(sessions['start_time'])
+        client.captureMessage('New P and PG cards was created.')
+
+
+def setListOfMembers(date_time):
+    start_date = datetime.strptime(date_time, "%Y-%m-%dT%X")
+    start_date = start_date - timedelta(days=1)
+    setListOfMembersTickers(None, start_time.strftime(API_DATE_FORMAT))

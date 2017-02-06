@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from django.http import JsonResponse
 from scipy.stats.stats import pearsonr
+from scipy.stats import rankdata
 from scipy.spatial.distance import euclidean
 from datetime import date, datetime, timedelta
 from django.core.cache import cache
@@ -1508,30 +1509,6 @@ def getCompass(request, date_=None): # TODO make propper setters and getters
                          "data": data}, 
                         safe=False)
 
-def setTaggedBallots(request, person_id):
-
-    person = Person.objects.get(id_parladata=int(person_id))
-    data = tryHard(API_URL + '/getTaggedVotes/' + str(person_id)).json()
-
-    tagged_ballots = TaggedBallots(person=person, data=data)
-    tagged_ballots.save()
-
-    return HttpResponse('All iz well')
-
-def getTaggedBallots_(request, person_id, date=None):
-
-    card = getPersonCardModel(TaggedBallots, person_id, date)
-    static = getPersonCardModelNew(MPStaticPL, person_id, date)
-
-    out = {
-        'person': getPersonData(person_id, date),
-        'created_at': card.created_at.strftime(API_DATE_FORMAT),
-        'created_for': card.created_for.strftime(API_DATE_FORMAT),
-        'ballots': card.data
-    }
-
-    return JsonResponse(out, safe=False)
-
 
 def setMembershipsOfMember(request, person_id, date=None):
     if date:
@@ -1570,31 +1547,39 @@ def getTaggedBallots(request, person_id, date_=None):
     else:
         date_of = datetime.now().date()
     out = []
-    ballots = Ballot.objects.filter(person__id_parladata=person_id, start_time__lte=date_of)
-    created_at = ballots.latest("created_at").created_at
-    ballots = [[ballot for ballot in ballots.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in ballots.order_by("start_time").datetimes('start_time', 'day')]
-    
+    ballots = Ballot.objects.filter(person__id_parladata=person_id,
+                                    start_time__lte=date_of)
+    if ballots:
+        created_at = ballots.latest('created_at').created_at
+    else:
+        created_at = datetime.now()
+    b_list = [[ballot for ballot in ballots.filter(start_time__range=[t_date,
+                                                                      t_date+timedelta(days=1)])]
+              for t_date in ballots.order_by('start_time').datetimes('start_time',
+                                                                     'day')]
+
     lastDay = None
-    for day in ballots:
-        dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "ballots":[]}
+    for day in b_list:
+        dayData = {'date': day[0].start_time.strftime(API_OUT_DATE_FORMAT),
+                   'ballots': []}
         lastDay = day[0].start_time.strftime(API_OUT_DATE_FORMAT)
         for ballot in day:
-            dayData["ballots"].append({
-                "motion": ballot.vote.motion,
-                "vote_id": ballot.vote.id_parladata,
-                "ballot_id": ballot.id_parladata,
-                "session_id": ballot.vote.session.id_parladata if ballot.vote.session else None,
-                "option": ballot.option,
-                "tags": ballot.vote.tags})
+            dayData['ballots'].append({
+                'motion': ballot.vote.motion,
+                'vote_id': ballot.vote.id_parladata,
+                'result': ballot.vote.result,
+                'ballot_id': ballot.id_parladata,
+                'session_id': ballot.vote.session.id_parladata if ballot.vote.session else None,
+                'option': ballot.option,
+                'tags': ballot.vote.tags})
         out.append(dayData)
 
-
-    tags = list(Tag.objects.all().values_list("name", flat=True))
-    result  = {
+    tags = list(Tag.objects.all().values_list('name', flat=True))
+    result = {
         'person': getPersonData(person_id, date_),
         'all_tags': tags,
         'created_at': created_at.strftime(API_OUT_DATE_FORMAT),
-        'created_for': lastDay,
+        'created_for': lastDay if lastDay else created_at.strftime(API_OUT_DATE_FORMAT),
         'results': list(reversed(out))
         }
     return JsonResponse(result, safe=False)
@@ -1845,3 +1830,247 @@ def setAllMPsTFIDFsFromSearch(request):
             return JsonResponse({'status': 'There is not data'})
     else:
         return JsonResponse({'status': 'It wasnt POST'})
+
+
+def setPresenceThroughTime(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, '%d.%m.%Y').date()
+    else:
+        fdate = datetime.now().date()
+
+    url = API_URL + '/getBallotsCounterOfPerson/' + person_id + '/' + fdate.strftime(API_DATE_FORMAT)
+    data = tryHard(url).json()
+
+    data_for_save = []
+
+    for month in data:
+        stats = month['ni'] + month['za'] + month['proti'] + month['kvorum']
+        not_member = month['total'] - stats
+        not_member = float(not_member) / month['total'] if not_member else 0
+        presence = float(stats-month['ni']) / month['total'] if stats else 0
+        data_for_save.append({'date_ts': month['date_ts'],
+                              'presence': presence * 100,
+                              'not_member': not_member * 100,
+                              'vote_count': month['total']})
+
+    saved = saveOrAbortNew(model=PresenceThroughTime,
+                           person=Person.objects.get(id_parladata=person_id),
+                           created_for=fdate,
+                           data=data_for_save)
+
+    return JsonResponse({'alliswell': True, "status": 'OK', "saved": saved})
+
+
+def getPresenceThroughTime(request, person_id, date_=None):
+    card = getPersonCardModelNew(PresenceThroughTime,
+                                 person_id,
+                                 date_)
+    card_date = card.created_for.strftime(API_DATE_FORMAT)
+
+    out = {
+        'person': getPersonData(person_id, card_date),
+        'created_at': card.created_at.strftime(API_DATE_FORMAT),
+        'created_for': card_date,
+        'results': card.data
+    }
+
+    return JsonResponse(out, safe=False)
+
+
+def setListOfMembersTickers(request, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+
+    mps = tryHard(API_URL+'/getMPs/'+date_).json()
+
+    prevCard = getListOfMembersTickers(request, (date_of-timedelta(days=1)).strftime(API_DATE_FORMAT)).content
+    prevData = json.loads(prevCard)['data']
+
+    rank_data = {'presence_sessions': [],
+                 'presence_votes': [],
+                 'vocabulary_size': [],
+                 'spoken_words': [],
+                 'speeches_per_session': [],
+                 'number_of_questions': [],
+                 'privzdignjeno': [],
+                 'preprosto': [],
+                 'problematicno': [],
+                 }
+
+    data = []
+    for mp in mps:
+        person_obj = {}
+        person_obj['results'] = {}
+        person_id = mp['id']
+        person_obj['person'] = getPersonData(person_id, date_)
+
+        try:
+            value = getPersonCardModelNew(Presence,
+                                          person_id,
+                                          date_).person_value_sessions
+        except:
+            value = 0
+        person_obj['results']['presence_sessions'] = {}
+        person_obj['results']['presence_sessions']['score'] = value
+        rank_data['presence_sessions'].append(value)
+
+        try:
+            value = getPersonCardModelNew(Presence,
+                                          person_id,
+                                          date_).person_value_votes
+        except:
+            value = 0
+        person_obj['results']['presence_votes'] = {}
+        person_obj['results']['presence_votes']['score'] = value
+        rank_data['presence_votes'].append(value)
+
+        try:
+            value = getPersonCardModelNew(VocabularySize,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['vocabulary_size'] = {}
+        person_obj['results']['vocabulary_size']['score'] = value
+        rank_data['vocabulary_size'].append(value)
+
+        try:
+            value = getPersonCardModelNew(SpokenWords,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['spoken_words'] = {}
+        person_obj['results']['spoken_words']['score'] = value
+        rank_data['spoken_words'].append(value)
+
+        try:
+            value = getPersonCardModelNew(AverageNumberOfSpeechesPerSession,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['speeches_per_session'] = {}
+        person_obj['results']['speeches_per_session']['score'] = value
+        rank_data['speeches_per_session'].append(value)
+
+        try:
+            value = getPersonCardModelNew(NumberOfQuestions,
+                                          person_id,
+                                          date_).score
+        except:
+            value = 0
+        person_obj['results']['number_of_questions'] = {}
+        person_obj['results']['number_of_questions']['score'] = value
+        rank_data['number_of_questions'].append(value)
+
+        try:
+            styleScores = getPersonCardModelNew(StyleScores,
+                                                int(person_id),
+                                                date_)
+        except:
+            styleScores = None
+
+        privzdignjeno = 0
+        problematicno = 0
+        preprosto = 0
+        try:
+            if (styleScores.privzdignjeno != 0 and
+               styleScores.privzdignjeno_average != 0):
+                privzdignjeno = styleScores.privzdignjeno / styleScores.privzdignjeno_average
+
+            if (styleScores.problematicno != 0 and
+               styleScores.problematicno_average != 0):
+                problematicno = styleScores.problematicno / styleScores.problematicno_average
+
+            if (styleScores.preprosto != 0 and
+               styleScores.preprosto_average != 0):
+                preprosto = styleScores.preprosto / styleScores.preprosto_average
+        except:
+            preprosto = 0
+            privzdignjeno = 0
+            problematicno = 0
+
+        person_obj['results']['privzdignjeno'] = {}
+        person_obj['results']['privzdignjeno']['score'] = privzdignjeno
+        rank_data['privzdignjeno'].append(value)
+
+        person_obj['results']['preprosto'] = {}
+        person_obj['results']['preprosto']['score'] = preprosto
+        rank_data['preprosto'].append(value)
+
+        person_obj['results']['problematicno'] = {}
+        person_obj['results']['problematicno']['score'] = problematicno
+        rank_data['problematicno'].append(value)
+
+        data.append(person_obj)
+
+    ranking = {}
+    for key in rank_data.keys():
+        ranks = rank_data[key]
+        inverse = len(ranks) + 1
+        ranking[key] = inverse - rankdata(ranks, method='max').astype(int)
+
+    print ranking
+
+    # set rankings to persons data
+    for idx, cPerson in enumerate(data):
+        # get persons data in previous list
+        is_prev = True
+        if prevData:
+            prevPerson = prevData[idx]
+            if prevPerson['person']['id'] == cPerson['person']['id']:
+                pass
+            else:
+                # if person isn't in the same place in the list
+                prevPerson = None
+                for person in prevData:
+                    if person['person']['id'] == cPerson['person']['id']:
+                        prevPerson = person
+                        continue
+                # if person isn't member in the previous list
+                if not prevPerson:
+                    is_prev = False
+        else:
+            is_prev = False
+        for key in rank_data.keys():
+            cPerson['results'][key]['rank'] = ranking[key][idx]
+            if is_prev:
+                prevSocre = prevPerson['results'][key]['score']
+                currentScore = cPerson['results'][key]['score']
+                diff = currentScore - prevSocre
+                cPerson['results'][key]['diff'] = diff
+            else:
+                cPerson['results'][key]['diff'] = 0
+
+    data = sorted(data, key=lambda k: k['person']['name'])
+
+    MembersList(created_for=date_of,
+                data=data).save()
+    return JsonResponse(data, safe=False)
+
+
+def getListOfMembersTickers(request, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+    lists = MembersList.objects.filter(created_for__lte=date_of)
+    if not lists:
+        return JsonResponse({'created_at': date_,
+                             'created_for': date_,
+                             'data': []},
+                            safe=False)
+    last_day = lists.latest('created_for').created_for
+    cards = MembersList.objects.filter(created_for=last_day)
+    card = cards.latest('created_at')
+    return JsonResponse({'created_at': card.created_at,
+                         'created_for': card.created_for,
+                         'data': card.data,
+                         'districts': [{dist.id_parladata: dist.name}
+                                       for dist in District.objects.all()]},
+                        safe=False)

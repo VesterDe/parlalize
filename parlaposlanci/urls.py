@@ -39,8 +39,6 @@ urlpatterns = patterns(
     url(r'^setCompass/(?P<date_>[\w].+)', setCompass),
     url(r'^setCompass', setCompass),
 
-    url(r'^setTaggedBallots/(?P<person_id>\d+)', setTaggedBallots),
-
     url(r'^setMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+)', setMembershipsOfMember),
     url(r'^setMembershipsOfMember/(?P<person_id>\d+)', setMembershipsOfMember),
 
@@ -49,6 +47,10 @@ urlpatterns = patterns(
 
     url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
     url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
+
+    url(r'^setListOfMembersTickers/(?P<date_>[\w].+)', setListOfMembersTickers),
+    url(r'^setListOfMembersTickers/', setListOfMembersTickers),
+    
 
 
     ####################################################################################
@@ -96,7 +98,15 @@ urlpatterns = patterns(
 
     url(r'^getQuestions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getQuestions),
     url(r'^getQuestions/(?P<person_id>\d+)', getQuestions),
-    
+
+    url(r'^setPresenceThroughTime/(?P<person_id>\d+)/(?P<date_>[\w].+)', setPresenceThroughTime),
+    url(r'^setPresenceThroughTime/(?P<person_id>\d+)', setPresenceThroughTime),
+
+    url(r'^getPresenceThroughTime/(?P<person_id>\d+)/(?P<date_>[\w].+)', getPresenceThroughTime),
+    url(r'^getPresenceThroughTime/(?P<person_id>\d+)', getPresenceThroughTime),
+
+    url(r'^getListOfMembersTickers/(?P<date_>[\w].+)', getListOfMembersTickers),
+    url(r'^getListOfMembersTickers/', getListOfMembersTickers),
 
     url(r'^getMPsIDs', getMPsIDs),
 

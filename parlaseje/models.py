@@ -49,8 +49,12 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
 
     organization = models.ForeignKey('parlaskupine.Organization',
                                      blank=True, null=True,
-                                     related_name='organization',
+                                     related_name='session',
                                      help_text='The organization in session')
+
+    organizations = models.ManyToManyField('parlaskupine.Organization',
+                                           related_name='sessions',
+                                           help_text='The organizations in session')
 
     classification = models.CharField(_('classification'),
                                       max_length=128,
@@ -58,30 +62,35 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                                       help_text='Session classification')
 
     actived = models.CharField(_('actived'),
-                            null=True,
-                            blank=True,
-                            max_length=128,
-                            help_text=_('Yes if PG is actived or no if it is not'))
+                               null=True,
+                               blank=True,
+                               max_length=128,
+                               help_text=_('Yes if PG is actived or no if it is not'))
 
     classification = models.CharField(_('classification'),
                                       max_length=128,
                                       blank=True, null=True,
                                       help_text=_('An organization category, e.g. committee'))
 
-    gov_id = models.TextField(blank=True, null=True, help_text='Gov website ID.')
+    gov_id = models.TextField(blank=True,
+                              null=True,
+                              help_text='Gov website ID.')
 
-    in_review = models.BooleanField(default=False, help_text='Is session in review?')
-
+    in_review = models.BooleanField(default=False,
+                                    help_text='Is session in review?')
 
     def __str__(self):
         return self.name
 
     def getSessionData(self):
+        orgs_data = [org.getOrganizationData()
+                     for org
+                     in self.organizations.all()]
         return {'name': self.name,
                 'date': self.start_time.strftime(API_OUT_DATE_FORMAT),
                 'date_ts': self.start_time,
                 'id': self.id_parladata,
-                'org': self.organization.getOrganizationData(),
+                'orgs': orgs_data,
                 'in_review': self.in_review}
 
 
@@ -182,31 +191,36 @@ class Vote(Timestampable, models.Model):
                                 blank=True, null=True,
                                 related_name='in_session',
                                 help_text=_('Session '))
-
     motion = models.TextField(blank=True,
                               null=True,
                               help_text='The motion for which the vote took place')
+    tags = JSONField(blank=True,
+                     null=True)
 
-    tags = JSONField(blank=True, null=True)
-
-    votes_for = models.IntegerField(blank=True, null=True,
+    votes_for = models.IntegerField(blank=True,
+                                    null=True,
                                     help_text='Number of votes for')
 
-    against = models.IntegerField(blank=True, null=True,
+    against = models.IntegerField(blank=True,
+                                  null=True,
                                   help_text='Number votes againt')
 
-    abstain = models.IntegerField(blank=True, null=True,
+    abstain = models.IntegerField(blank=True,
+                                  null=True,
                                   help_text='Number votes abstain')
 
-    not_present = models.IntegerField(blank=True, null=True,
+    not_present = models.IntegerField(blank=True,
+                                      null=True,
                                       help_text='Number of MPs that warent on the session')
-
-    result = models.NullBooleanField(blank=True, null=True,
-                              default=False,
-                              help_text='The result of the vote')
-
+    result = models.NullBooleanField(blank=True,
+                                     null=True,
+                                     default=False,
+                                     help_text='The result of the vote')
     id_parladata = models.IntegerField(_('parladata id'),
-                            blank=True, null=True, help_text=_('id parladata'))
+                                       blank=True,
+                                       null=True,
+                                       help_text=_('id parladata'))
+    document_url = JSONField(blank=True, null=True)
 
 
 class Vote_graph(Timestampable, models.Model):

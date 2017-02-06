@@ -126,32 +126,43 @@ def setMotionOfSession(request, id_se):
                 kvorum = kvorum + 1
             if vote['option'] == str('ni'):
                 not_present = not_present + 1
+        result = mot['result']
+        if not str(result).strip().isdigit():
+            result = resultOfMotion(yes,
+                                    no,
+                                    kvorum,
+                                    not_present,
+                                    mot['id'],
+                                    session.start_time)
 
         if Vote.objects.filter(id_parladata=mot['vote_id']):
-            Vote.objects.filter(id_parladata=mot['vote_id']).update(created_for=session.start_time,
-                                                                    session=session,
-                                                                    motion=mot['text'],
-                                                                    tags=mot['tags'],
-                                                                    votes_for=yes,
-                                                                    against=no,
-                                                                    abstain=kvorum,
-                                                                    not_present=not_present,
-                                                                    result=resultOfMotion(yes, no, kvorum, not_present, mot['id'], session.start_time),
-                                                                    id_parladata=mot['vote_id'],
-                                                                    )
+            vote = Vote.objects.filter(id_parladata=mot['vote_id'])
+            vote.update(created_for=session.start_time,
+                        session=session,
+                        motion=mot['text'],
+                        tags=mot['tags'],
+                        votes_for=yes,
+                        against=no,
+                        abstain=kvorum,
+                        not_present=not_present,
+                        result=result,
+                        id_parladata=mot['vote_id'],
+                        document_url=mot['doc_url'],
+                        )
         else:
             result = saveOrAbortNew(model=Vote,
-                                       created_for=session.start_time,
-                                       session=session,
-                                       motion=mot['text'],
-                                       tags=mot['tags'],
-                                       votes_for=yes,
-                                       against=no,
-                                       abstain=kvorum,
-                                       not_present=not_present,
-                                       result=resultOfMotion(yes, no, kvorum, not_present, mot['id'], session.start_time),
-                                       id_parladata=mot['vote_id'],
-                                       )
+                                    created_for=session.start_time,
+                                    session=session,
+                                    motion=mot['text'],
+                                    tags=mot['tags'],
+                                    votes_for=yes,
+                                    against=no,
+                                    abstain=kvorum,
+                                    not_present=not_present,
+                                    result=result,
+                                    id_parladata=mot['vote_id'],
+                                    document_url=mot['doc_url']
+                                    )
 
         yes = 0
         no = 0
@@ -200,17 +211,27 @@ def setMotionOfSessionGraph(request, id_se):
                 npdic[vote['pg_id']] += 1
                 tabnp.append(vote['mp_id'])
 
+        result = mot['result']
+        if not str(result).strip().isdigit():
+            result = resultOfMotion(yes,
+                                    no,
+                                    kvorum,
+                                    not_present,
+                                    mot['id'],
+                                    session.start_time)
+        vote = Vote.objects.get(id_parladata=mot['vote_id'])
         if Vote_graph.objects.filter(vote__id_parladata=mot['vote_id']):
-            Vote_graph.objects.filter(vote__id_parladata=mot['vote_id']).update(
+            vote_graph = Vote_graph.objects.filter(vote__id_parladata=mot['vote_id'])
+            vote_graph.update(
                         session=session,
-                        vote=Vote.objects.get(id_parladata=mot['vote_id']),
+                        vote=vote,
                         created_for=session.start_time,
                         motion=mot['text'],
                         votes_for=yes,
                         against=no,
                         abstain=kvorum,
                         not_present=not_present,
-                        result=resultOfMotion(yes, no, kvorum, not_present, mot['id'], session.start_time),
+                        result=result,
                         pgs_yes=yesdic,
                         pgs_no=nodic,
                         pgs_np=npdic,
@@ -222,24 +243,24 @@ def setMotionOfSessionGraph(request, id_se):
                         )
         else:
             vg = saveOrAbortNew(model=Vote_graph,
-                         session=session,
-                         vote=Vote.objects.get(id_parladata=mot['vote_id']),
-                         created_for=session.start_time,
-                         motion=mot['text'],
-                         votes_for=yes,
-                         against=no,
-                         abstain=kvorum,
-                         not_present=not_present,
-                         result=resultOfMotion(yes, no, kvorum, not_present, mot['id'], session.start_time),
-                         pgs_yes=yesdic,
-                         pgs_no=nodic,
-                         pgs_np=npdic,
-                         pgs_kvor=kvordic,
-                         mp_yes=tabyes,
-                         mp_no=tabno,
-                         mp_np=tabnp,
-                         mp_kvor=tabkvo
-                         )
+                                session=session,
+                                vote=vote,
+                                created_for=session.start_time,
+                                motion=mot['text'],
+                                votes_for=yes,
+                                against=no,
+                                abstain=kvorum,
+                                not_present=not_present,
+                                result=result,
+                                pgs_yes=yesdic,
+                                pgs_no=nodic,
+                                pgs_np=npdic,
+                                pgs_kvor=kvordic,
+                                mp_yes=tabyes,
+                                mp_no=tabno,
+                                mp_np=tabnp,
+                                mp_kvor=tabkvo
+                                )
 
         yes = 0
         no = 0
@@ -255,41 +276,39 @@ def setMotionOfSessionGraph(request, id_se):
         npdic = defaultdict(int)
     return JsonResponse({'alliswell': True})
 
+
 def getMotionOfSession(request, id_se, date=False):
     out = []
     created_at = None
     if Session.objects.filter(id_parladata=int(id_se)):
         session = Session.objects.get(id_parladata=int(id_se))
         if Vote.objects.filter(session__id_parladata=id_se):
-            if date:
-                model = Vote.objects.filter(session__id_parladata=id_se, start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
-            else:
-                model = Vote.objects.filter(session__id_parladata=id_se)
+            model = Vote.objects.filter(session__id_parladata=id_se)
             dates = []
             for card in model:
                 print card
-                out.append({
-                'session': session.getSessionData(),
-                'results': {
-
-                        'motion_id': card.id_parladata,
-                        'text': card.motion,
-                        'votes_for': card.votes_for,
-                        'against': card.against,
-                        'abstain': card.abstain,
-                        'not_present':card.not_present,
-                        'result':card.result}
-                })
+                out.append({'session': session.getSessionData(),
+                            'results': {'motion_id': card.id_parladata,
+                                        'text': card.motion,
+                                        'votes_for': card.votes_for,
+                                        'against': card.against,
+                                        'abstain': card.abstain,
+                                        'not_present': card.not_present,
+                                        'result': card.result,
+                                        }
+                            })
                 dates.append(card.created_at)
             created_at = max(dates).strftime(API_DATE_FORMAT)
         else:
             out = []
+        ses_date = session.start_time.strftime(API_DATE_FORMAT)
         return JsonResponse({"results": out,
                              "session": session.getSessionData(),
-                             "created_for": session.start_time.strftime(API_DATE_FORMAT),
+                             "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
-        return JsonResponse({'result':'No session'})
+        return JsonResponse({'result': 'No session'})
+
 
 def getMotionOfSessionVotes(request, votes):
     out = []
@@ -388,18 +407,22 @@ def getMotionGraph(request, id_mo, date=False):
 
             mps = []
 
-        out_np = {'option':'not_present','total_votes': model[0].not_present, 'breakdown':option_np}
+        out_np = {'option': 'not_present',
+                  'total_votes': model[0].not_present,
+                  'breakdown': option_np}
 
-        out = {'id':id_mo,
+        out = {'id': id_mo,
                'created_for': model[0].vote.created_for.strftime(API_DATE_FORMAT),
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
-               'name': model[0].motion, 
-               'result':model[0].result, 
-               'required':'62', #TODO: naji pravo stvar za ta 62 :D
-               'all': {'kvorum': out_kvor, 
-                       'for': out_for, 
-                       'against': out_against, 
-                       'not_present': out_np}}
+               'name': model[0].motion,
+               'result': model[0].result,
+               'documents': model[0].vote.document_url,
+               'required': '62', #TODO: naji pravo stvar za ta 62 :D
+               'all': {'kvorum': out_kvor,
+                       'for': out_for,
+                       'against': out_against,
+                       'not_present': out_np},
+               'session': model[0].session.getSessionData()}
         return JsonResponse(out, safe=False)
     else:
         raise Http404("Nismo našli kartice")
@@ -678,12 +701,12 @@ def getSessionsByClassification(request):
     COUNCIL_ID = 9
     DZ = 95
     working_bodies = ["odbor", "komisija", "preiskovalna komisija"]
-    out = {"kolegij": [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=COUNCIL_ID).order_by("-start_time")],
-           "dz": [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=DZ).order_by("-start_time")],
+    out = {"kolegij": [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=COUNCIL_ID).order_by("-start_time")],
+           "dz": [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=DZ).order_by("-start_time")],
            "dt": [org.getOrganizationData() for org in Organization.objects.filter(classification__in=working_bodies)],}
 
     for dt in out["dt"]:
-        dt["sessions"] = [session.getSessionData() for session in Session.objects.filter(organization__id_parladata=dt["id"]).order_by("-start_time")]
+        dt["sessions"] = [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=dt["id"]).order_by("-start_time")]
         for session in dt["sessions"]:
             session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
                             "speeches": True if Speech.objects.filter(session__id_parladata=session["id"]) else False})
@@ -718,7 +741,7 @@ def getSessionsList(request, date_=None, force_render=False):
         orgs = Organization.objects.filter(Q(id_parladata=COUNCIL_ID) |
                                            Q(id_parladata=DZ) |
                                            Q(classification__in=working_bodies))
-        sessions = Session.objects.filter(organization__in=orgs)
+        sessions = Session.objects.filter(organizations__in=orgs)
         sessions = sessions.order_by("-start_time")
         out = {'sessions': [session.getSessionData() for session in sessions],
                'created_for': datetime.now().strftime(API_DATE_FORMAT),
