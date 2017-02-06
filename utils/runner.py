@@ -197,7 +197,7 @@ def setAllSessions():
                                           classification=sessions['classification'],
                                           id_parladata=sessions['id'],
                                           in_review=sessions['is_in_review']):
-                #save changes
+                # save changes
                 session = Session.objects.get(id_parladata=sessions['id'])
                 session.name = sessions['name']
                 session.gov_id = sessions['gov_id']
@@ -206,6 +206,8 @@ def setAllSessions():
                 session.classification = sessions['classification']
                 session.in_review = sessions['is_in_review']
                 session.save()
+                orgs = list(orgs)
+                session.organizations.add(*orgs)
 
     return 1
 
