@@ -1207,18 +1207,27 @@ def fastUpdate(date_=None):
     new_redna_seja = []
 
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
-    update_dates = []
-    update_dates.append(Session.objects.latest('updated_at').updated_at)
-    update_dates.append(Vote.objects.latest('updated_at').updated_at)
-    update_dates.append(Speech.objects.latest('updated_at').updated_at)
-    update_dates.append(Person.objects.latest('updated_at').updated_at)
 
-    update_from_date = max(update_dates).strftime(API_DATE_FORMAT + '_%H:%M')
+    dates = []
 
     if date_:
-        update_from_date = date_ + "_00:00"
+        dates = [date_ + "_00:00" for i in range(5)]
+    else:
+        # get dates of last update
+        dates.append(Person.objects.latest('updated_at').updated_at)
+        dates.append(Session.objects.latest('updated_at').updated_at)
+        dates.append(Speech.objects.latest('updated_at').updated_at)
+        dates.append(Ballot.objects.latest('updated_at').updated_at)
+        dates.append(Question.objects.latest('updated_at').updated_at)
 
-    data = tryHard(API_URL + '/getAllChangesAfter/'+update_from_date).json()
+    # prepare url
+    url = API_URL + '/getAllChangesAfter/'
+    for sDate in dates:
+        url += sDate.strftime(API_DATE_FORMAT + '_%H:%M') + '/'
+
+    print url
+
+    data = tryHard(url[:-1]).json()
 
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
@@ -1285,6 +1294,8 @@ def fastUpdate(date_=None):
                 session.classification = sessions['classification']
                 session.in_review = sessions['is_in_review']
                 session.save()
+                orgs = list(orgs)
+                session.organizations.add(*orgs)
 
     # update speeches
     existingIDs = list(Speech.objects.all().values_list("id_parladata",
