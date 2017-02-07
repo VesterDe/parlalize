@@ -907,7 +907,7 @@ def getTaggedBallots(request, pg_id, date_=None):
                 dayData['ballots'].append({
                     'motion': vote_balots[0].vote.motion,
                     'vote_id': vote_balots[0].vote.id_parladata,
-                    'result': ballot.vote.result,
+                    'result': vote_balots[0].vote.result,
                     'session_id': vote_balots[0].vote.session.id_parladata if vote_balots[0].vote.session else None,
                     'option': max(counter, key=counter.get),
                     'tags': vote_balots[0].vote.tags})
