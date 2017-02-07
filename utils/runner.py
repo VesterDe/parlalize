@@ -172,47 +172,47 @@ def setAllSessions():
     data = tryHard(API_URL + '/getSessions/').json()
     session_ids = list(Session.objects.all().values_list("id_parladata",
                                                          flat=True))
-    for sessions in data:
-        orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
-        if sessions['id'] not in session_ids:
-            result = Session(name=sessions['name'],
-                             gov_id=sessions['gov_id'],
-                             start_time=sessions['start_time'],
-                             end_time=sessions['end_time'],
-                             classification=sessions['classification'],
-                             id_parladata=sessions['id'],
-                             in_review=sessions['is_in_review'],
+    for session in data:
+        orgs = Organization.objects.filter(id_parladata__in=session['organizations_id'])
+        if session['id'] not in session_ids:
+            result = Session(name=session['name'],
+                             gov_id=session['gov_id'],
+                             start_time=session['start_time'],
+                             end_time=session['end_time'],
+                             classification=session['classification'],
+                             id_parladata=session['id'],
+                             in_review=session['is_in_review'],
                              organization=orgs[0]
                              )
             result.save()
             orgs = list(orgs)
             result.organizations.add(*orgs)
-            if sessions['id'] == DZ:
-                if 'redna seja' in sessions['name'].lower():
+            if session['id'] == DZ:
+                if 'redna seja' in session['name'].lower():
                     # call method for create new list of members
-                    # setListOfMembers(sessions['start_time'])
+                    # setListOfMembers(session['start_time'])
                     pass
         else:
-            if not Session.objects.filter(name=sessions['name'],
-                                          gov_id=sessions['gov_id'],
-                                          start_time=sessions['start_time'],
-                                          end_time=sessions['end_time'],
-                                          classification=sessions['classification'],
-                                          id_parladata=sessions['id'],
-                                          in_review=sessions['is_in_review'],
-                                          organization=orgs[0]):
+            if not Session.objects.filter(name=session['name'],
+                                          gov_id=session['gov_id'],
+                                          start_time=session['start_time'],
+                                          end_time=session['end_time'],
+                                          classification=session['classification'],
+                                          id_parladata=session['id'],
+                                          in_review=session['is_in_review'],
+                                          organization=orgs[0]).exclude(organizations=None):
                 # save changes
-                session = Session.objects.get(id_parladata=sessions['id'])
-                session.name = sessions['name']
-                session.gov_id = sessions['gov_id']
-                session.start_time = sessions['start_time']
-                session.end_time = sessions['end_time']
-                session.classification = sessions['classification']
-                session.in_review = sessions['is_in_review']
-                session.organization = orgs[0]
-                session.save()
+                session2 = Session.objects.get(id_parladata=session['id'])
+                session2.name = session['name']
+                session2.gov_id = session['gov_id']
+                session2.start_time = session['start_time']
+                session2.end_time = session['end_time']
+                session2.classification = session['classification']
+                session2.in_review = session['is_in_review']
+                session2.organization = orgs[0]
+                session2.save()
                 orgs = list(orgs)
-                session.organizations.add(*orgs)
+                session2.organizations.add(*orgs)
 
     return 1
 
