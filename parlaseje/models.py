@@ -82,7 +82,7 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
     def __str__(self):
         return self.name
 
-    def getSessionData(self):
+    def getSessionDataMultipleOrgs(self):
         orgs_data = [org.getOrganizationData()
                      for org
                      in self.organizations.all()]
@@ -91,6 +91,14 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                 'date_ts': self.start_time,
                 'id': self.id_parladata,
                 'orgs': orgs_data,
+                'in_review': self.in_review}
+
+    def getSessionData(self):
+        return {'name': self.name,
+                'date': self.start_time.strftime(API_OUT_DATE_FORMAT),
+                'date_ts': self.start_time,
+                'id': self.id_parladata,
+                'org': self.organization.getOrganizationData(),
                 'in_review': self.in_review}
 
 
