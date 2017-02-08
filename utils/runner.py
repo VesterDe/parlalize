@@ -25,6 +25,8 @@ from multiprocessing import Pool
 from parlalize.utils import tryHard, datesGenerator
 import json
 
+from time import time
+
 DZ = 95
 
 ## parlalize initial runner methods ##
@@ -1211,11 +1213,16 @@ def updatePagesS(ses_list=None):
 
 
 def fastUpdate(date_=None):
+    start_time = time()
     new_redna_seja = []
 
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
 
     dates = []
+
+    lastBallotTime = Ballot.objects.latest('updated_at').updated_at
+    lastVoteTime = Vote.objects.latest('updated_at').updated_at
+    lastSpeechTime = Speech.objects.latest('updated_at').updated_at
 
     if date_:
         dates = [date_ + "_00:00" for i in range(5)]
@@ -1223,8 +1230,8 @@ def fastUpdate(date_=None):
         # get dates of last update
         dates.append(Person.objects.latest('updated_at').updated_at)
         dates.append(Session.objects.latest('updated_at').updated_at)
-        dates.append(Speech.objects.latest('updated_at').updated_at)
-        dates.append(Ballot.objects.latest('updated_at').updated_at)
+        dates.append(lastSpeechTime)
+        dates.append(lastBallotTime)
         dates.append(Question.objects.latest('updated_at').updated_at)
 
     # prepare url
@@ -1362,33 +1369,36 @@ def fastUpdate(date_=None):
     print "update person status"
     updatePersonStatus()
 
-    client.captureMessage('End fast update and start update sessions cards at: ' + str(datetime.now()))
+    t_delta = time() - start_time
+    client.captureMessage('End fast update (' + str(t_delta) + ' s) and start update sessions cards at: ' + str(datetime.now()))
 
     print "sessions"
     s_update = []
-    sessions = Session.objects.filter(updated_at__gte=datetime.now().date)
-    s_update += list(sessions.values_list("id_parladata", flat=True))
-    votes = Vote.objects.filter(updated_at__gte=datetime.now().date)
+    #sessions = Session.objects.filter(updated_at__gte=datetime.now().date)
+    #s_update += list(sessions.values_list("id_parladata", flat=True))
+    votes = Vote.objects.filter(updated_at__gte=lastVoteTime)
     s_update += list(votes.values_list("session__id_parladata", flat=True))
-    ballots = Ballot.objects.filter(updated_at__gte=datetime.now().date)
+    ballots = Ballot.objects.filter(updated_at__gte=lastBallotTime)
     s_update += list(ballots.values_list("session__id_parladata", flat=True))
-    speeches = Speech.objects.filter(updated_at__gte=datetime.now().date)
-    s_update += list(speeches.values_list("session__id_parladata", flat=True))
 
     runSettersSessions(sessions_ids=list(set(s_update)))
 
-    client.captureMessage('End creating cards and start creating recache: ' + str(datetime.now()))
+    t_delta = time() - start_time
+    client.captureMessage('End creating cards (' + str(t_delta) + ' s) and start creating recache: ' + str(datetime.now()))
 
-    # updatePages()
+    # recache
 
-    # updatePagesPG()
+    # add sesessions of updated speeches to recache
+    speeches = Speech.objects.filter(updated_at__gte=lastSpeechTime)
+    s_update += list(speeches.values_list("session__id_parladata", flat=True))
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
     getSessionsList(None, date_, force_render=True)
 
     updatePagesS(list(set(s_update)))
 
-    client.captureMessage('End fastUpdate everything: ' + str(datetime.now()))
+    t_delta = time() - start_time
+    client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
 
     for session in new_redna_seja:
         # run cards
