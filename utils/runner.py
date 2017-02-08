@@ -1274,7 +1274,7 @@ def fastUpdate(date_=None):
     for sessions in data['sessions']:
         orgs = Organization.objects.filter(id_parladata__in=sessions['organizations_id'])
         if not orgs:
-            orgs = Organization.objects.filter(id_parladata=sessions['organizations_id'])
+            orgs = Organization.objects.filter(id_parladata=sessions['organization_id'])
         if sessions['id'] not in session_ids:
             result = Session(name=sessions['name'],
                              gov_id=sessions['gov_id'],
