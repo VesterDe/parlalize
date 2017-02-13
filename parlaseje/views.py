@@ -550,7 +550,8 @@ def getPresenceOfPG(request, id_se, date=False):
         if date:
             presence = PresenceOfPG.objects.get(session__id_parladata=id_se, start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
         else:
-            presence = PresenceOfPG.objects.get(session__id_parladata=id_se)
+            presence = PresenceOfPG.objects.filter(session__id_parladata=id_se)
+            presence = presence.latest("created_at")
 
             for p in presence.presence[0]:
                 results.append({"organization": Organization.objects.get(id_parladata=p).getOrganizationData(), "percent": presence.presence[0][p]})
