@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#flush solr
-curl http://parlameter.si:8983/solr/knedl/update -H "Content-Type: text/xml" --data-binary '<delete><query>*:*</query></delete>'
-curl http://parlameter.si:8983/solr/knedl/update -H "Content-Type: text/xml" --data-binary '<commit />'
+#flush solr We don't need it anymore 
+#curl http://parlameter.si:8983/solr/knedl/update -H "Content-Type: text/xml" --data-binary '<delete><query>*:*</query></delete>'
+#curl http://parlameter.si:8983/solr/knedl/update -H "Content-Type: text/xml" --data-binary '<commit />'
 
 #export speeches to solr
 cd "/home/parladaddy/parladata"
