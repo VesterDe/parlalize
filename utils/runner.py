@@ -1415,6 +1415,10 @@ def fastUpdate(date_=None):
 
 
 def setListOfMembers(date_time):
+    """
+    TODO: naredi da se posle mejl ko se doda nova redna seja.
+    Ker je potrebno pognat se style score na searchu.
+    """
     start_date = datetime.strptime(date_time, "%Y-%m-%dT%X")
     start_date = start_date - timedelta(days=1)
     setListOfMembersTickers(None, start_time.strftime(API_DATE_FORMAT))
