@@ -756,13 +756,19 @@ def update():
 
 
 def updateCacheforList(date_=None):
-    # refresh cache
+    """
+    Method which runs once per day (cron job)
+    for recache cache with short lifetime
+    """
     try:
         if not date_:
             date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
         getListOfMembers(None, date_, force_render=True)
         getListOfPGs(None, date_, force_render=True)
         getSessionsList(None, date_, force_render=True)
+
+        # store static data for search
+        getAllStaticData(None, force_render=True)
     except:
         client.captureException()
 
@@ -1363,13 +1369,11 @@ def fastUpdate(date_=None):
 
     updateTags()
 
-    print "mp static"
-    updateMPStatic()
-
-    getAllStaticData(None, force_render=True)
-
-    print "update person status"
-    updatePersonStatus()
+    if data['persons']:
+        print "mp static"
+        updateMPStatic()
+        print "update person status"
+        updatePersonStatus()
 
     t_delta = time() - start_time
     client.captureMessage('End fast update (' + str(t_delta) + ' s) and start update sessions cards at: ' + str(datetime.now()))

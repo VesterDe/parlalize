@@ -48,11 +48,6 @@ urlpatterns = patterns(
     url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
     url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
 
-    url(r'^setListOfMembersTickers/(?P<date_>[\w].+)', setListOfMembersTickers),
-    url(r'^setListOfMembersTickers/', setListOfMembersTickers),
-    
-
-
     ####################################################################################
 
     # getters
