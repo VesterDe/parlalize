@@ -748,6 +748,7 @@ def getSessionsList(request, date_=None, force_render=False):
                'created_at': datetime.now().strftime(API_DATE_FORMAT)}
 
         newList = []
+        sessionsIds = []
         for session in out["sessions"]:
             activity = Activity.objects.filter(session__id_parladata=session['id'])
             if activity:
@@ -758,8 +759,11 @@ def getSessionsList(request, date_=None, force_render=False):
                 continue
             session.update({"updated_at": last_day.strftime(API_DATE_FORMAT)})
             session.update({"updated_at_ts": last_day})
-            # TODO zbrisi ta umazn fix ko se dodajo empty state-si
-            newList.append(session)
+            # joint sessions fix
+            if session['id'] not in sessionsIds:
+                # TODO zbrisi ta umazn fix ko se dodajo empty state-si
+                newList.append(session)
+                sessionsIds.append(session['id'])
         # TODO zbrisi ta umazn fix ko se dodajo empty state-si
         out["sessions"] = newList
         cache.set("sessions_list_" + key, out, 60 * 60 * 48)
