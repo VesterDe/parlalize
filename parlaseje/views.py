@@ -127,13 +127,6 @@ def setMotionOfSession(request, id_se):
             if vote['option'] == str('ni'):
                 not_present = not_present + 1
         result = mot['result']
-        if not str(result).strip().isdigit():
-            result = resultOfMotion(yes,
-                                    no,
-                                    kvorum,
-                                    not_present,
-                                    mot['id'],
-                                    session.start_time)
 
         if Vote.objects.filter(id_parladata=mot['vote_id']):
             vote = Vote.objects.filter(id_parladata=mot['vote_id'])
