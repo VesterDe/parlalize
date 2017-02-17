@@ -78,7 +78,7 @@ def updateOrganizations():
 
 
 def updateSpeeches():
-    data = tryHard(API_URL + '/getAllSpeeches').json()
+    data = tryHard(API_URL + '/getAllAllSpeeches').json()
     existingISs = list(Speech.objects.all().values_list("id_parladata",
                                                         flat=True))
     for dic in data:
@@ -98,6 +98,12 @@ def updateSpeeches():
                             valid_to=dic['valid_to'],
                             id_parladata=dic['id'])
             speech.save()
+        else:
+            print "update speech"
+            speech = Speech.objects.filter(id_parladata=dic["id"])
+            speech.update(content=dic['content'],
+                          valid_from=dic['valid_from'],
+                          valid_to=dic['valid_to'])
 
     # delete speeches which was deleted in parladata @dirty fix
     deleteUnconnectedSpeeches()
