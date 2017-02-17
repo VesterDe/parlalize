@@ -101,8 +101,7 @@ def updateSpeeches():
         else:
             print "update speech"
             speech = Speech.objects.filter(id_parladata=dic["id"])
-            speech.update(content=dic['content'],
-                          valid_from=dic['valid_from'],
+            speech.update(valid_from=dic['valid_from'],
                           valid_to=dic['valid_to'])
 
     # delete speeches which was deleted in parladata @dirty fix
