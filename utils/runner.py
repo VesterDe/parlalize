@@ -176,6 +176,8 @@ def setAllSessions():
                                                          flat=True))
     for session in data:
         orgs = Organization.objects.filter(id_parladata__in=session['organizations_id'])
+        if not orgs:
+            orgs = Organization.objects.filter(id_parladata=sessions['organization_id'])
         if session['id'] not in session_ids:
             result = Session(name=session['name'],
                              gov_id=session['gov_id'],
