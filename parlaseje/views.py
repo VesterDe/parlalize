@@ -54,7 +54,8 @@ def getSpeechesOfSession(request, session_id):
                "session": speech.session.getSessionData(),
                "quoted_text": None,
                "end_idx": None,
-               "start_idx": None}
+               "start_idx": None,
+               "quote_id": None}
 
         result = {
             'person': getPersonData(speech.person.id_parladata,
