@@ -205,13 +205,13 @@ def setMotionOfSessionGraph(request, id_se):
                 tabnp.append(vote['mp_id'])
 
         result = mot['result']
-        if not str(result).strip().isdigit():
-            result = resultOfMotion(yes,
-                                    no,
-                                    kvorum,
-                                    not_present,
-                                    mot['id'],
-                                    session.start_time)
+        # if not str(result).strip().isdigit():
+        #     result = resultOfMotion(yes,
+        #                             no,
+        #                             kvorum,
+        #                             not_present,
+        #                             mot['id'],
+        #                             session.start_time)
         vote = Vote.objects.get(id_parladata=mot['vote_id'])
         if Vote_graph.objects.filter(vote__id_parladata=mot['vote_id']):
             vote_graph = Vote_graph.objects.filter(vote__id_parladata=mot['vote_id'])
