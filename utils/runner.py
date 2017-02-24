@@ -1451,7 +1451,9 @@ def fastUpdate(date_=None):
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
     getSessionsList(None, date_, force_render=True)
+    print s_update
     if s_update:
+        print "recache"
         updatePagesS(list(set(s_update)))
 
     t_delta = time() - start_time
