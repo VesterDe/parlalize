@@ -1451,8 +1451,8 @@ def fastUpdate(date_=None):
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
     getSessionsList(None, date_, force_render=True)
-
-    updatePagesS(list(set(s_update)))
+    if s_update:
+        updatePagesS(list(set(s_update)))
 
     t_delta = time() - start_time
     client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
