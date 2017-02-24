@@ -1228,7 +1228,9 @@ def updatePagesS(ses_list=None):
 def fastUpdate(date_=None):
     start_time = time()
     new_redna_seja = []
-
+    lockFile = open('parser.lock', 'w+')
+    lockFile.write('LOCKED')
+    lockFile.close()
     client.captureMessage('Start fast update at: ' + str(datetime.now()))
 
     dates = []
@@ -1398,6 +1400,10 @@ def fastUpdate(date_=None):
 
     t_delta = time() - start_time
     client.captureMessage('End creating cards (' + str(t_delta) + ' s) and start creating recache: ' + str(datetime.now()))
+
+    lockFile = open('parser.lock', 'w+')
+    lockFile.write('UNLOCKED')
+    lockFile.close()
 
     # recache
 
