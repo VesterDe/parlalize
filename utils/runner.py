@@ -1428,12 +1428,13 @@ def fastUpdate(date_=None):
     s_update = []
     #sessions = Session.objects.filter(updated_at__gte=datetime.now().date)
     #s_update += list(sessions.values_list("id_parladata", flat=True))
-    votes = Vote.objects.filter(updated_at__gte=lastVoteTime)
+    votes = Vote.objects.filter(updated_at__gt=lastVoteTime)
     s_update += list(votes.values_list("session__id_parladata", flat=True))
-    ballots = Ballot.objects.filter(updated_at__gte=lastBallotTime)
-    s_update += list(ballots.values_list("session__id_parladata", flat=True))
+    ballots = Ballot.objects.filter(updated_at__gt=lastBallotTime)
+    s_update += list(ballots.values_list("vote__session__id_parladata", flat=True))
 
-    runSettersSessions(sessions_ids=list(set(s_update)))
+    if s_update:
+        runSettersSessions(sessions_ids=list(set(s_update)))
 
     t_delta = time() - start_time
     client.captureMessage('End creating cards (' + str(t_delta) + ' s) and start creating recache: ' + str(datetime.now()))
