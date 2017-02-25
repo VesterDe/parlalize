@@ -754,6 +754,16 @@ def getSessionsList(request, date_=None, force_render=False):
                 continue
             session.update({"updated_at": last_day.strftime(API_DATE_FORMAT)})
             session.update({"updated_at_ts": last_day})
+            if Vote.objects.filter(session__id_parladata=session["id"]):
+                is_vote = True
+            else:
+                is_vote = False
+            if Speech.objects.filter(session__id_parladata=session["id"]):
+                is_speech = True
+            else:
+                is_speech = False
+            session.update({"votes": is_vote,
+                            "speeches": is_speech})
             # joint sessions fix
             if session['id'] not in sessionsIds:
                 # TODO zbrisi ta umazn fix ko se dodajo empty state-si
