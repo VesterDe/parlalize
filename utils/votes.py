@@ -12,18 +12,18 @@ from parlaposlanci.models import Person, EqualVoters, LessEqualVoters, Presence
 from parlaskupine.models import Organization, MostMatchingThem, LessMatchingThem, DeviationInOrganization, PercentOFAttendedSession
 
 
-VOTE_MAP = {"za": 1,
-            "proti": -1,
-            "kvorum": 0,
-            "ni": 0,
-            "ni_poslanec": 0
+VOTE_MAP = {'za': 1,
+            'proti': -1,
+            'kvorum': 0,
+            'ni': 0,
+            'ni_poslanec': 0
             }
 
 
 class VotesAnalysis(object):
     def __init__(self, date_=None):
         self.debug = False
-        self.date_ = ""
+        self.date_ = ''
         self.api_url = None
         self.date_of = datetime.now()
         self.members = None
@@ -38,11 +38,11 @@ class VotesAnalysis(object):
         self.presencePGs = None
         self.pgs = None
 
-        print "getData"
+        print 'getData'
         self.prepareData()
 
         # analyse
-        print "analyse"
+        print 'analyse'
         self.presenceMPsSessions()
         self.presenceMPsVotes()
         self.presencePGsTogether()
@@ -134,7 +134,9 @@ class VotesAnalysis(object):
         """
         Analyse how equal are voters
         """
-        data2 = self.data[['voter', 'vote_id', 'logic']].pivot('voter', 'vote_id')
+        data2 = self.data[['voter',
+                           'vote_id',
+                           'logic']].pivot('voter', 'vote_id')
         data2 = data2.transpose().reset_index().iloc[:, 2:]
         zero_data = data2.fillna(0)
         distance = lambda column1, column2: pd.np.linalg.norm(column1 - column2)
@@ -237,7 +239,7 @@ class VotesAnalysis(object):
                             for m
                             in self.memsOfPGs[pg_key]
                             ]
-            print "pg", pg, len(self.memsOfPGs[str(pg)]), len(otherMembers)
+            print 'pg', pg, len(self.memsOfPGs[str(pg)]), len(otherMembers)
             otherMems = r[r.voter.isin(otherMembers)]
 
             # most equal
@@ -289,7 +291,7 @@ class VotesAnalysis(object):
             # deviation
             print thisPG
             dev_data = []
-            for idx in range(thisPG.count()["voter"]):
+            for idx in range(thisPG.count()['voter']):
                 dev_data.append({'id': thisPG.iloc[idx]['voter'],
                                  'ratio': thisPG.iloc[idx][pg]})
             result = saveOrAbortNew(model=DeviationInOrganization,
