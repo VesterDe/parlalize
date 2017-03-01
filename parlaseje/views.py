@@ -1,24 +1,18 @@
 # -*- coding: UTF-8 -*-
 from datetime import datetime
-
 from parlalize.utils import *
-import requests
 import json
 from django.http import JsonResponse
 from parlaseje.models import *
 from parlalize.settings import API_URL, API_DATE_FORMAT
 from parlaseje.utils import *
 from collections import defaultdict, Counter
-from math import fabs
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 import re
 from django.db.models import Q
 from django.core.cache import cache
-
 from parlalize.utils import tryHard
-
-# Create your views here.
 
 
 def getSpeech(request, speech_id):
@@ -105,15 +99,12 @@ def getSessionSpeeches(request, session_id):
 
 
 def setMotionOfSession(request, id_se):
-    motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
+    motion = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
     session = Session.objects.get(id_parladata=id_se)
-    tab = []
     yes = 0
     no = 0
     kvorum = 0
     not_present = 0
-    option = ""
-    tyes = []
     for mot in motion:
         url = API_URL + '/getVotesOfMotion/' + str(mot['vote_id']) + '/'
         votes = tryHard(url).json()
@@ -172,14 +163,12 @@ def setMotionOfSession(request, id_se):
 
 
 def setMotionOfSessionGraph(request, id_se):
-    motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
+    motion = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
     session = Session.objects.get(id_parladata=id_se)
-    tab = []
     yes = 0
     no = 0
     kvorum = 0
     not_present = 0
-    option = ""
     tabyes = []
     tabno = []
     tabkvo = []
@@ -188,9 +177,8 @@ def setMotionOfSessionGraph(request, id_se):
     nodic = defaultdict(int)
     kvordic = defaultdict(int)
     npdic = defaultdict(int)
-    tyes = []
     for mot in motion:
-        url = API_URL + '/getVotesOfMotion/'+str(mot['vote_id'])+'/'
+        url = API_URL + '/getVotesOfMotion/' + str(mot['vote_id']) + '/'
         votes = tryHard(url).json()
         for vote in votes:
             if vote['option'] == str('za'):
@@ -220,29 +208,27 @@ def setMotionOfSessionGraph(request, id_se):
                                     mot['id'],
                                     session.start_time)
         vote = Vote.objects.get(id_parladata=mot['vote_id'])
-        if Vote_graph.objects.filter(vote__id_parladata=mot['vote_id']):
-            vote_graph = Vote_graph.objects.filter(vote__id_parladata=mot['vote_id'])
-            vote_graph.update(
-                        session=session,
-                        vote=vote,
-                        created_for=session.start_time,
-                        motion=mot['text'],
-                        votes_for=yes,
-                        against=no,
-                        abstain=kvorum,
-                        not_present=not_present,
-                        result=result,
-                        pgs_yes=yesdic,
-                        pgs_no=nodic,
-                        pgs_np=npdic,
-                        pgs_kvor=kvordic,
-                        mp_yes=tabyes,
-                        mp_no=tabno,
-                        mp_np=tabnp,
-                        mp_kvor=tabkvo,
-                        )
+        if VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id']):
+            voteDetailed = VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id'])
+            voteDetailed.update(session=session,
+                                vote=vote,
+                                created_for=session.start_time,
+                                motion=mot['text'],
+                                otes_for=yes,
+                                against=no,
+                                abstain=kvorum,
+                                not_present=not_present,
+                                result=result,
+                                pgs_yes=yesdic,
+                                pgs_no=nodic,
+                                pgs_np=npdic,
+                                pgs_kvor=kvordic,
+                                mp_yes=tabyes,
+                                mp_no=tabno,
+                                mp_np=tabnp,
+                                mp_kvor=tabkvo)
         else:
-            vg = saveOrAbortNew(model=Vote_graph,
+            vg = saveOrAbortNew(model=VoteDetailed,
                                 session=session,
                                 vote=vote,
                                 created_for=session.start_time,
@@ -319,37 +305,34 @@ def getMotionOfSessionVotes(request, votes):
             out.append({
                 'created_for': vot.created_for,
                 'session': vot.session.getSessionData(),
-                'results': {
-
-                        'motion_id': vot.id_parladata,
-                        'text': vot.motion,
-                        'votes_for': vot.votes_for,
-                        'against': vot.against,
-                        'abstain': vot.abstain,
-                        'not_present':vot.not_present,
-                        'result':vot.result}
-                })
+                'results': {'motion_id': vot.id_parladata,
+                            'text': vot.motion,
+                            'votes_for': vot.votes_for,
+                            'against': vot.against,
+                            'abstain': vot.abstain,
+                            'not_present': vot.not_present,
+                            'result': vot.result}
+            })
         else:
             out.append({'Error': "No vote"})
             return JsonResponse(out, safe=False)
     return JsonResponse(out, safe=False)
 
+
 def getMotionGraph(request, id_mo, date=False):
     out = []
-    if Vote_graph.objects.filter(vote__id_parladata=id_mo):
+    if VoteDetailed.objects.filter(vote__id_parladata=id_mo):
         if date:
-            model = Vote_graph.objects.filter(vote__id_parladata=id_mo, start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
+            model = VoteDetailed.objects.filter(vote__id_parladata=id_mo,
+                                                start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
         else:
-            model = Vote_graph.objects.filter(vote__id_parladata=id_mo)
-
+            model = VoteDetailed.objects.filter(vote__id_parladata=id_mo)
 
         option_for = []
         option_kvor = []
         option_against = []
         option_np = []
-        breakdown = []
-        mps =[]
-
+        mps = []
 
         for pg in model[0].pgs_kvor:
             party = Organization.objects.get(id_parladata=pg).getOrganizationData()
@@ -364,7 +347,9 @@ def getMotionGraph(request, id_mo, date=False):
 
             mps = []
 
-        out_kvor = {'option':'kvorum','total_votes': model[0].abstain, 'breakdown':option_kvor}
+        out_kvor = {'option': 'kvorum',
+                    'total_votes': model[0].abstain,
+                    'breakdown': option_kvor}
 
         for pg in model[0].pgs_yes:
             party = Organization.objects.get(id_parladata=pg).getOrganizationData()
@@ -379,7 +364,9 @@ def getMotionGraph(request, id_mo, date=False):
 
             mps = []
 
-        out_for = {'option':'for','total_votes': model[0].votes_for, 'breakdown':option_for}
+        out_for = {'option': 'for',
+                   'total_votes': model[0].votes_for,
+                   'breakdown': option_for}
 
         for pg in model[0].pgs_no:
             party = Organization.objects.get(id_parladata=pg).getOrganizationData()
@@ -393,7 +380,9 @@ def getMotionGraph(request, id_mo, date=False):
 
             mps = []
 
-        out_against = {'option':'against','total_votes': model[0].against, 'breakdown':option_against}
+        out_against = {'option': 'against',
+                       'total_votes': model[0].against,
+                       'breakdown': option_against}
 
         for pg in model[0].pgs_np:
             party = Organization.objects.get(id_parladata=pg).getOrganizationData()
@@ -417,7 +406,7 @@ def getMotionGraph(request, id_mo, date=False):
                'name': model[0].motion,
                'result': model[0].result,
                'documents': model[0].vote.document_url,
-               'required': '62', #TODO: naji pravo stvar za ta 62 :D
+               'required': '62',
                'all': {'kvorum': out_kvor,
                        'for': out_for,
                        'against': out_against,
@@ -427,15 +416,15 @@ def getMotionGraph(request, id_mo, date=False):
     else:
         raise Http404("Nismo našli kartice")
 
-def setAbsentMPs(request, id_se):
-    votes = tryHard(API_URL + '/getVotesOfSession/'+str(id_se)+'/').json()
-    session = Session.objects.get(id_parladata=id_se)
-    mps = tryHard(API_URL+'/getMembersOfPGsOnDate/'+ session.start_time.strftime(API_DATE_FORMAT)).json()
 
+def setAbsentMPs(request, id_se):
+    votes = tryHard(API_URL + '/getVotesOfSession/' + str(id_se) + '/').json()
+    session = Session.objects.get(id_parladata=id_se)
+    mps = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
 
     mpsID = []
     if len(votes) != 0:
-        mpsID = reduce(lambda x,y: x+y,mps.values())
+        mpsID = reduce(lambda x, y: x + y, mps.values())
         for vote in votes:
             if vote['option'] != 'ni':
                 if vote['mp_id'] in mpsID:
@@ -464,9 +453,7 @@ def getAbsentMPs(request, id_se, date=False):
         results = []
 
         for abMP in absentMembers.absentMPs:
-            result = {
-            "person": getPersonData(abMP, date)
-            }
+            result = {"person": getPersonData(abMP, date)}
             results.append(result)
 
     except ObjectDoesNotExist:
@@ -476,20 +463,17 @@ def getAbsentMPs(request, id_se, date=False):
                          "created_at": absentMembers.created_at.strftime(API_DATE_FORMAT),
                          "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
 
-def setPresenceOfPG(request, id_se):
-    votes = tryHard(API_URL+'/getVotesOfSession/'+str(id_se)+'/').json()
-    motions = tryHard(API_URL+'/motionOfSession/'+str(id_se)+'/').json()
-    session = Session.objects.get(id_parladata=id_se)
-    membersOfPG = tryHard(API_URL+'/getMembersOfPGsOnDate/'+ session.start_time.strftime(API_DATE_FORMAT)).json()
 
-    allTimePGs = tryHard(API_URL+'/getAllPGsExt/').json().keys()
+def setPresenceOfPG(request, id_se):
+    votes = tryHard(API_URL + '/getVotesOfSession/' + str(id_se) + '/').json()
+    motions = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
+    session = Session.objects.get(id_parladata=id_se)
+    membersOfPG = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
+
+    allTimePGs = tryHard(API_URL + '/getAllPGsExt/').json().keys()
 
     onSession = {}
-    yesdic = defaultdict(int)
-    allsessionsinone = defaultdict(list)
     final = {}
-    numOfMPs = {}
-    results = {}
     allPgs = {}
 
     if len(votes) != 0:
@@ -498,7 +482,7 @@ def setPresenceOfPG(request, id_se):
                 if vote['mo_id'] in onSession.keys():
                     onSession[vote['mo_id']].append(vote['pg_id'])
                 else:
-                    onSession.update({vote['mo_id'] : [vote['pg_id']]})
+                    onSession.update({vote['mo_id']: [vote['pg_id']]})
     else:
         return JsonResponse({'alliswell': True, "status": "nothin to add"})
 
@@ -514,41 +498,20 @@ def setPresenceOfPG(request, id_se):
         else:
             final[i] = 0
 
-
-
-    """for b in onSession:
-        for i in onSession[b]:
-            yesdic[i] += 1
-        results[b] = yesdic
-
-    if len(results)>0:
-        temp = dict(results[results.keys()[0]])
-        for i in temp:
-            if allPgs[str(i)] != 0:
-                final[i] = int((float(temp[i]) / float(allPgs[str(i)])) * 100)
-            else:
-                final[i] = 0
-
-        for pg in allPgs.keys():
-            for result in results:"""
-
-
-
-
-
     result = saveOrAbortNew(model=PresenceOfPG,
                             created_for=session.start_time,
                             presence=[final],
-                            session = session
-                            )
+                            session=session)
 
     return JsonResponse({'alliswell': True})
+
 
 def getPresenceOfPG(request, id_se, date=False):
     results = []
     try:
         if date:
-            presence = PresenceOfPG.objects.get(session__id_parladata=id_se, start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
+            presence = PresenceOfPG.objects.get(session__id_parladata=id_se,
+                                                start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
         else:
             presence = PresenceOfPG.objects.filter(session__id_parladata=id_se)
             presence = presence.latest("created_at")
@@ -561,25 +524,25 @@ def getPresenceOfPG(request, id_se, date=False):
     return JsonResponse({"results": results,
                          "created_for": presence.created_for.strftime(API_DATE_FORMAT),
                          "created_at": presence.created_at.strftime(API_DATE_FORMAT),
-                         "session": presence.session.getSessionData()}, 
+                         "session": presence.session.getSessionData()},
                         safe=False)
 
 
 def setSpeechesOnSession(request, date=False):
     if date:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.strptime(date, '%d.%m.%Y')))
-        mps = tryHard(API_URL+'/getMPs/'+ date).json()
+        mps = tryHard(API_URL + '/getMPs/' + date).json()
     else:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.now().date()).json())
-        mps = tryHard(API_URL+'/getMPs/'+  str(datetime.now().date().strftime(API_DATE_FORMAT))).json()
+        mps = tryHard(API_URL + '/getMPs/' + str(datetime.now().date().strftime(API_DATE_FORMAT))).json()
         date = datetime.now().date()
 
     mpsID = {}
     for mp in mps:
-        url = API_URL + '/getSpeechesOfMP/' + str(mp['id'])+'/' + date
+        url = API_URL + '/getSpeechesOfMP/' + str(mp['id']) + '/' + date
         speech = len(tryHard(url).json())
         if numberOfSessions != 0:
-            mpsID.update({mp['id']: float(float(speech)/float(numberOfSessions))})
+            mpsID.update({mp['id']: float(float(speech) / float(numberOfSessions))})
     date = datetime.strptime(date, '%d.%m.%Y')
     result = saveOrAbortNew(model=AverageSpeeches,
                             created_for=date,
@@ -621,8 +584,7 @@ def getMaxSpeechesOnSession(request, date=False):
             date_ = datetime.now().date()
             date = date_.strftime(API_DATE_FORMAT)
 
-
-        sort = sorted(averageSpeeches.items(), key=lambda x:x[1], reverse=True)
+        sort = sorted(averageSpeeches.items(), key=lambda x: x[1], reverse=True)
         for s in sort:
             result = {
                 "person": getPersonData(s[0], date),
@@ -637,7 +599,10 @@ def getMaxSpeechesOnSession(request, date=False):
 
 def setQuote(request, speech_id, start_pos, end_pos):
     speech = get_object_or_404(Speech, id_parladata=speech_id)
-    quote = Quote(speech=speech, first_char=start_pos, last_char=end_pos, quoted_text=re.sub(r"\n+", " ", speech.content.strip())[int(start_pos):int(end_pos)].strip())
+    quote = Quote(speech=speech,
+                  first_char=start_pos,
+                  last_char=end_pos,
+                  quoted_text=re.sub(r"\n+", " ", speech.content.strip())[int(start_pos):int(end_pos)].strip())
     quote.save()
 
     return JsonResponse({"status": "alliswell", "id": quote.id})
@@ -661,7 +626,7 @@ def getLastSessionLanding(request, date_=None):
     if date_:
         fdate = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().today()
+        fdate = datetime.now().today()
     ready = False
     presences = PresenceOfPG.objects.filter(created_for__lte=fdate).order_by("-created_for")
     if not presences:
@@ -676,8 +641,6 @@ def getLastSessionLanding(request, date_=None):
         motions = json.loads(getMotionOfSession(None, presence.session.id_parladata).content)
         if type(motions) == dict:
             if "results" in motions.keys():
-                # tfidf = tryHard("https://isci.parlameter.si/tfidf/s/"+str(presence.session.id_parladata))
-                # if tfidf.status_code == 200:
                 tfidf = json.loads(getTFIDF(None, presence.session.id_parladata).content)
                 if tfidf["results"]:
                     ready = True
@@ -686,8 +649,8 @@ def getLastSessionLanding(request, date_=None):
         else:
             presence_index += 1
 
-    results = [{"org":Organization.objects.get(id_parladata=p).getOrganizationData(),
-                                "percent":presence.presence[0][p],} for p in presence.presence[0]]
+    results = [{"org": Organization.objects.get(id_parladata=p).getOrganizationData(),
+                                "percent": presence.presence[0][p]} for p in presence.presence[0]]
     result = sorted(results, key=lambda k: k['percent'], reverse=True)
     session = Session.objects.get(id_parladata=int(presence.session.id_parladata))
     return JsonResponse({"session": session.getSessionData(),
@@ -704,20 +667,20 @@ def getSessionsByClassification(request):
     working_bodies = ["odbor", "komisija", "preiskovalna komisija"]
     out = {"kolegij": [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=COUNCIL_ID).order_by("-start_time")],
            "dz": [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=DZ).order_by("-start_time")],
-           "dt": [org.getOrganizationData() for org in Organization.objects.filter(classification__in=working_bodies)],}
+           "dt": [org.getOrganizationData() for org in Organization.objects.filter(classification__in=working_bodies)]}
 
     for dt in out["dt"]:
         dt["sessions"] = [session.getSessionData() for session in Session.objects.filter(organizations__id_parladata=dt["id"]).order_by("-start_time")]
         for session in dt["sessions"]:
-            session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
+            session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False,
                             "speeches": True if Speech.objects.filter(session__id_parladata=session["id"]) else False})
 
     for session in out["kolegij"]:
-        session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
+        session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False,
                         "speeches": True if Speech.objects.filter(session__id_parladata=session["id"]) else False})
 
     for session in out["dz"]:
-        session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False, 
+        session.update({"votes": True if Vote.objects.filter(session__id_parladata=session["id"]) else False,
                         "speeches": True if Speech.objects.filter(session__id_parladata=session["id"]) else False})
 
     return JsonResponse(out)
@@ -774,7 +737,7 @@ def getSessionsList(request, date_=None, force_render=False):
 
 def setTFIDF(request, session_id):
     date_of = datetime.now().date()
-    url = "https://isci.parlameter.si/tfidf/s/"+str(session_id)
+    url = "https://isci.parlameter.si/tfidf/s/" + str(session_id)
     data = tryHard(url).json()
     session = Session.objects.get(id_parladata=session_id)
     is_saved = saveOrAbortNew(Tfidf,

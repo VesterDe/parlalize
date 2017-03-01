@@ -16,7 +16,7 @@ from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
 
-from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
+from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, VoteDetailed
 from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 
@@ -685,7 +685,7 @@ def runSettersSessions(date_to=None, sessions_ids=None):
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
         #AverageSpeeches: setSpeechesOnSession,
-        Vote_graph: setMotionOfSessionGraph
+        VoteDetailed: setMotionOfSessionGraph
     }
     for model, setter in setters_models.items():
         if model != AverageSpeeches:

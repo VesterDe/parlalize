@@ -5,7 +5,7 @@ from django.http import Http404, JsonResponse, HttpResponse
 import requests
 from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
-from parlaseje.models import Session, Vote, Ballot, Speech, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
+from parlaseje.models import Session, Vote, Ballot, Speech, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, VoteDetailed
 from parlalize.settings import VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT, DEBUG
 from django.contrib.contenttypes.models import ContentType
 import requests
@@ -618,8 +618,8 @@ def checkSessions():
     else:
         print "ni votov sploh"
 
-    if len(Vote_graph.objects.all()) > 0:
-        print "Vote graph katerih ni v parlalizah: ", list(set(motionIDs) - set(Vote_graph.objects.all().values_list('vote__id_parladata', flat=True)))
+    if len(VoteDetailed.objects.all()) > 0:
+        print "Vote graph katerih ni v parlalizah: ", list(set(motionIDs) - set(VoteDetailed.objects.all().values_list('vote__id_parladata', flat=True)))
     else:
         print "ni votov grafov sploh"
 
