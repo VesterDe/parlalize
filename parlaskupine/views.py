@@ -1237,7 +1237,11 @@ def setNumberOfQuestionsAll(request, date_=None):
     for question in data:
         qDate = datetime.strptime(question['date'], "%Y-%m-%dT%X")
         qDate = qDate.strftime(API_DATE_FORMAT)
-        person_data = mpStatic[str(question['author_id'])]
+        try:
+            person_data = mpStatic[str(question['author_id'])]
+        except KeyError as e:
+            person_data = getPersonData(str(question['author_id']), date_s)
+            mpStatic[str(question['author_id'])] = person_data
         if person_data and person_data['party'] and person_data['party']['id']:
             #if person_data['party']['id'] in pg_ids:
             authors.append(person_data['party']['id'])
