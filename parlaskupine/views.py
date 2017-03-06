@@ -1228,7 +1228,7 @@ def setNumberOfQuestionsAll(request, date_=None):
 
     mpStatic = {}
     for mp in mps:
-        mpStatic[mp['id']: getPersonData(mp['id'], date_s)]
+        mpStatic[str(mp['id'])] = getPersonData(str(mp['id']), date_s)
 
     allPGs = tryHard(API_URL+'/getAllPGsExt/').json().keys()
 
