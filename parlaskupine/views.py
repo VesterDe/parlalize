@@ -1376,19 +1376,6 @@ def getQuestionsOfPG(request, pg_id, date_=False):
                     }
 
             out.append(dayDataDict)
-            if len(out) > 14:
-                break
-        if len(out)>14:
-            break
-
-    #dict to list for sorting in front
-    """for day in out:
-        ses_ids = day["sessions"].keys()
-        for session in ses_ids:
-            day["sessions"][session]["author"] = sorted(day["sessions"][session]["author"].values(), key=lambda k,: k["person"]["name"], reverse=False)
-        ses_order_ids = Session.objects.filter(id_parladata__in=ses_ids).order_by("-start_time").values_list("id_parladata", flat=True)
-        temp_day_order = [day["sessions"][s_id] for s_id in ses_order_ids]
-        day["sessions"] = temp_day_order"""
 
     # WORKAROUND: created_at is today.
     result = {
