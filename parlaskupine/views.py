@@ -1446,7 +1446,7 @@ def getQuestionsOfPG(request, pg_id, date_=False):
     print i
     # WORKAROUND: created_at is today.
     result = {
-        'results': list(reversed(out)),
+        'results': out,
         'created_for': out[-1]["date"] if out else date_,
         'created_at': date_,
         'party': Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
