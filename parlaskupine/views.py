@@ -1425,8 +1425,8 @@ def getQuestionsOfPG(request, pg_id, date_=False):
         all_recipients += list(rangeQuestions.values_list('recipient_text',
                                                           flat=True))
 
-        for t_date in rangeQuestions.datetimes('start_time', 'day'):
-            thisRangeQ = rangeQuestions.filter(start_time__range=[t_date, t_date+timedelta(hours=23, minutes=59)])
+        for t_date in rangeQuestions.datetimes('start_time', 'day').order_by("-start_time"):
+            thisRangeQ = rangeQuestions.filter(start_time__range=[t_date, t_date+timedelta(hours=23, minutes=59)]).order_by('-start_time')
             questionsOnDate = []
             for question in thisRangeQ:
                 i += 1
