@@ -1345,7 +1345,7 @@ def getQuestions(request, person_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
-def getQuestionsOfPG(request, pg_id, date_=False):
+def getQuestionsOfPG1(request, pg_id, date_=False):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1357,6 +1357,7 @@ def getQuestionsOfPG(request, pg_id, date_=False):
 
     membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
     out = []
+    personsData = {}
     for pgMembersRange in membersOfPGRanges:
         startTime = datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT)
         endTime = datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT)+timedelta(hours=23, minutes=59)
@@ -1371,27 +1372,86 @@ def getQuestionsOfPG(request, pg_id, date_=False):
                                          person__id_parladata__in=pgMembersRange["members"][pg_id]).datetimes('start_time', 'day')]
         for day in reversed(questionz):
             #dayData = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "sessions":[]}
-            dayDataDict = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "authors":{}}
+            dayDataDict = {"date": day[0].start_time.strftime(API_OUT_DATE_FORMAT), "questions": []}
             addedPersons = []
             addedSessions = []
             for question in day:
-                if question.person.id_parladata in dayDataDict["authors"].keys():
-                    author = dayDataDict["authors"][question.person.id_parladata]
-                    author["questions"].append(question.getQuestionData())
-                else:
-                    dayDataDict["authors"][question.person.id_parladata] = {
-                        "questions": [question.getQuestionData()],
-                        "person": getPersonData(question.person.id_parladata, startTime.strftime(API_DATE_FORMAT))
-                    }
+                person_id = question.person.id_parladata
+                try:
+                    personData = personsData[person_id]
+                except KeyError as e:
+                    personData = getPersonData(person_id, date_)
+                    personsData[person_id] = personData
+                questionData = question.getQuestionData()
+                questionData.update({'person': personData})
+                dayDataDict["questions"].append(questionData)
 
             out.append(dayDataDict)
 
     # WORKAROUND: created_at is today.
     result = {
         'results': out,
-        "created_for": out[-1]["date"] if out else date_,
-        "created_at": date_,
-        "party": Organization.objects.get(id_parladata=pg_id).getOrganizationData()
+        'created_for': out[-1]["date"] if out else date_,
+        'created_at': date_,
+        'party': Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
+        }
+    return JsonResponse(result, safe=False)
+
+
+def getQuestionsOfPG(request, pg_id, date_=False):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+    else:
+        date_of = datetime.now().date()
+        date_ = date_of.strftime(API_DATE_FORMAT)
+
+    end_of_day = date_of + timedelta(days=1)
+    questions = Question.objects.filter(start_time__lt=end_of_day)
+
+    personsData = {}
+
+    all_recipients = []
+
+    membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
+    i = 0
+    out = []
+    for pgMembersRange in membersOfPGRanges:
+        startTime = datetime.strptime(pgMembersRange["start_date"], API_DATE_FORMAT)
+        endTime = datetime.strptime(pgMembersRange["end_date"], API_DATE_FORMAT) + timedelta(hours=23, minutes=59)
+
+        rangeQuestions = questions.filter(start_time__lt=endTime,
+                                          start_time__gt=startTime,
+                                          person__id_parladata__in=pgMembersRange["members"][pg_id])
+        all_recipients += list(rangeQuestions.values_list('recipient_text',
+                                                          flat=True))
+
+        for t_date in rangeQuestions.datetimes('start_time', 'day'):
+            thisRangeQ = rangeQuestions.filter(start_time__range=[t_date, t_date+timedelta(hours=23, minutes=59)])
+            questionsOnDate = []
+            for question in thisRangeQ:
+                i += 1
+                persons_id = question.person.id_parladata
+                try:
+                    personData = personsData[persons_id]
+                except KeyError as e:
+                    personData = getPersonData(persons_id, date_)
+                    personsData[persons_id] = personData
+                questionData = question.getQuestionData()
+                questionData.update({'person': personData})
+                questionsOnDate.append(questionData)
+
+            dayDataDict = {"date": t_date.strftime(API_OUT_DATE_FORMAT),
+                           "questions": questionsOnDate}
+            out.append(dayDataDict)
+    print i
+    # WORKAROUND: created_at is today.
+    result = {
+        'results': list(reversed(out)),
+        'created_for': out[-1]["date"] if out else date_,
+        'created_at': date_,
+        'party': Organization.objects.get(id_parladata=pg_id).getOrganizationData(),
+        'all_authors': [pData for pData in personsData.values()],
+        'all_recipients': list(set(all_recipients)),
         }
     return JsonResponse(result, safe=False)
 
