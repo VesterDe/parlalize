@@ -105,3 +105,43 @@ def updateCacheforList(date_=None):
     client.captureMessage('Zgeneriru sem cache za nasledn dan')
 
     return 1
+
+
+def recacheCards(pgCards=[], mpCards=[], sessions={}):
+    def cardRecache(card_url):
+        url = card_url + '?forceRender=true'
+        requests.get(url)
+        url = card_url + '?forceRender=true&frame=true&altHeader=true'
+        requests.get(url)
+        url = card_url + '?forceRender=true&embed=true&altHeader=true'
+        requests.get(url)
+
+    mps = tryHard(API_URL + '/getMPs/').json()
+    mps_ids = [mp['id'] for mp in mps]
+    pg_ids = tryHard(API_URL + '/getAllPGs/').json().keys()
+
+    base_url = 'https://glej.parlameter.si/'
+    if pgCards:
+        for pg in pg_ids:
+            for pgCard in pgCards:
+                card_url = base_url + 'ps/' + pgCard + '/' + str(pg)
+                cardRecache(card_url)
+            printProgressBar(pg_ids.index(pg), len(pg_ids), prefix='Orgs: ')
+
+    if mpCards:
+        for mp in mps_ids:
+            for mpCard in mpCards:
+                card_url = base_url + 'p/' + mpCard + '/' + str(mp)
+                cardRecache(card_url)
+            printProgressBar(mps_ids.index(mp),
+                             len(mps_ids),
+                             prefix='Members: ')
+
+    if sessions:
+        for s in sessions['sessions']:
+            for sCard in sessions['cards']:
+                card_url = base_url + 's/' + sCard + '/' + str(s)
+                cardRecache(card_url)
+            printProgressBar(mps_ids.index(mp),
+                             len(mps_ids),
+                             prefix='Members: ')
