@@ -23,9 +23,13 @@ VOTE_MAP = {'za': 1,
 class VotesAnalysis(object):
     def __init__(self, date_=None):
         self.debug = False
-        self.date_ = ''
+        if date_:
+            self.date_ = date_.strftime(API_DATE_FORMAT)
+            self.date_of = date_
+        else:
+            self.date_ = ''
+            self.date_of = datetime.now()
         self.api_url = None
-        self.date_of = datetime.now()
         self.members = None
         self.data = None
 
@@ -50,16 +54,24 @@ class VotesAnalysis(object):
         self.equalVotersPG()
 
     def prepareData(self):
-        if debug:
+        if self.debug:
             self.data = pd.read_pickle('backup_baze.pkl')
         else:
-            self.data = pd.read_json('https://data.parlameter.si/v1/getVotesTable/')
+            url = API_URL + '/getVotesTable/' + self.date_
+            print url
+            self.data = pd.read_json(url)
             # before debug load data to backup_baze.pkl file (uncoment next line)
             # self.data.to_pickle('backup_baze.pkl')
-        mps = tryHard('https://data.parlameter.si/v1/getMPs').json()
+        url = API_URL + '/getMPs/' + self.date_
+        print url
+        mps = tryHard(url).json()
         self.members = [mp['id'] for mp in mps]
-        self.memsOfPGs = tryHard('https://data.parlameter.si/v1/getMembersOfPGs/').json()
-        self.pgs = tryHard('https://data.parlameter.si/v1/getAllPGs/').json()
+        url = API_URL + '/getMembersOfPGsOnDate/' + self.date_
+        print url
+        self.memsOfPGs = tryHard(url).json()
+        url = API_URL + '/getAllPGs/' + self.date_
+        print url
+        self.pgs = tryHard(url).json()
         self.pgs = self.pgs.keys()
 
         def toLogic(row):
@@ -366,11 +378,11 @@ class VotesAnalysis(object):
                                     average_votes=averageVotes,
                                     maximum_votes=maxVotes)
 
-    def setAll():
+    def setAll(self):
         """
         set all vote cards
         """
-        setPresenceMPs()
-        setPresenceOfPGs()
-        setEqualVoters()
-        setEqualVotesPG()
+        self.setPresenceMPs()
+        self.setPresenceOfPGs()
+        self.setEqualVoters()
+        self.setEqualVotesPG()

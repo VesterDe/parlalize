@@ -475,6 +475,9 @@ def updateLastDay(date_=None):
     speeches = Speech.objects.filter(session_date__lte=to_date)
     lastSpeechDay = speeches.latest('start_time').start_time
 
+    votez = VotesAnalysis(to_date)
+    votez.setAll()
+
     runForTwoDays = True
 
     if lastVoteDay.date() == lastSpeechDay.date():
