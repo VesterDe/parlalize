@@ -199,13 +199,16 @@ class Vote(Timestampable, models.Model):
                                    blank=True,
                                    null=True,
                                    help_text=_('date of vote'))
+
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
                                 related_name='in_session',
                                 help_text=_('Session '))
+
     motion = models.TextField(blank=True,
                               null=True,
                               help_text='The motion for which the vote took place')
+
     tags = JSONField(blank=True,
                      null=True)
 
@@ -224,15 +227,23 @@ class Vote(Timestampable, models.Model):
     not_present = models.IntegerField(blank=True,
                                       null=True,
                                       help_text='Number of MPs that warent on the session')
+
     result = models.NullBooleanField(blank=True,
                                      null=True,
                                      default=False,
                                      help_text='The result of the vote')
+
     id_parladata = models.IntegerField(_('parladata id'),
                                        blank=True,
                                        null=True,
                                        help_text=_('id parladata'))
-    document_url = JSONField(blank=True, null=True)
+
+    document_url = JSONField(blank=True,
+                             null=True)
+
+    start_time = PopoloDateTimeField(blank=True,
+                                     null=True,
+                                     help_text='Start time')
 
 
 class Vote_graph(Timestampable, models.Model):
