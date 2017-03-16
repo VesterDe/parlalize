@@ -107,7 +107,7 @@ def updateCacheforList(date_=None):
     return 1
 
 
-def recacheCards(pgCards=[], mpCards=[], sessions={}):
+def recacheCards(pgCards=[], mpCards=[], sessions={}, votes_of_s=[]):
     def cardRecache(card_url):
         url = card_url + '?forceRender=true'
         requests.get(url)
@@ -144,4 +144,18 @@ def recacheCards(pgCards=[], mpCards=[], sessions={}):
                 cardRecache(card_url)
             printProgressBar(mps_ids.index(mp),
                              len(mps_ids),
-                             prefix='Members: ')
+                             prefix='Session: ')
+
+    if votes_of_s:
+        for s in votes_of_s:
+            print "recache votes of session list " + str(s)
+            card_url = base_url + 's/' + 'glasovanja-seja' + '/' + str(s)
+            cardRecache(card_url)
+            print "recache vote graphs of session " + str(s)
+            votes = Vote.objects.filter(session__id_parladata=s)
+            for v in votes.values_list("id_parladata", flat=True):
+                card_url = base_url + 's/' + 'glasovanje-layered-2' + '/' + str(v)
+                cardRecache(card_url)
+        printProgressBar(votes_of_s.index(s),
+                         len(votes_of_s),
+                         prefix='Session: ')
