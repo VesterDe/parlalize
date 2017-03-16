@@ -6,8 +6,11 @@ from sklearn.manifold import MDS as sklearnMDS
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
 from parlalize.utils import tryHard
 
-def showCompass():
 
+def showCompass():
+    """
+    Plot compass data
+    """
     fig, ax = plt.subplots()
     ax.scatter(ideology, zeros)
     for i, txt in enumerate(people):
@@ -16,7 +19,11 @@ def showCompass():
 
     return false
 
+
 def assignValueToOption(option):
+    """
+    get numeric class for vote option
+    """
     if option == 'ni':
         return 0
     if option == 'za':
@@ -28,17 +35,11 @@ def assignValueToOption(option):
     if option == 'ni obstajal':
         return 4
 
-def getPeoplesNames(ids, date_of):
-    names_list = []
-    for person_id in ids:
-        data = tryHard(BASE_URL+'/p/getMPStatic/' + str(person_id) + '/' + date_of.strftime(API_DATE_FORMAT)).json()
-        name = data['person']['name']
-
-        names_list.append(data['person']['name'].encode('ascii', errors='xmlcharrefreplace'))
-
-    return names_list
 
 def makeSimilarities(people_ballots_sorted_list):
+    """
+    make Matrix similarity of ballots for all persons
+    """
 
     similarities = []
 
@@ -60,14 +61,22 @@ def makeSimilarities(people_ballots_sorted_list):
 
     return np.array(similarities)
 
+
 def enrichData(vT1, vT2, people, date_of):
-    
-    enriched = [{'person_id': str(speaker), 'score': {'vT1': vT1[i], 'vT2': vT2[i]}} for i, speaker in enumerate(people)]
+    """
+    prepare output data
+    """
+    enriched = [{'person_id': str(speaker),
+                 'score': {'vT1': vT1[i],
+                           'vT2': vT2[i]}} for i, speaker in enumerate(people)]
 
     return enriched
 
 
 def getData(date_of):
+    """
+    group balots for each person and calculate SVD
+    """
     # getting all the necessary data
     allballots = tryHard(API_URL+'/getAllBallots/'+date_of.strftime(API_DATE_FORMAT)).json()
     people = tryHard(API_URL+'/getMPs/'+date_of.strftime(API_DATE_FORMAT)).json()
@@ -111,15 +120,13 @@ def getData(date_of):
     hijene = []
     # assign numerical values to ballots
     for i, person in enumerate(people_ballots_sorted_list):
-        #print person
+        # print person
         for j, ballot in enumerate(person):
             people_ballots_sorted_list[i][j] = assignValueToOption(ballot['option'])
-        #print len(people_ballots_sorted_list[i]), people_ids[i], people_ballots_sorted_list[i].count(4), (len(people_ballots_sorted_list[i]) - people_ballots_sorted_list[i].count(4))
-        #print people_ballots_sorted_list[i]
         if (len(people_ballots_sorted_list[i]) - people_ballots_sorted_list[i].count(4)) < 5:
             hijene.append(i)
-	    print "brisem", i
-	print i
+            print "brisem", i
+    print i
     print people_ids
     hijene.sort()
     for i in reversed(hijene):
@@ -129,39 +136,8 @@ def getData(date_of):
     # transform numerical ballot values to numpy array
     thearray = np.array(people_ballots_sorted_list)
 
-    # get people's names
-    #people_names = getPeoplesNames(people_ids, date_of)
-
-    # sklearn_pca = sklearnPCA(n_components=2)
-    # sklearn_transf = sklearn_pca.fit_transform(thearray)
-    #
-    # fig, ax = plt.subplots()
-    # ax.scatter(sklearn_transf[0:90,0],sklearn_transf[0:90,1])#, 'o', markersize=7, color='blue', alpha=0.5)
-    # for i, txt in enumerate(people_ids):
-    #     ax.annotate(str(txt), (sklearn_transf[0:90,0][i], sklearn_transf[0:90,1][i]))
-    #
-    # # plt.plot(sklearn_transf[0:90,0],sklearn_transf[0:90,1], 'o', markersize=7, color='blue', alpha=0.5)
-    # plt.savefig('PCA.png')
-    #
-    # sklearn_mda = sklearnMDS(n_components=2, metric=True, max_iter=3000, verbose=1, n_jobs=-2, dissimilarity='euclidean')
-    # mda_result = sklearn_mda.fit_transform(people_ballots_sorted_list)
-    #
-    # fig2, ax2 = plt.subplots()
-    # ax2.scatter(mda_result[0:90, 0], mda_result[0:90, 1])
-    # for i, txt in enumerate(people_ids):
-    #     ax2.annotate(str(txt), (mda_result[0:90, 0][i], mda_result[0:90, 1][i]))
-    # plt.savefig('MDA.png')
-
     # generate similarity matrix by adding +1 each time two people's ballots match
     similarities = makeSimilarities(people_ballots_sorted_list)
     u, s, vT = np.linalg.svd(similarities)
 
-    # fig3, ax3 = plt.subplots()
-    # ax3.scatter(vT[1,:], vT[0,:])
-    # for i, txt in enumerate(people_ids):
-    #     ax3.annotate(str(txt), (vT[1,:][i], vT[0,:][i]))
-    # plt.savefig('SVD.png')
-
     return enrichData(vT[1,:], vT[0,:], people_ids, date_of)
-
-    #return people_ids, people_ballots_sorted, people_ballots_sorted_list#, sklearn_mda
