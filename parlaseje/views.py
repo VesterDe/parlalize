@@ -132,6 +132,7 @@ def setMotionOfSession(request, id_se):
         if Vote.objects.filter(id_parladata=mot['vote_id']):
             vote = Vote.objects.filter(id_parladata=mot['vote_id'])
             vote.update(created_for=session.start_time,
+                        start_time=mot['start_time'],
                         session=session,
                         motion=mot['text'],
                         tags=mot['tags'],
@@ -146,6 +147,7 @@ def setMotionOfSession(request, id_se):
         else:
             result = saveOrAbortNew(model=Vote,
                                     created_for=session.start_time,
+                                    start_time=mot['start_time'],
                                     session=session,
                                     motion=mot['text'],
                                     tags=mot['tags'],
@@ -276,11 +278,10 @@ def getMotionOfSession(request, id_se, date=False):
     created_at = None
     if Session.objects.filter(id_parladata=int(id_se)):
         session = Session.objects.get(id_parladata=int(id_se))
-        sesData = session.getSessionData()
-        if Vote.objects.filter(session__id_parladata=id_se):
-            model = Vote.objects.filter(session__id_parladata=id_se)
+        votes = Vote.objects.filter(session__id_parladata=id_se).order_by("start_time")
+        if votes:
             dates = []
-            for card in model:
+            for card in votes:
                 print card
                 out.append({'session': sesData,
                             'results': {'motion_id': card.id_parladata,
