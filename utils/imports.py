@@ -56,6 +56,13 @@ def updateOrganizations():
     return 1
 
 
+def deleteUnconnectedSpeeches():
+    data = tryHard(API_URL + '/getAllSpeeches').json()
+    idsInData = [speech['id'] for speech in data]
+    blindSpeeches = Speech.objects.all().exclude(id_parladata__in=idsInData)
+    blindSpeeches.delete()
+
+
 def updateSpeeches():
     data = tryHard(API_URL + '/getAllAllSpeeches').json()
     existingISs = list(Speech.objects.all().values_list('id_parladata',

@@ -182,8 +182,12 @@ def saveOrAbortNew(model, **kwargs):
             party_id = kwargs['organization'].id_parladata
             models = model.objects.filter(organization__id_parladata=party_id,
                                           created_for__lte=created_for)
-            lastDate = models.latest('created_for').created_for
-            if savedModel.latest('created_for').created_for != lastDate:
+            if models:
+                # if allready exist write in DB for thiw PG
+                lastDate = models.latest('created_for').created_for
+                if savedModel.latest('created_for').created_for != lastDate:
+                    save_it(model, created_for, **kwargs)
+            else:
                 save_it(model, created_for, **kwargs)
 
         elif 'session' in kwargs:
