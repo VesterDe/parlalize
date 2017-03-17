@@ -278,7 +278,8 @@ def getMotionOfSession(request, id_se, date=False):
     created_at = None
     if Session.objects.filter(id_parladata=int(id_se)):
         session = Session.objects.get(id_parladata=int(id_se))
-        votes = Vote.objects.filter(session__id_parladata=id_se).order_by("start_time")
+        votes = Vote.objects.filter(session__id_parladata=id_se,
+                                    is_visible=True).order_by("start_time")
         if votes:
             dates = []
             for card in votes:
