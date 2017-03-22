@@ -2,8 +2,7 @@ from django.conf.urls import patterns, include, url
 from parlaposlanci.views import *
 
 urlpatterns = patterns(
-    '',
-#   url(r'^getMPsList/', getMPsList),
+    '', # TODO this is fucking crazy
 
     # setters
     url(r'^setMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMPStaticPL),
@@ -130,6 +129,6 @@ urlpatterns = patterns(
 
     ###########################################################################
 
-    #runenr
+    #runer
     #url(r'^runSetters/(?P<date_to>[\w].+)', runSetters),
 )

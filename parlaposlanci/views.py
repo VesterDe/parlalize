@@ -28,32 +28,6 @@ from kompas2 import notes
 
 from parlalize.utils import tryHard
 
-# Create your views here.
-
-#get List of MPs
-def getMPsList(request, date_=None):
-    output = []
-    data = None
-    if date_:
-        while data is None:
-            try:
-                data = tryHard(API_URL+'/getMPs/'+date_)
-            except:
-                pass
-    else:
-        while data is None:
-            try:
-                data = tryHard(API_URL+'/getMPs/')
-            except:
-                pass
-
-    data = data.json()
-
-    output = [{'id': i['id'], 'image': i['image'], 'name': i['name'], 'membership': i['membership'], 'acronym': i['acronym'], 'district': i['district']} for i in data]
-
-    return JsonResponse(output, safe=False)
-
-
 # returns MP static data like PoliticalParty, age, ....
 def setMPStaticPL(request, person_id, date_=None):
     if date_:
@@ -98,6 +72,119 @@ def setMPStaticPL(request, person_id, date_=None):
 
 
 def getMPStaticPL(request, person_id, date_=None):
+    """
+    * @api {get} /p/getMPStatic/{id}/{?date} MP's static info
+    * @apiName getMPStatic
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with all 
+      "static" data belonging to an MP. By static we mean that it
+      is entered and maintained by hand and rarely, if ever, changes.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results
+    * @apiSuccess {Integer} results.voters Number of voters who voted for this MP at the last election.
+    * @apiSuccess {String} results.acronym This MP's party acronym.
+    * @apiSuccess {Integer} results.mandate Number of this MP's mandates in the national assembly (including their current one).
+    * @apiSuccess {Integer} results.party_id This MP's party's Parladata (organization) id.
+    * @apiSuccess {Object[]} results.groups List of groups this MP is a member of (other than their party). #TODO refactor
+    * @apiSuccess {Integer} results.groups.id Group's Parladata (organization) id.
+    * @apiSuccess {String} results.groups.group_name Group's name.
+    * @apiSuccess {String} results.education A string describing the education of this person.
+    * @apiSuccess {Object[]} results.working_bodies_functions
+    * @apiSuccess {String} results.working_bodies_functions.role The person's role in this working body.
+    * @apiSuccess {Object} results.working_bodies_functions.wb Working body object.
+    * @apiSuccess {String} results.working_bodies_functions.wb.acronym Working body's acronym (usually an empty string).
+    * @apiSuccess {Boolean} results.working_bodies_functions.wb.is_coalition Answers the question: Does this working body belong to the coalition?
+    * @apiSuccess {Integer} results.working_bodies_functions.wb.id Working body's Parladata (organization) id.
+    * @apiSuccess {String} results.working_bodies_functions.wb.name The working body's name.
+    * @apiSuccess {String} results.previous_occupation MP's occupation before becoming an MP.
+    * @apiSuccess {String} results.name MP's name.
+    * @apiSuccess {String[]} results.district List of strings representing district names.
+    * @apiSuccess {Integer} results.age MP's age calculated from their birthday.
+    * @apiSuccess {Object[]} results.social An array containing the object with social keys. #TODO refactor
+    * @apiSuccess {String} results.social.twitter MP's Twitter url.
+    * @apiSuccess {String} results.social.facebook MP's Facebook url.
+    * @apiSuccess {String} results.social.linkedin MP's Linkedin url.
+    * @apiSuccess {String} results.party MP's party name.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getMPStatic/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getMPStatic/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": true,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "08.03.2017",
+        "created_for": "06.08.2014",
+        "results": {
+            "voters": 919,
+            "acronym": "ZL",
+            "mandates": 1,
+            "party_id": 8,
+            "groups": [{
+            "group_id": 9,
+            "group_name": "Kolegij predsednika dr\u017eavnega zbora"
+            }, {
+            "group_id": 34,
+            "group_name": "Delegacija Dr\u017eavnega zbora v Parlamentarni skup\u0161\u010dini Unije za Sredozemlje"
+            }],
+            "education": "diplomant univerzitetnega programa\r\n",
+            "working_bodies_functions": [{
+            "role": "vice_president",
+            "wb": {
+                "acronym": "",
+                "is_coalition": false,
+                "id": 10,
+                "name": "Komisija za nadzor javnih financ"
+            }
+            }],
+            "previous_occupation": "\u0161tudent",
+            "name": "Luka Mesec",
+            "district": ["Trbovlje"],
+            "age": 29,
+            "social": [{
+            "twitter": "https://twitter.com/lukamesec",
+            "facebook": "https://www.facebook.com/mesec.luka",
+            "linkedin": null
+            }],
+            "party": "PS Zdru\u017eena Levica"
+        }
+    }
+    """
     card = getPersonCardModelNew(MPStaticPL, person_id, date_)
 
     if card.twitter == 'False':
@@ -200,6 +287,197 @@ def setPercentOFAttendedSession(request, person_id, date_=None):
 
 
 def getPercentOFAttendedSession(request, person_id, date=None):
+    """
+    * @api {get} /p/getPresence/{id}/{?date} MP's presence
+    * @apiName getPresence
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      calculated presence scores. There are two scores, one for their presence
+      at voting events and one for their presence at sessions overall. The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results
+
+    * @apiSuccess {Object} results.votes MP's calculated presence at voting events.    
+    * @apiSuccess {Object} results.votes.max MP (or MPs) who has the highest attendance and their score.
+    * @apiSuccess {Float} results.votes.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.votes.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.votes.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.votes.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.votes.max.mps.name MP's full name.
+    * @apiSuccess {String} results.votes.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.votes.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.votes.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.votes.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.votes.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.votes.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.votes.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.votes.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.votes.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.votes.average The average score for this metric accross the parliament.
+    * @apiSuccess {Float} results.votes.score Score for the MP in question.
+    
+    * @apiSuccess {Object} results.sessions MP's calculated presence at sessions.
+    * @apiSuccess {Object} results.sessions.max MP (or MPs) who has the highest attendance and their score.
+    * @apiSuccess {Float} results.sessions.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.sessions.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.sessions.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.sessions.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.sessions.max.mps.name MP's full name.
+    * @apiSuccess {String} results.sessions.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.sessions.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.sessions.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.sessions.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.sessions.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.sessions.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.sessions.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.sessions.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.sessions.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Float} results.votes.average The average score for this metric accross the parliament.
+    * @apiSuccess {Float} results.votes.score Score for the MP in question.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getPresence/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getPresence/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "21.03.2017",
+        "created_for": "17.02.2017",
+        "results": {
+            "votes": {
+            "max": {
+                "score": 98.5804416403786,
+                "mps": [{
+                "is_active": false,
+                "district": [8],
+                "name": "Ur\u0161ka Ban",
+                "gov_id": "P240",
+                "gender": "f",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 3,
+                "has_function": false
+                }]
+            },
+            "average": 80.5083236752256,
+            "score": 76.9716088328076
+            },
+            "sessions": {
+            "max": {
+                "score": 100.0,
+                "mps": [{
+                "is_active": false,
+                "district": [84],
+                "name": "Vlasta Po\u010dkaj",
+                "gov_id": "P303",
+                "gender": "f",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 2934,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [85],
+                "name": "Teja Ljubi\u010d",
+                "gov_id": "P304",
+                "gender": "f",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 2933,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [48],
+                "name": "Jasna Murgel",
+                "gov_id": "P274",
+                "gender": "f",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 60,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [66],
+                "name": "Julijana Bizjak Mlakar",
+                "gov_id": "P158",
+                "gender": "f",
+                "party": {
+                    "acronym": "DeSUS",
+                    "is_coalition": true,
+                    "id": 3,
+                    "name": "PS Demokratska Stranka Upokojencev Slovenije"
+                },
+                "type": "mp",
+                "id": 5,
+                "has_function": false
+                }]
+            },
+            "average": 88.5490589303276,
+            "score": 85.5072463768116
+            }
+        }
+    }
+    """
     equalVoters = getPersonCardModelNew(Presence, person_id, date)
 
     out  = {
@@ -275,6 +553,104 @@ def setNumberOfSpokenWordsALL(request, date_=None):
     return HttpResponse('All iz well')
 
 def getNumberOfSpokenWords(request, person_id, date=None):
+    """
+    * @api {get} /p/getNumberOfSpokenWords/{id}/{?date} MP's number of spoken words
+    * @apiName getNumberOfSpokenWords
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      calculated number of spoken words. The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's number of spoken words.
+    * @apiSuccess {Object} results.max MP (or MPs) who has the highest number of spoken words and their score.
+    * @apiSuccess {Float} results.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.max.mps.name MP's full name.
+    * @apiSuccess {String} results.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.average The average score for this metric accross the parliament.
+    * @apiSuccess {Float} results.score Score for the MP in question.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getNumberOfSpokenWords/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getNumberOfSpokenWords/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "21.03.2017",
+        "created_for": "20.03.2017",
+        "results": {
+            "max": {
+            "score": 672449,
+            "mps": [{
+                "is_active": false,
+                "district": [17],
+                "name": "Jo\u017eef Horvat",
+                "gov_id": "P020",
+                "gender": "m",
+                "party": {
+                "acronym": "NSI",
+                "is_coalition": false,
+                "id": 6,
+                "name": "PS Nova Slovenija"
+                },
+                "type": "mp",
+                "id": 32,
+                "has_function": false
+            }]
+            },
+            "average": 177115,
+            "score": 381389
+        }
+    }
+    """
 
     card = getPersonCardModelNew(SpokenWords, person_id, date)
 
@@ -351,6 +727,151 @@ def setLastActivity(request, person_id):
 
 
 def getLastActivity(request, person_id, date_=None):
+    """
+    * @api {get} /p/getLastActivity/{id}/{?date} MP's last activity
+    * @apiName getLastActivity
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs "last activity".
+      This includes all ballots cast, questions asked and speeches spoken in the past
+      ten days. This function returns the activity as it was calculated for a given
+      date, if no date is supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person
+      was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in
+      coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the
+      president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object[]} results
+    * @apiSuccess {date} results.date The date of the events in this object.
+    * @apiSuccess {Object[]} results.events List of event objects for this date.
+    
+    * @apiSuccess {String} results.events.option The option on the ballot, if the event was
+      a ballot.
+    * @apiSuccess {Integer} results.session_id Parladata id of the session at which the event
+      took place, if the event was a ballot.
+    * @apiSuccess {Boolean} results.result Returns true if the motion was passed, if the event
+      was a ballot.
+    * @apiSuccess {String} results.vote_name The name of the vote / text of the motion, if the
+      event was a ballot.
+    * @apiSuccess {Integer} results.vote_id Parladata id of the vote, if the event was a ballot.
+    
+    * @apiSuccess {String} results.recipient_text Who was the question addressed to, if the
+      event was a question.
+    * @apiSuccess {String} results.title The title of the question, if the event was a question.
+    * @apiSuccess {String} results.content_url The url to the PDF of the question, if the
+      event was a question.
+    * @apiSUccess {Object} results.session Session object, if the event was a question. Currently returns null.
+    * @apiSuccess {Integer} results.question_id Parladata id of the question, if the event was
+      a question.
+
+    * @apiSuccess {Object} results.session Session object, if the event was a speech.
+    * @apiSuccess {String} results.session.name Session name, if the event was a speech.
+    * @apiSuccess {date} results.session.date_ts UTF-8 date, if the event was a speech.
+    * @apiSuccess {Object[]} results.session.orgs List of organizations this session belongs to, if the event was a speech.
+    * @apiSuccess {String} results.session.orgs.acronym Organization acronym, if the event was a speech.
+    * @apiSuccess {Boolean} results.session.orgs.is_coalition If the event was a speech answers the question: Is this organization in coalition with the government?
+    * @apiSuccess {Integer} results.session.orgs.id Parladata id of the organization, if the event was a speech.
+    * @apiSuccess {String} results.session.orgs.name Name of the organization, if the event was a speech.
+    * @apiSuccess {date} results.session.date Slovenian date of the session, if the event was a speech.
+    * @apiSuccess {Object} results.session.org The primary organization for this session, if the event was a speech.
+    * @apiSuccess {String} results.session.org.acronym Organization acronym, if the event was a speech.
+    * @apiSuccess {Boolean} results.session.org.is_coalition If the event was a speech answers the question: Is this organization in coalition with the government?
+    * @apiSuccess {Integer} results.session.org.id Parladata id of the organization, if the event was a speech.
+    * @apiSuccess {String} results.session.org.name Name of the organization, if the event was a speech.
+    * @apiSuccess {Integer} results.session.id Parladata id of the session, if the event ws a speech.
+    
+    * @apiSuccess {String} results.type Denotes the type of event (ballot/speech/question).
+    
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getLastActivity/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getLastActivity/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "20. 3. 2017",
+        "created_for": "20. 3. 2017",
+        "results": [{
+            "date": "20. 3. 2017",
+            "events": [{
+            "option": "za",
+            "session_id": 9379,
+            "result": true,
+            "vote_name": "Dnevni red v celoti",
+            "vote_id": 6900,
+            "type": "ballot"
+            }]
+        }, {
+            "date": "17. 3. 2017",
+            "events": [{
+            "recipient_text": "ministrica za zdravje",
+            "title": "v zvezi z zakonskim omejevanjem vsebnosti transma\u0161\u010dob v \u017eivilh",
+            "content_url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0052e10f59269cd589241144a04f18728b6e6935124c6df30d7331d1f5f",
+            "session": null,
+            "type": "question",
+            "question_id": 10180
+            }]
+        }, {
+            "date": "10. 3. 2017",
+            "events": [{
+            "session": {
+                "name": "88. redna seja",
+                "date_ts": "2017-03-10T01:00:00",
+                "orgs": [{
+                "acronym": "",
+                "is_coalition": false,
+                "id": 9,
+                "name": "Kolegij predsednika dr\u017eavnega zbora"
+                }],
+                "date": "10. 3. 2017",
+                "org": {
+                "acronym": "",
+                "is_coalition": false,
+                "id": 9,
+                "name": "Kolegij predsednika dr\u017eavnega zbora"
+                },
+                "id": 9358,
+                "in_review": true
+            },
+            "speech_id": 1118501,
+            "type": "speech"
+            }]
+        }]
+    }
+    """
     print date
 
     def parseDayActivites(day_activites):
@@ -422,6 +943,106 @@ def getLastActivity(request, person_id, date_=None):
 
 # TODO date
 def getAllSpeeches(request, person_id, date_=None):
+    """
+    * @api {get} /p/getAllSpeeches/{id}/{?date} MP's speeches
+    * @apiName getAllSpeeches
+    * @apiGroup MPs
+    * @apiDescription This function returns a list of all dates when the MP spoke
+      as well as speech ids that happened on those days. The function returns the
+      list as it was compiled on a given date, if no date is supplied the date is
+      today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object[]} results MP's speeches.
+    * @apiSuccess {date} results.date The date of the speech.
+    * @apiSuccess {Object[]} results.speeches List of speeches that happened on this day.
+    * @apiSuccess {String} results.speeches.session_name The name of the session at which the speech took place.
+    * @apiSuccess {Integer} results.speech_id Parladata id of the speech.
+    * @apiSuccess {Integer} results.session_id Parladata id of the session at which the speech took place.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getAllSpeeches/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getAllSpeeches/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "22. 11. 2016",
+        "created_for": "28. 8. 2014",
+        "results": [{
+            "date": "28. 8. 2014",
+            "speeches": [{
+            "session_name": "2. izredna seja",
+            "speech_id": 524522,
+            "session_id": 5619
+            }, {
+            "session_name": "2. izredna seja",
+            "speech_id": 524403,
+            "session_id": 5619
+            }]
+        }, {
+            "date": "25. 8. 2014",
+            "speeches": [{
+            "session_name": "1. izredna seja",
+            "speech_id": 524582,
+            "session_id": 5620
+            }, {
+            "session_name": "1. izredna seja",
+            "speech_id": 524665,
+            "session_id": 5620
+            }, {
+            "session_name": "1. izredna seja",
+            "speech_id": 524690,
+            "session_id": 5620
+            }]
+        }, {
+            "date": "22. 8. 2014",
+            "speeches": [{
+            "session_name": "1. redna seja",
+            "speech_id": 529141,
+            "session_id": 5729
+            }, {
+            "session_name": "1. redna seja",
+            "speech_id": 529131,
+            "session_id": 5729
+            }]
+        }]
+    }
+    """
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y')
         speeches = Speech.getValidSpeeches(fdate)
@@ -514,6 +1135,168 @@ def setMostEqualVoters(request, person_id, date_=None):
 
 
 def getMostEqualVoters(request, person_id, date_=None):
+    """
+    * @api {get} /p/getMostEqualVoters/{id}/{?date} MP's most similar voters
+    * @apiName getMostEqualVoters
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      top 5 most similar voters. The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object[]} results List of 5 person objects representing MP's most similar voters.
+    * @apiSuccess {Object} results.person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} results.person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.person.name MP's full name.
+    * @apiSuccess {String} results.person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.person.party.name The party's name.
+    * @apiSuccess {String} results.person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.ratio The euclidean distance between the chosen MP and this one.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getMostEqualVoters/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getMostEqualVoters/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "03.11.2016",
+        "created_for": "28.08.2014",
+        "results": [{
+            "person": {
+            "is_active": false,
+            "district": [103],
+            "name": "Violeta Tomi\u0107",
+            "gov_id": "P289",
+            "gender": "f",
+            "party": {
+                "acronym": "ZL",
+                "is_coalition": false,
+                "id": 8,
+                "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 80,
+            "has_function": false
+            },
+            "ratio": 0.584624087008587
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [49],
+            "name": "Franc Tr\u010dek ",
+            "gov_id": "P290",
+            "gender": "m",
+            "party": {
+                "acronym": "ZL",
+                "is_coalition": false,
+                "id": 8,
+                "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 82,
+            "has_function": false
+            },
+            "ratio": 0.541776627164668
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [76],
+            "name": "Matja\u017e Han\u017eek",
+            "gov_id": "P256",
+            "gender": "m",
+            "party": {
+                "acronym": "ZL",
+                "is_coalition": false,
+                "id": 8,
+                "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 31,
+            "has_function": false
+            },
+            "ratio": 0.538931817860966
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [83],
+            "name": "Matej Ta\u0161ner Vatovec",
+            "gov_id": "P288",
+            "gender": "m",
+            "party": {
+                "acronym": "ZL",
+                "is_coalition": false,
+                "id": 8,
+                "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 79,
+            "has_function": false
+            },
+            "ratio": 0.494254483850995
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [46],
+            "name": "Branislav Raji\u0107",
+            "gov_id": "P281",
+            "gender": "m",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 70,
+            "has_function": false
+            },
+            "ratio": 0.384675997982625
+        }]
+    }
+    """
     equalVoters = getPersonCardModelNew(EqualVoters, person_id, date_)
 
     print equalVoters.person1.id_parladata
@@ -579,7 +1362,169 @@ def setLessEqualVoters(request, person_id, date_=None):
     return JsonResponse({'alliswell': True, "status":'OK', "saved": result})
 
 
-def getLessEqualVoters(request, person_id, date_=None):
+def getLessEqualVoters(request, person_id, date_=None): # TODO refactor rename
+    """
+    * @api {get} /p/getLeastEqualVoters/{id}/{?date} MP's least similar voters
+    * @apiName getLeastEqualVoters
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      top 5 least similar voters. The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object[]} results List of 5 person objects representing MP's least similar voters.
+    * @apiSuccess {Object} results.person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} results.person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.person.name MP's full name.
+    * @apiSuccess {String} results.person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.person.party.name The party's name.
+    * @apiSuccess {String} results.person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.ratio The euclidean distance between the chosen MP and this one.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getLeastEqualVoters/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getLeastEqualVoters/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "03.11.2016",
+        "created_for": "28.08.2014",
+        "results": [{
+            "person": {
+            "is_active": false,
+            "district": [60],
+            "name": "Branko Grims",
+            "gov_id": "P016",
+            "gender": "m",
+            "party": {
+                "acronym": "SDS",
+                "is_coalition": false,
+                "id": 5,
+                "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 26,
+            "has_function": false
+            },
+            "ratio": -0.588580815327302
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [94],
+            "name": "An\u017ee Logar",
+            "gov_id": "P238",
+            "gender": "m",
+            "party": {
+                "acronym": "SDS",
+                "is_coalition": false,
+                "id": 5,
+                "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 54,
+            "has_function": false
+            },
+            "ratio": -0.475334337037446
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [26],
+            "name": "Suzana Lep \u0160imenko",
+            "gov_id": "P268",
+            "gender": "f",
+            "party": {
+                "acronym": "SDS",
+                "is_coalition": false,
+                "id": 5,
+                "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 51,
+            "has_function": false
+            },
+            "ratio": -0.475334337037446
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [44],
+            "name": "Bojan Podkraj\u0161ek",
+            "gov_id": "P277",
+            "gender": "m",
+            "party": {
+                "acronym": "SDS",
+                "is_coalition": false,
+                "id": 5,
+                "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 64,
+            "has_function": false
+            },
+            "ratio": -0.475334337037446
+        }, {
+            "person": {
+            "is_active": false,
+            "district": [7],
+            "name": "Anja Bah \u017dibert",
+            "gov_id": "P239",
+            "gender": "f",
+            "party": {
+                "acronym": "SDS",
+                "is_coalition": false,
+                "id": 5,
+                "name": "PS Slovenska Demokratska Stranka"
+            },
+            "type": "mp",
+            "id": 2,
+            "has_function": false
+            },
+            "ratio": -0.475334337037446
+        }]
+    }
+    """
     equalVoters = getPersonCardModelNew(LessEqualVoters, person_id, date_)
     out = {
         'created_at': equalVoters.created_at.strftime(API_DATE_FORMAT),
@@ -613,7 +1558,7 @@ def getLessEqualVoters(request, person_id, date_=None):
     return JsonResponse(out, safe=False)
 
 #get speech and data of speaker
-def getSpeech(request, id):
+def getSpeech(request, id): # TODO refactor remove?
     speech=tryHard(API_URL+'/getSpeech/'+id+'/')
     speech = speech.json()
     memList = getMPsList(request)
@@ -625,7 +1570,7 @@ def getSpeech(request, id):
 #TODO
 #/id/percent/prisotniAliVsi
 #/34/66/1
-def getMPsWhichFitsToPG(request, id):
+def getMPsWhichFitsToPG(request, id): # TODO refactor remove?
     r=tryHard(API_URL+'/getVotes/')
     votes = r.json()
     r=tryHard(API_URL+'/getMembersOfPGs/')
@@ -817,6 +1762,583 @@ def setCutVotes(request, person_id, date_=None):
 
 
 def getCutVotes(request, person_id, date=None):
+    """
+    * @api {get} /p/getCutVotes/{id}/{?date} MP's vote numbers by option
+    * @apiName getCutVotes
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      ballots categorised based on which option the ballot represented (for, against,
+      abstain, not present). The function returns percentages as they were
+      calculated for a given date, if no date is supplied it is assumed the
+      date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's percentage of each particular ballot type.
+    
+    * @apiSuccess {Object} results.absent Results (percentage of ballots) for "absent" ballot option.
+    * @apiSuccess {Object} results.absent.avgCoalition Average coalition percentage of "absent" ballots.
+    * @apiSuccess {Float} results.absent.avgCoalition.score The actual percentage.
+    * @apiSuccess {Object} results.absent.avgOpposition Average opposition percentage of "absent" ballots.
+    * @apiSuccess {Float} results.absent.avgOpposition.score The actual percentage.
+    * @apiSuccess {Float} results.absent.score This MP's score.
+    * @apiSuccess {Object} results.absent.maxCoalition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.absent.maxCoalition.score Maximum score inside the coalition.
+    * @apiSuccess {Object[]} results.absent.maxCoalition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.absent.maxCoalition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.absent.maxCoalition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.absent.maxCoalition.mps.name MP's full name.
+    * @apiSuccess {String} results.absent.maxCoalition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.absent.maxCoalition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.absent.maxCoalition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.absent.maxCoalition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.absent.maxCoalition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.absent.maxCoalition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.absent.maxCoalition.mps.party.name The party's name.
+    * @apiSuccess {String} results.absent.maxCoalition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.absent.maxCoalition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} results.absent.maxOpposition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.absent.maxOpposition.score Maximum score inside the opposition.
+    * @apiSuccess {Object[]} results.absent.maxOpposition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.absent.maxOpposition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.absent.maxOpposition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.absent.maxOpposition.mps.name MP's full name.
+    * @apiSuccess {String} results.absent.maxOpposition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.absent.maxOpposition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.absent.maxOpposition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.absent.maxOpposition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.absent.maxOpposition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.absent.maxOpposition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.absent.maxOpposition.mps.party.name The party's name.
+    * @apiSuccess {String} results.absent.maxOpposition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.absent.maxOpposition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Object} results.abstain Results (percentage of ballots) for "abstain" ballot option.
+    * @apiSuccess {Object} results.abstain.avgCoalition Average coalition percentage of "abstain" ballots.
+    * @apiSuccess {Float} results.abstain.avgCoalition.score The actual percentage.
+    * @apiSuccess {Object} results.abstain.avgOpposition Average opposition percentage of "abstain" ballots.
+    * @apiSuccess {Float} results.abstain.avgOpposition.score The actual percentage.
+    * @apiSuccess {Float} results.abstain.score This MP's score.
+    * @apiSuccess {Object} results.abstain.maxCoalition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.abstain.maxCoalition.score Maximum score inside the coalition.
+    * @apiSuccess {Object[]} results.abstain.maxCoalition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.abstain.maxCoalition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.abstain.maxCoalition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.name MP's full name.
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.abstain.maxCoalition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.abstain.maxCoalition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.abstain.maxCoalition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.party.name The party's name.
+    * @apiSuccess {String} results.abstain.maxCoalition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.abstain.maxCoalition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} results.abstain.maxOpposition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.abstain.maxOpposition.score Maximum score inside the opposition.
+    * @apiSuccess {Object[]} results.abstain.maxOpposition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.abstain.maxOpposition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.abstain.maxOpposition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.name MP's full name.
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.abstain.maxOpposition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.abstain.maxOpposition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.abstain.maxOpposition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.party.name The party's name.
+    * @apiSuccess {String} results.abstain.maxOpposition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.abstain.maxOpposition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Object} results.for Results (percentage of ballots) for "for" ballot option.
+    * @apiSuccess {Object} results.for.avgCoalition Average coalition percentage of "for" ballots.
+    * @apiSuccess {Float} results.for.avgCoalition.score The actual percentage.
+    * @apiSuccess {Object} results.for.avgOpposition Average opposition percentage of "for" ballots.
+    * @apiSuccess {Float} results.for.avgOpposition.score The actual percentage.
+    * @apiSuccess {Float} results.for.score This MP's score.
+    * @apiSuccess {Object} results.for.maxCoalition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.for.maxCoalition.score Maximum score inside the coalition.
+    * @apiSuccess {Object[]} results.for.maxCoalition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.for.maxCoalition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.for.maxCoalition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.for.maxCoalition.mps.name MP's full name.
+    * @apiSuccess {String} results.for.maxCoalition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.for.maxCoalition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.for.maxCoalition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.for.maxCoalition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.for.maxCoalition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.for.maxCoalition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.for.maxCoalition.mps.party.name The party's name.
+    * @apiSuccess {String} results.for.maxCoalition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.for.maxCoalition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} results.for.maxOpposition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.for.maxOpposition.score Maximum score inside the opposition.
+    * @apiSuccess {Object[]} results.for.maxOpposition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.for.maxOpposition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.for.maxOpposition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.for.maxOpposition.mps.name MP's full name.
+    * @apiSuccess {String} results.for.maxOpposition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.for.maxOpposition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.for.maxOpposition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.for.maxOpposition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.for.maxOpposition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.for.maxOpposition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.for.maxOpposition.mps.party.name The party's name.
+    * @apiSuccess {String} results.for.maxOpposition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.for.maxOpposition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Object} results.against Results (percentage of ballots) for "against" ballot option.
+    * @apiSuccess {Object} results.against.avgCoalition Average coalition percentage of "against" ballots.
+    * @apiSuccess {Float} results.against.avgCoalition.score The actual percentage.
+    * @apiSuccess {Object} results.against.avgOpposition Average opposition percentage of "against" ballots.
+    * @apiSuccess {Float} results.against.avgOpposition.score The actual percentage.
+    * @apiSuccess {Float} results.against.score This MP's score.
+    * @apiSuccess {Object} results.against.maxCoalition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.against.maxCoalition.score Maximum score inside the coalition.
+    * @apiSuccess {Object[]} results.against.maxCoalition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.against.maxCoalition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.against.maxCoalition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.against.maxCoalition.mps.name MP's full name.
+    * @apiSuccess {String} results.against.maxCoalition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.against.maxCoalition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.against.maxCoalition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.against.maxCoalition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.against.maxCoalition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.against.maxCoalition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.against.maxCoalition.mps.party.name The party's name.
+    * @apiSuccess {String} results.against.maxCoalition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.against.maxCoalition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} results.against.maxOpposition MPs with the maximum score and their score.
+    * @apiSuccess {Float} results.against.maxOpposition.score Maximum score inside the opposition.
+    * @apiSuccess {Object[]} results.against.maxOpposition.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.against.maxOpposition.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.against.maxOpposition.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.against.maxOpposition.mps.name MP's full name.
+    * @apiSuccess {String} results.against.maxOpposition.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.against.maxOpposition.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.against.maxOpposition.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.against.maxOpposition.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.against.maxOpposition.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.against.maxOpposition.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.against.maxOpposition.mps.party.name The party's name.
+    * @apiSuccess {String} results.against.maxOpposition.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.against.maxOpposition.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getCutVotes/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getCutVotes/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "03.11.2016",
+        "created_for": "28.08.2014",
+        "results": {
+            "absent": {
+            "avgCoalition": {
+                "score": 0.000599547511312217
+            },
+            "avgOpposition": {
+                "score": 0.00142414860681115
+            },
+            "score": 29.4117647058824,
+            "maxCoalition": {
+                "score": 0.00470588235294118,
+                "mps": [{
+                "is_active": false,
+                "district": [34],
+                "name": "Karl Viktor Erjavec",
+                "gov_id": "G20",
+                "gender": "m",
+                "party": {
+                    "acronym": "DeSUS",
+                    "is_coalition": true,
+                    "id": 3,
+                    "name": "PS Demokratska Stranka Upokojencev Slovenije"
+                },
+                "type": "mp",
+                "id": 20,
+                "has_function": false
+                }]
+            },
+            "maxOpposition": {
+                "score": 70.5882352941177,
+                "mps": [{
+                "is_active": false,
+                "district": [25],
+                "name": "Marijan Pojbi\u010d",
+                "gov_id": "P098",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 66,
+                "has_function": false
+                }]
+            }
+            },
+            "abstain": {
+            "avgCoalition": {
+                "score": 1.13122171945701e-05
+            },
+            "avgOpposition": {
+                "score": 0.00185758513931889
+            },
+            "score": 11.7647058823529,
+            "maxCoalition": {
+                "score": 0.000588235294117647,
+                "mps": [{
+                "is_active": false,
+                "district": [76],
+                "name": "Milan Brglez",
+                "gov_id": "P243",
+                "gender": "m",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 11,
+                "has_function": true
+                }]
+            },
+            "maxOpposition": {
+                "score": 35.2941176470588,
+                "mps": [{
+                "is_active": false,
+                "district": [65],
+                "name": "\u017dan Mahni\u010d",
+                "gov_id": "P270",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 55,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [71],
+                "name": "Janez Jan\u0161a",
+                "gov_id": "P025",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 36,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [12],
+                "name": "Toma\u017e Lisec",
+                "gov_id": "P187",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 53,
+                "has_function": false
+                }]
+            }
+            },
+            "for": {
+            "avgCoalition": {
+                "score": 0.00780542986425339
+            },
+            "avgOpposition": {
+                "score": 0.00501547987616099
+            },
+            "score": 35.2941176470588,
+            "maxCoalition": {
+                "score": 0.00941176470588235,
+                "mps": [{
+                "is_active": false,
+                "district": [52],
+                "name": "Ivan Prelog",
+                "gov_id": "P279",
+                "gender": "m",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 68,
+                "has_function": false
+                }]
+            },
+            "maxOpposition": {
+                "score": 82.3529411764706,
+                "mps": [{
+                "is_active": false,
+                "district": [90],
+                "name": "Roberto Battelli",
+                "gov_id": "P005",
+                "gender": "m",
+                "party": {
+                    "acronym": "IMNS",
+                    "is_coalition": false,
+                    "id": 2,
+                    "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                },
+                "type": "mp",
+                "id": 4,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [91],
+                "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                "gov_id": "P117",
+                "gender": "m",
+                "party": {
+                    "acronym": "IMNS",
+                    "is_coalition": false,
+                    "id": 2,
+                    "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                },
+                "type": "mp",
+                "id": 24,
+                "has_function": false
+                }]
+            }
+            },
+            "against": {
+            "avgCoalition": {
+                "score": 0.00158371040723982
+            },
+            "avgOpposition": {
+                "score": 0.00170278637770898
+            },
+            "score": 23.5294117647059,
+            "maxCoalition": {
+                "score": 0.00333333333333333,
+                "mps": [{
+                "is_active": false,
+                "district": [99],
+                "name": "Du\u0161an Verbi\u010d",
+                "gov_id": "P296",
+                "gender": "m",
+                "party": {
+                    "acronym": "SMC",
+                    "is_coalition": true,
+                    "id": 1,
+                    "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 92,
+                "has_function": false
+                }]
+            },
+            "maxOpposition": {
+                "score": 23.5294117647059,
+                "mps": [{
+                "is_active": false,
+                "district": [28],
+                "name": "Andrej \u010cu\u0161",
+                "gov_id": "P225",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 15,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [89],
+                "name": "Eva Irgl",
+                "gov_id": "P023",
+                "gender": "f",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 35,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [9],
+                "name": "Zvonko Lah",
+                "gov_id": "P129",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 49,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [65],
+                "name": "\u017dan Mahni\u010d",
+                "gov_id": "P270",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 55,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [30],
+                "name": "Jelka Godec",
+                "gov_id": "P252",
+                "gender": "f",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 23,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [55],
+                "name": "Danijel Krivec",
+                "gov_id": "P040",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 47,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [12],
+                "name": "Toma\u017e Lisec",
+                "gov_id": "P187",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 53,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [34],
+                "name": "Ljubo \u017dnidar",
+                "gov_id": "P212",
+                "gender": "m",
+                "party": {
+                    "acronym": "SDS",
+                    "is_coalition": false,
+                    "id": 5,
+                    "name": "PS Slovenska Demokratska Stranka"
+                },
+                "type": "mp",
+                "id": 91,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [64],
+                "name": "Miha Kordi\u0161",
+                "gov_id": "P262",
+                "gender": "m",
+                "party": {
+                    "acronym": "ZL",
+                    "is_coalition": false,
+                    "id": 8,
+                    "name": "PS Zdru\u017eena Levica"
+                },
+                "type": "mp",
+                "id": 42,
+                "has_function": false
+                }, {
+                "is_active": false,
+                "district": [15],
+                "name": "Luka Mesec",
+                "gov_id": "P273",
+                "gender": "m",
+                "party": {
+                    "acronym": "ZL",
+                    "is_coalition": false,
+                    "id": 8,
+                    "name": "PS Zdru\u017eena Levica"
+                },
+                "type": "mp",
+                "id": 58,
+                "has_function": false
+                }]
+            }
+            }
+        }
+    }
+    """
     cutVotes = getPersonCardModelNew(CutVotes, person_id, date)
 
     out = {
@@ -963,6 +2485,71 @@ def setStyleScores(request, person_id):
     return JsonResponse(output, safe=False)
 
 def getStyleScores(request, person_id, date_=None):
+    """
+    * @api {get} /p/getStyleScores/{id}/{?date} MP's style scores
+    * @apiName getStyleScores
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      style scores. The function returns the scores as they were calculated
+      for a given date. If no date is supplied it is assumed the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's style scores.
+    * @apiSuccess {Float} results.problematicno MP's "problematic" language score.
+    * @apiSuccess {Float} results.preprosto MP's "simple" language score.
+    * @apiSuccess {Float} results.privzdignjeno MP's "fancy" language score.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getStyleScores/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getStyleScores/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "02.11.2016",
+        "created_for": "06.09.2014",
+        "results": {
+            "problematicno": 0.6451263190481497,
+            "preprosto": 1.0269481824385878,
+            "privzdignjeno": 0
+        }
+    }
+    """
     card = getPersonCardModelNew(StyleScores, int(person_id), date_)
 
     privzdignjeno = 0
@@ -996,7 +2583,7 @@ def getStyleScores(request, person_id, date_=None):
 
     return JsonResponse(out, safe=False)
 
-def getTotalStyleScores(request):
+def getTotalStyleScores(request): # TODO refactor remove?
 #    speeches = tryHard(API_URL+'/getAllSpeeches/').json()
 #    speeches_content = [speech['content'] for speech in speeches]
 #    speeches_megastring = string.join(speeches_content)
@@ -1034,7 +2621,7 @@ def getTotalStyleScores(request):
 
     return JsonResponse(output, safe=False)
 
-def makeAverageStyleScores(date_):
+def makeAverageStyleScores(date_): # TODO refactor cleanup
 #    speeches = tryHard(API_URL+'/getAllSpeeches/').json()
 #    speeches_content = [speech['content'] for speech in speeches]
 #    speeches_megastring = string.join(speeches_content)
@@ -1061,7 +2648,7 @@ def makeAverageStyleScores(date_):
 
     return output
 
-def setTFIDFold(request, person_id):
+def setTFIDFold(request, person_id): # TODO refactor remove?
 
     mps = tryHard(API_URL+'/getMPs/').json()
 
@@ -1105,7 +2692,239 @@ def setTFIDF(request, person_id, date_=None):
     return JsonResponse({"alliswell": True,
                          "saved": is_saved})
 
-def getTFIDF(request, person_id, date_=None):
+def getTFIDF(request, person_id, date_=None): # TODO refactor fix date?
+    """
+    * @api {get} /p/getTFIDF/{id}/{?date} MP's top TFIDF terms
+    * @apiName getTFIDF
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      top TFIDF terms. It returns between 10 and 15 terms, depending on the
+      topical overlap of the top 15 terms. The function returns the score as
+      it was calculated for a given date, if no date is supplied it is assumed
+      the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object[]} results MP's top TFIDF words (between 10 and 15).
+    * @apiSuccess {String} results.term The term in question.
+    * @apiSuccess {Object} results.scores TFIDF scores
+    * @apiSuccess {Integer} results.scores.tf Term frequency.
+    * @apiSuccess {Integer} results.scores.df Document frequency.
+    * @apiSuccess {Float} results.scores.tf-idf TF/DF.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getTFIDF/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getTFIDF/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "20.02.2017",
+        "created_for": "20.02.2017",
+        "results": [{
+            "term": "transma\u0161\u010doba",
+            "scores": {
+            "tf": 27,
+            "df": 30,
+            "tf-idf": 0.9
+            }
+        }, {
+            "term": "transma\u0161\u010doben",
+            "scores": {
+            "tf": 12,
+            "df": 14,
+            "tf-idf": 0.8571428571428571
+            }
+        }, {
+            "term": "borznoposredni\u0161ki",
+            "scores": {
+            "tf": 47,
+            "df": 59,
+            "tf-idf": 0.7966101694915254
+            }
+        }, {
+            "term": "soupravljanje",
+            "scores": {
+            "tf": 82,
+            "df": 126,
+            "tf-idf": 0.6507936507936508
+            }
+        }, {
+            "term": "trgovalen",
+            "scores": {
+            "tf": 49,
+            "df": 80,
+            "tf-idf": 0.6125
+            }
+        }, {
+            "term": "Cinven",
+            "scores": {
+            "tf": 35,
+            "df": 63,
+            "tf-idf": 0.5555555555555556
+            }
+        }, {
+            "term": "borzen",
+            "scores": {
+            "tf": 60,
+            "df": 114,
+            "tf-idf": 0.5263157894736842
+            }
+        }, {
+            "term": "Alpina",
+            "scores": {
+            "tf": 37,
+            "df": 82,
+            "tf-idf": 0.45121951219512196
+            }
+        }, {
+            "term": "kislina",
+            "scores": {
+            "tf": 14,
+            "df": 32,
+            "tf-idf": 0.4375
+            }
+        }, {
+            "term": "obvezni\u010dar",
+            "scores": {
+            "tf": 11,
+            "df": 26,
+            "tf-idf": 0.4230769230769231
+            }
+        }, {
+            "term": "registrski",
+            "scores": {
+            "tf": 73,
+            "df": 175,
+            "tf-idf": 0.41714285714285715
+            }
+        }, {
+            "term": "Lahovnikov zakon",
+            "scores": {
+            "tf": 20,
+            "df": 49,
+            "tf-idf": 0.40816326530612246
+            }
+        }, {
+            "term": "\u010cate\u017e",
+            "scores": {
+            "tf": 12,
+            "df": 30,
+            "tf-idf": 0.4
+            }
+        }, {
+            "term": "cigareta",
+            "scores": {
+            "tf": 32,
+            "df": 81,
+            "tf-idf": 0.3950617283950617
+            }
+        }, {
+            "term": "progresija",
+            "scores": {
+            "tf": 15,
+            "df": 43,
+            "tf-idf": 0.3488372093023256
+            }
+        }, {
+            "term": "neizpla\u010dan",
+            "scores": {
+            "tf": 28,
+            "df": 82,
+            "tf-idf": 0.34146341463414637
+            }
+        }, {
+            "term": "delavski",
+            "scores": {
+            "tf": 197,
+            "df": 582,
+            "tf-idf": 0.3384879725085911
+            }
+        }, {
+            "term": "Helios",
+            "scores": {
+            "tf": 38,
+            "df": 116,
+            "tf-idf": 0.3275862068965517
+            }
+        }, {
+            "term": "predkupen",
+            "scores": {
+            "tf": 25,
+            "df": 80,
+            "tf-idf": 0.3125
+            }
+        }, {
+            "term": "Telekom",
+            "scores": {
+            "tf": 201,
+            "df": 648,
+            "tf-idf": 0.3101851851851852
+            }
+        }, {
+            "term": "Siriza",
+            "scores": {
+            "tf": 14,
+            "df": 46,
+            "tf-idf": 0.30434782608695654
+            }
+        }, {
+            "term": "prekeren",
+            "scores": {
+            "tf": 33,
+            "df": 109,
+            "tf-idf": 0.30275229357798167
+            }
+        }, {
+            "term": "pregrevanje",
+            "scores": {
+            "tf": 27,
+            "df": 90,
+            "tf-idf": 0.3
+            }
+        }, {
+            "term": "klasificirati",
+            "scores": {
+            "tf": 25,
+            "df": 84,
+            "tf-idf": 0.2976190476190476
+            }
+        }]
+    }
+    """
 
     card = getPersonCardModelNew(Tfidf, int(person_id), date=date_, is_visible=True)
 
@@ -1178,7 +2997,7 @@ def setVocabularySizeAndSpokenWords(request, date_=None):
     return HttpResponse('All MPs updated.')
 
 #Depricated
-def setVocabularySizeALL(request, date_):
+def setVocabularySizeALL(request, date_): # TODO refactor remove? 
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1295,6 +3114,104 @@ def setVocabularySize(request, person_id, date_=None):
 
 
 def getVocabularySize(request, person_id, date_=None):
+    """
+    * @api {get} /p/getVocabularySize/{id}/{?date} MP's vocabulary size
+    * @apiName getVocabularySize
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      calculated vocabulary size. The function returns the score as it was
+      calculated for a given date, if no date is supplied it is assumed
+      the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's vocabulary size.
+    * @apiSuccess {Object} results.max MP (or MPs) who has the highest vocabulary size and their score.
+    * @apiSuccess {Float} results.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.max.mps.name MP's full name.
+    * @apiSuccess {String} results.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.average The average score for this metric accross the parliament.
+    * @apiSuccess {Float} results.score Score for the MP in question.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getVocabularySize/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getVocabularySize/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "14.11.2016",
+        "created_for": "10.09.2014",
+        "results": {
+            "max": {
+            "score": 744.915094339623,
+            "mps": [{
+                "is_active": false,
+                "district": [40],
+                "name": "Benedikt Kopmajer",
+                "gov_id": "P261",
+                "gender": "m",
+                "party": {
+                "acronym": "DeSUS",
+                "is_coalition": true,
+                "id": 3,
+                "name": "PS Demokratska Stranka Upokojencev Slovenije"
+                },
+                "type": "mp",
+                "id": 41,
+                "has_function": false
+            }]
+            },
+            "average": 388.298609949473,
+            "score": 592.0
+        }
+    }
+    """
 
     card = getPersonCardModelNew(VocabularySize, person_id, date_)
 
@@ -1315,7 +3232,7 @@ def getVocabularySize(request, person_id, date_=None):
     return JsonResponse(out, safe=False)
 
 
-def getVocabolarySizeLanding(request, date_=None):
+def getVocabolarySizeLanding(request, date_=None): # TODO refactor document fits into different category?
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1339,7 +3256,7 @@ def getVocabolarySizeLanding(request, date_=None):
                          safe=False)
 
 
-def getVocabolarySizeUniqueWordsLanding(request, date_=None):
+def getVocabolarySizeUniqueWordsLanding(request, date_=None): # TODO document?
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1354,7 +3271,7 @@ def getVocabolarySizeUniqueWordsLanding(request, date_=None):
 
 
 #just method ALL is edited for date
-def setAverageNumberOfSpeechesPerSession(request, person_id):
+def setAverageNumberOfSpeechesPerSession(request, person_id): # TODO refactor remove?
 
     person = Person.objects.get(id_parladata=int(person_id))
     speeches = tryHard(API_URL+'/getSpeechesOfMP/' + person_id).json()
@@ -1386,7 +3303,7 @@ def setAverageNumberOfSpeechesPerSession(request, person_id):
 
     return HttpResponse('All iz well')
 
-def setAverageNumberOfSpeechesPerSessionAll(request, date_=None):
+def setAverageNumberOfSpeechesPerSessionAll(request, date_=None): # TODO refactor check if float
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1431,6 +3348,104 @@ def setAverageNumberOfSpeechesPerSessionAll(request, date_=None):
     return HttpResponse('All iz well')
 
 def getAverageNumberOfSpeechesPerSession(request, person_id, date=None):
+    """
+    * @api {get} /p/getAverageNumberOfSpeechesPerSession/{id}/{?date} MP's average number of speeches per session
+    * @apiName getAverageNumberOfSpeechesPerSession
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      calculated average number of speeches per session. The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's average number of speeches per session.
+    * @apiSuccess {Object} results.max MP (or MPs) who has the highest speeches per session and their score.
+    * @apiSuccess {Integer} results.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.max.mps.name MP's full name.
+    * @apiSuccess {String} results.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Integer} results.average The average score for this metric accross the parliament.
+    * @apiSuccess {Integer} results.score Score for the MP in question.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getAverageNumberOfSpeechesPerSession/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getAverageNumberOfSpeechesPerSession/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "02.11.2016",
+        "created_for": "06.09.2014",
+        "results": {
+            "max": {
+            "score": 31.0,
+            "mps": [{
+                "is_active": false,
+                "district": [76],
+                "name": "Milan Brglez",
+                "gov_id": "P243",
+                "gender": "m",
+                "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+                },
+                "type": "mp",
+                "id": 11,
+                "has_function": true
+            }]
+            },
+            "average": 2.0,
+            "score": 2.0
+        }
+    }
+    """
 
     card = getPersonCardModelNew(AverageNumberOfSpeechesPerSession, person_id, date)
     #static = getPersonCardModelNew(MPStaticPL, person_id, date)
@@ -1453,7 +3468,7 @@ def getAverageNumberOfSpeechesPerSession(request, person_id, date=None):
 
 
 # get MPs IDs
-def getMPsIDs(request):
+def getMPsIDs(request): # TODO document understand?
     output = []
     data = tryHard(API_URL+'/getMPs/')
     data = data.json()
@@ -1489,7 +3504,7 @@ def setCompass(request, date_=None):
 
     return JsonResponse({'alliswell': True, "status":'OK', "saved": True})
 
-def getCompass(request, date_=None): # TODO make propper setters and getters
+def getCompass(request, date_=None): # TODO make proper setters and getters TODO document
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -1527,7 +3542,7 @@ def setMembershipsOfMember(request, person_id, date=None):
     return HttpResponse(memberships)
 
 
-def getMembershipsOfMember(request, person_id, date=None):
+def getMembershipsOfMember(request, person_id, date=None): # TODO document
     card = getPersonCardModelNew(MembershipsOfMember, person_id, date)
     static = getPersonCardModelNew(MPStaticPL, person_id, date)
 
@@ -1541,7 +3556,7 @@ def getMembershipsOfMember(request, person_id, date=None):
     return JsonResponse(out, safe=False)
 
 
-def getTaggedBallots(request, person_id, date_=None):
+def getTaggedBallots(request, person_id, date_=None): # TODO document
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
     else:
@@ -1625,7 +3640,104 @@ def setNumberOfQuestionsAll(request, date_=None):
     return HttpResponse('All iz well')
 
 
-def getNumberOfQuestions(request, person_id, date_=None):
+def getNumberOfQuestions(request, person_id, date_=None): # TODO refactor fix date?
+    """
+    * @api {get} /p/getNumberOfQuestions/{id}/{?date} MP's number of questions
+    * @apiName getNumberOfQuestions
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the MPs
+      calculated number of questions (like PM's questions in the UK). The function
+      returns the score as it was calculated for a given date, if no date is
+      supplied the date is today.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for What historic date does this data correspond with?
+
+    * @apiSuccess {Object} results MP's number of questions.
+    * @apiSuccess {Object} results.max MP (or MPs) who has the highest number of questions and their score.
+    * @apiSuccess {Integer} results.max.score Max MP's score.
+    * @apiSuccess {Object[]} results.max.mps A list of MP's with the same maximum score.
+    * @apiSuccess {Boolean} results.max.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.max.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.max.mps.name MP's full name.
+    * @apiSuccess {String} results.max.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.max.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.max.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.max.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.max.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.max.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.max.mps.party.name The party's name.
+    * @apiSuccess {String} results.max.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Boolean} results.max.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Float} results.average The average score for this metric accross the parliament.
+    * @apiSuccess {Integer} results.score Score for the MP in question.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/p/getNumberOfQuestions/12
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/p/getNumberOfQuestions/12/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "person": {
+            "is_active": false,
+            "district": [15],
+            "name": "Luka Mesec",
+            "gov_id": "P273",
+            "gender": "m",
+            "party": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "id": 8,
+            "name": "PS Zdru\u017eena Levica"
+            },
+            "type": "mp",
+            "id": 58,
+            "has_function": false
+        },
+        "created_at": "21.03.2017",
+        "created_for": "20.03.2017",
+        "results": {
+            "max": {
+            "score": 672449,
+            "mps": [{
+                "is_active": false,
+                "district": [17],
+                "name": "Jo\u017eef Horvat",
+                "gov_id": "P020",
+                "gender": "m",
+                "party": {
+                "acronym": "NSI",
+                "is_coalition": false,
+                "id": 6,
+                "name": "PS Nova Slovenija"
+                },
+                "type": "mp",
+                "id": 32,
+                "has_function": false
+            }]
+            },
+            "average": 177115,
+            "score": 381389
+        }
+    }
+    """
     card = getPersonCardModelNew(NumberOfQuestions,
                                  person_id,
                                  date_)
@@ -1649,7 +3761,7 @@ def getNumberOfQuestions(request, person_id, date_=None):
     return JsonResponse(out, safe=False)
 
 
-def getQuestions(request, person_id, date_=None):
+def getQuestions(request, person_id, date_=None): # TODO document
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y')
         questions = Question.objects.filter(person__id_parladata=person_id)
@@ -1690,7 +3802,7 @@ def getQuestions(request, person_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
-def getListOfMembers(request, date_=None, force_render=False):
+def getListOfMembers(request, date_=None, force_render=False): # TODO document
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
         key = date_
@@ -1764,11 +3876,11 @@ def getListOfMembers(request, date_=None, force_render=False):
     return JsonResponse(data)
 
 
-def getAllActiveMembers(request):
+def getAllActiveMembers(request): # TODO document
     return JsonResponse([getPersonData(person.id_parladata) for person in Person.objects.filter(actived="Yes")], safe=False)
 
 
-def getSlugs(request):
+def getSlugs(request): # TODO document
     obj = {"person": {person.id_parladata: {"slug": slugify(person.name)}
                       for person
                       in Person.objects.all().exclude(pg__isnull=True)},
@@ -1861,7 +3973,7 @@ def setPresenceThroughTime(request, person_id, date_=None):
     return JsonResponse({'alliswell': True, "status": 'OK', "saved": saved})
 
 
-def getPresenceThroughTime(request, person_id, date_=None):
+def getPresenceThroughTime(request, person_id, date_=None): # TODO document
     card = getPersonCardModelNew(PresenceThroughTime,
                                  person_id,
                                  date_)
@@ -2053,7 +4165,7 @@ def setListOfMembersTickers(request, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getListOfMembersTickers(request, date_=None):
+def getListOfMembersTickers(request, date_=None): # TODO document
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
