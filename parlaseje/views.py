@@ -413,7 +413,7 @@ def getMotionGraph(request, id_mo, date=False):
                'created_for': model[0].vote.created_for.strftime(API_DATE_FORMAT),
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
                'name': model[0].motion,
-               'result': model[0].result,
+               'result': model[0].vote.result,
                'documents': docs if docs else [],
                'required': '62', #TODO: naji pravo stvar za ta 62 :D
                'all': {'kvorum': out_kvor,
