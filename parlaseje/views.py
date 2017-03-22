@@ -278,7 +278,8 @@ def getMotionOfSession(request, id_se, date=False):
     created_at = None
     if Session.objects.filter(id_parladata=int(id_se)):
         session = Session.objects.get(id_parladata=int(id_se))
-        votes = Vote.objects.filter(session__id_parladata=id_se).order_by("start_time")
+        votes = Vote.objects.filter(session__id_parladata=id_se,
+                                    result__isnull=False).order_by("start_time")
         if votes:
             dates = []
             for card in votes:
@@ -407,12 +408,13 @@ def getMotionGraph(request, id_mo, date=False):
                   'total_votes': model[0].not_present,
                   'breakdown': option_np}
 
+        docs = model[0].vote.document_url
         out = {'id': id_mo,
                'created_for': model[0].vote.created_for.strftime(API_DATE_FORMAT),
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
                'name': model[0].motion,
-               'result': model[0].result,
-               'documents': model[0].vote.document_url,
+               'result': model[0].vote.result,
+               'documents': docs if docs else [],
                'required': '62', #TODO: naji pravo stvar za ta 62 :D
                'all': {'kvorum': out_kvor,
                        'for': out_for,
