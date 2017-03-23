@@ -2692,7 +2692,7 @@ def setTFIDF(request, person_id, date_=None):
     return JsonResponse({"alliswell": True,
                          "saved": is_saved})
 
-def getTFIDF(request, person_id, date_=None): # TODO refactor fix date?
+def getTFIDF(request, person_id, date_=None):
     """
     * @api {get} /p/getTFIDF/{id}/{?date} MP's top TFIDF terms
     * @apiName getTFIDF
