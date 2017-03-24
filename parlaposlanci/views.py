@@ -508,7 +508,7 @@ def getPercentOFAttendedSession(request, person_id, date=None):
     return JsonResponse(out)
 
 
-#Depricated
+#Deprecated
 #Saves to DB number of spoken word of MP and maximum and average of spoken words
 def setNumberOfSpokenWordsALL(request, date_=None):
     if date_:
@@ -3066,7 +3066,7 @@ def setVocabularySizeALL(request, date_): # TODO refactor remove?
 #
 #    return JsonResponse(result, safe=False)
 
-def setVocabularySize(request, person_id, date_=None):
+def setVocabularySize(request, person_id, date_=None): # TODO refactor cleanup
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -3367,7 +3367,7 @@ def getVocabolarySizeLanding(request, date_=None): # TODO refactor typo getVocab
                          safe=False)
 
 
-def getVocabolarySizeUniqueWordsLanding(request, date_=None):
+def getVocabolarySizeUniqueWordsLanding(request, date_=None): # TODO refactor typo getVocabularySize
     """
     * @api {get} /p/getUniqueWordsLanding/{?date} [DEPRECATED] Number of unique words spoken by MPs
     * @apiName getUniqueWordsLanding
