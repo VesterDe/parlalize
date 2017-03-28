@@ -209,15 +209,10 @@ def updateLastDay(date_=None):
         to_date = datetime.now()
     else:
         to_date = date_
-    try:
-        print 'sessions'
-        runSettersSessions()
-    except:
-        client.captureException()
 
-    votes = Vote.objects.filter(session_date__lte=to_date)
+    votes = Vote.objects.filter(start_time__lte=to_date)
     lastVoteDay = votes.latest('created_for').created_for
-    speeches = Speech.objects.filter(session_date__lte=to_date)
+    speeches = Speech.objects.filter(start_time__lte=to_date)
     lastSpeechDay = speeches.latest('start_time').start_time
 
     votez = VotesAnalysis(to_date)
@@ -225,7 +220,7 @@ def updateLastDay(date_=None):
 
     runForTwoDays = True
 
-    if lastVoteDay.date() == lastSpeechDay.date():
+    if lastVoteDay == lastSpeechDay.date():
         runForTwoDays = False
 
     try:

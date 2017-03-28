@@ -338,14 +338,14 @@ class VotesAnalysis(object):
             result = saveOrAbortNew(model=Presence,
                                     created_for=self.date_of,
                                     person=person,
-                                    person_value_sessions=thisSession*100,
+                                    person_value_sessions=thisSession,
                                     maxMP_sessions=[int(maxSession.voter)],
-                                    average_sessions=avgSession*100,
-                                    maximum_sessions=maxSession.attendance*100,
-                                    person_value_votes=thisVotes*100,
+                                    average_sessions=avgSession,
+                                    maximum_sessions=maxSession.attendance,
+                                    person_value_votes=thisVotes,
                                     maxMP_votes=[int(maxVote.voter)],
-                                    average_votes=avgVote*100,
-                                    maximum_votes=maxVote.attendance*100)
+                                    average_votes=avgVote,
+                                    maximum_votes=maxVote.attendance)
 
     def setPresenceOfPGs(self):
         """
