@@ -1653,7 +1653,11 @@ def getQuestions(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y')
         questions = Question.objects.filter(person__id_parladata=person_id)
-        questions = [[question for question in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
+        questions = [[question
+                      for question
+                      in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])]
+                     for t_date
+                     in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
     else:
         fdate = datetime.now()
         questions = Question.objects.filter(person__id_parladata=person_id)
@@ -1672,11 +1676,19 @@ def getQuestions(request, person_id, date_=None):
         lastDay = day[0].start_time.strftime(API_OUT_DATE_FORMAT)
         for question in day:
             created_at.append(question.created_at)
+            persons = []
+            orgs = []
+            for person in question.recipient_persons.all():
+                persons.append(getPersonData(person.id_parladata))
+            for org in question.recipient_organizations.all():
+                orgs.append(org.getOrganizationData())
             dayData['questions'].append({
                 'session_name': question.session.name if question.session else 'Unknown',
                 'id': question.id_parladata,
                 'title': question.title,
                 'recipient_text': question.recipient_text,
+                'recipient_persons': persons,
+                'recipient_orgs': orgs,
                 'url': question.content_link,
                 'session_id': question.session.id_parladata if question.session else 'Unknown'})
         out.append(dayData)
