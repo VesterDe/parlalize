@@ -1456,6 +1456,9 @@ def fastUpdate(date_=None):
         print "recache"
         updatePagesS(list(set(s_update)))
 
+    updateLastActivity()
+    recacheWBs()
+
     t_delta = time() - start_time
     client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
 
@@ -1475,3 +1478,19 @@ def setListOfMembers(date_time):
     start_date = datetime.strptime(date_time, "%Y-%m-%dT%X")
     start_date = start_date - timedelta(days=1)
     setListOfMembersTickers(None, start_time.strftime(API_DATE_FORMAT))
+
+
+def updateLastActivity():
+    mps = tryHard('https://data.parlameter.si/v1/getMPs/').json()
+    mps_ids = [mp['id'] for mp in mps]
+    for mp in mps_ids:
+        print mp
+        print setLastActivity(None, str(mp))
+        print requests.get("https://glej.parlameter.si/p/zadnje-aktivnosti/" + str(mp) + "/?frame=true&altHeader=true&forceRender=true")
+
+
+def recacheWBs():
+    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    for wb in wbs:
+        print wb
+        print requests.get("https://glej.parlameter.si/wb/getWorkingBodies/"+str(wb['id'])+"?frame=true&altHeader=true&forceRender=true")
