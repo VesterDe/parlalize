@@ -134,6 +134,49 @@ def getMPStaticPL(request, person_id, date_=None):
     return JsonResponse(data)
 
 
+# returns MP static data like PoliticalParty, age, ....
+def setMinsterStatic(request, person_id, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+        data = tryHard(API_URL+'/getMinistrStatic/' + person_id + "/" + date_).json()
+    else:
+        date_of = datetime.now().date()
+        data = tryHard(API_URL+'/getMinistrStatic/' + person_id).json()
+
+    person = Person.objects.get(id_parladata=int(person_id))
+    if not data:
+        return JsonResponse({"status": 'Nothing iz well', "saved": False})
+    dic = dict()
+
+    if data['party']:
+        party = Organization.objects.get(id_parladata=data['party']['id'])
+    else:
+        party = None
+
+    if data['ministry']:
+        ministry = Organization.objects.get(id_parladata=data['ministry']['id'])
+    else:
+        ministry = None
+
+    result = saveOrAbortNew(model=MinisterStatic,
+                            created_for=date_of,
+                            person=person,
+                            age=data['age'],
+                            party=party,
+                            education=data['education'],
+                            previous_occupation=data['previous_occupation'],
+                            name=data['name'],
+                            district=data['district'],
+                            facebook=data['social']['facebook'],
+                            twitter=data['social']['twitter'],
+                            linkedin=data['social']['linkedin'],
+                            gov_id=data['gov_id'],
+                            gender=data['gender'],
+                            ministry=ministry)
+
+    return JsonResponse({"status":'All iz well', "saved":result})
+
+
 # Saves to DB percent of attended sessions of MP and
 # maximum and average of attended sessions
 def setPercentOFAttendedSession(request, person_id, date_=None):

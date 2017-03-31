@@ -9,6 +9,9 @@ urlpatterns = patterns(
     url(r'^setMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMPStaticPL),
     url(r'^setMPStatic/(?P<person_id>\d+)/', setMPStaticPL),
 
+    url(r'^setMinsterStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMinsterStatic),
+    url(r'^setMinsterStatic/(?P<person_id>\d+)/', setMinsterStatic),
+
     url(r'^setMostEqualVoters/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMostEqualVoters),
     url(r'^setMostEqualVoters/(?P<person_id>\d+)/', setMostEqualVoters),
 

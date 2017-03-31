@@ -10,7 +10,7 @@ from parlaposlanci.models import District
 from raven.contrib.django.raven_compat.models import client
 
 
-from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers
+from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers, setMinsterStatic
 from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass
 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
@@ -244,6 +244,22 @@ def updateMPStatic():
                 for member in list(set(change["members"][pg]) - set(lastObject["members"][pg])):
                     setMPStaticPL(None, str(member), change["start_date"])
         lastObject = change
+
+
+def updateMinistrers():
+    start_date = datetime(day=2, month=8, year=2014)
+    days = range((datetime.now()-start_date).days)
+    prev_ministers = []
+    for day in days:
+        today = start_date + timedelta(days=day)
+        print today
+        ministers = tryHard(API_URL + '/getIDsOfAllMinisters/' + today.strftime(API_DATE_FORMAT)).json()['ministers_ids']
+        diff = list(set(ministers) - set(prev_ministers))
+        if diff:
+            for person in diff:
+                print person
+                setMinsterStatic(None, str(person), today.strftime(API_DATE_FORMAT))
+            prev_ministers = ministers
 
 
 def runSettersMP(date_to):
