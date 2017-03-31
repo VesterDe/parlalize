@@ -159,16 +159,16 @@ class Question(Activity):
                                    blank=True,
                                    null=True,)
     title = models.TextField(help_text='Words spoken')
-    recipient_person = models.ForeignKey('parlaposlanci.Person',
-                                         blank=True,
-                                         null=True,
-                                         help_text='Recipient person (if it\'s a person).',
-                                         related_name='questions')
-    recipient_organization = models.ForeignKey('parlaskupine.Organization',
-                                               blank=True,
-                                               null=True,
-                                               help_text='Recipient organization (if it\'s an organization).',
-                                               related_name='questions_org')
+    recipient_persons = models.ManyToManyField('parlaposlanci.Person',
+                                              blank=True,
+                                              null=True,
+                                              help_text='Recipient persons (if it\'s a person).',
+                                              related_name='questions')
+    recipient_organizations = models.ManyToManyField('parlaskupine.Organization',
+                                                    blank=True,
+                                                    null=True,
+                                                    help_text='Recipient organizations (if it\'s an organization).',
+                                                    related_name='questions_org')
     recipient_text = models.TextField(blank=True,
                                       null=True,
                                       help_text='Recipient name as written on dz-rs.si')
