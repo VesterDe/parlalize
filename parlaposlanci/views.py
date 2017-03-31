@@ -1722,7 +1722,7 @@ def getQuestions(request, person_id, date_=None):
             persons = []
             orgs = []
             for person in question.recipient_persons.all():
-                persons.append(getPersonData(person.id_parladata))
+                persons.append(getMinistryData(person.id_parladata, question.start_time.strftime(API_DATE_FORMAT)))
             for org in question.recipient_organizations.all():
                 orgs.append(org.getOrganizationData())
             dayData['questions'].append({

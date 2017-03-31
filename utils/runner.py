@@ -139,8 +139,8 @@ def updateQuestions():
                                 content_link=link,
                                 )
             question.save()
-            question.recipient_person.add(*rec_p)
-            question.recipient_organization.add(*rec_org)
+            question.recipient_persons.add(*rec_p)
+            question.recipient_organizations.add(*rec_org)
         else:
             print "update question"
             if dic['recipient_id']:
@@ -152,8 +152,8 @@ def updateQuestions():
             else:
                 rec_org = []
             question = Question.objects.get(id_parladata=dic["id"])
-            question.recipient_person.add(*rec_p)
-            question.recipient_organization.add(*rec_org)
+            question.recipient_persons.add(*rec_p)
+            question.recipient_organizations.add(*rec_org)
 
     return 1
 
