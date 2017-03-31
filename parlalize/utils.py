@@ -3,7 +3,7 @@ import numpy
 from datetime import datetime, timedelta
 from django.http import Http404, JsonResponse, HttpResponse
 import requests
-from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity
+from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity, MinisterStatic
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
 from parlaseje.models import Session, Vote, Ballot, Speech, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
 from parlalize.settings import VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT, DEBUG
@@ -168,13 +168,31 @@ def saveOrAbortNew(model, **kwargs):
     savedModel = model.objects.filter(**kwargs)
     if savedModel:
         if 'person' in kwargs:
-            if model != LastActivity and savedModel.latest('created_for').created_for != model.objects.filter(person__id_parladata=kwargs["person"].id_parladata, created_for__lte=created_for).latest("created_for").created_for:
+            if model != LastActivity:
+                person_id = kwargs['person'].id_parladata
+                cards = model.objects.filter(person__id_parladata=person_id,
+                                             created_for__lte=created_for)
+                lastDate = cards.latest('created_for').created_for
+                if savedModel.latest('created_for').created_for != lastDate:
+                    save_it(model, created_for, **kwargs)
+
+        elif 'organization' in kwargs:
+            party_id = kwargs['organization'].id_parladata
+            models = model.objects.filter(organization__id_parladata=party_id,
+                                          created_for__lte=created_for)
+            if models:
+                # if allready exist write in DB for thiw PG
+                lastDate = models.latest('created_for').created_for
+                if savedModel.latest('created_for').created_for != lastDate:
+                    save_it(model, created_for, **kwargs)
+            else:
                 save_it(model, created_for, **kwargs)
-        elif "organization" in kwargs:
-            if savedModel.latest('created_for').created_for != model.objects.filter(organization__id_parladata=kwargs["organization"].id_parladata , created_for__lte=created_for).latest("created_for").created_for:
-                save_it(model, created_for, **kwargs)
-        elif "session" in kwargs:
-            if savedModel.latest('created_for').created_for != model.objects.filter(session__id_parladata=kwargs["session"].id_parladata).latest("created_at").created_for:
+
+        elif 'session' in kwargs:
+            ses_id = kwargs['session'].id_parladata
+            models = model.objects.filter(session__id_parladata=ses_id)
+            lastDate = models.latest('created_at').created_for
+            if savedModel.latest('created_for').created_for != lastDate:
                 save_it(model, created_for, **kwargs)
     else:
         if model != LastActivity:
@@ -549,6 +567,26 @@ def getPersonData(id_parladata, date_=None):
             'has_function': data.person.has_function,
         }
 
+
+def getMinistryData(id_parladata, date_=None):
+    if not date_:
+        date_ = datetime.now().strftime(API_DATE_FORMAT)
+    try:
+        data = getPersonCardModelNew(MinisterStatic, id_parladata, date_)
+        return {
+                'type': "ministry",
+                'name': data.person.name,
+                'id': int(data.person.id_parladata),
+                'gov_id': data.gov_id,
+                'party': data.party.getOrganizationData() if data.party else None,
+                'ministry': data.ministry.getOrganizationData() if data.ministry else None,
+                'gender': data.gender,
+                'district': data.district,
+                'is_active': True if data.person.actived == "True" else False,
+                'has_function': data.person.has_function,
+            }
+    except:
+        return getPersonData(id_parladata, date_)
 
 
 def getPersonDataAPI(request, id_parladata, date_=None):

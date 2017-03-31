@@ -10,7 +10,7 @@ from parlaposlanci.models import District
 from raven.contrib.django.raven_compat.models import client
 
 
-from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers
+from parlaposlanci.views import setCutVotes, setStyleScoresALL, setMPStaticPL, setMembershipsOfMember, setLessEqualVoters, setMostEqualVoters, setPercentOFAttendedSession, setLastActivity, setAverageNumberOfSpeechesPerSessionAll, setVocabularySizeAndSpokenWords, setCompass, getListOfMembers, setTFIDF, getSlugs, setListOfMembersTickers, setMinsterStatic
 from parlaposlanci.models import Person, StyleScores, CutVotes, VocabularySize, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass
 
 from parlaskupine.views import setCutVotes as setCutVotesPG, setDeviationInOrg, setLessMatchingThem, setMostMatchingThem, setPercentOFAttendedSessionPG, setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, setStyleScoresPGsALL, setTFIDF as setTFIDFpg, getListOfPGs
@@ -123,13 +123,13 @@ def updateQuestions():
             link = dic['link'] if dic['link'] else None
             person = Person.objects.get(id_parladata=int(dic['author_id']))
             if dic['recipient_id']:
-                rec_p = Person.objects.get(id_parladata=int(dic['recipient_id']))
+                rec_p = list(Person.objects.filter(id_parladata__in=dic['recipient_id']))
             else:
-                rec_p = None
+                rec_p = []
             if dic['recipient_org_id']:
-                rec_org = Organization.objects.get(id_parladata=int(dic['recipient_org_id']))
+                rec_org = list(Organization.objects.filter(id_parladata__in=dic['recipient_org_id']))
             else:
-                rec_org = None
+                rec_org = []
             question = Question(person=person,
                                 session=session,
                                 start_time=dic['date'],
@@ -137,10 +137,23 @@ def updateQuestions():
                                 recipient_text=dic['recipient_text'],
                                 title=dic['title'],
                                 content_link=link,
-                                recipient_organization=rec_org,
-                                recipient_person=rec_p,
                                 )
             question.save()
+            question.recipient_persons.add(*rec_p)
+            question.recipient_organizations.add(*rec_org)
+        else:
+            print "update question"
+            if dic['recipient_id']:
+                rec_p = list(Person.objects.filter(id_parladata__in=dic['recipient_id']))
+            else:
+                rec_p = []
+            if dic['recipient_org_id']:
+                rec_org = list(Organization.objects.filter(id_parladata__in=dic['recipient_org_id']))
+            else:
+                rec_org = []
+            question = Question.objects.get(id_parladata=dic["id"])
+            question.recipient_persons.add(*rec_p)
+            question.recipient_organizations.add(*rec_org)
 
     return 1
 
@@ -244,6 +257,22 @@ def updateMPStatic():
                 for member in list(set(change["members"][pg]) - set(lastObject["members"][pg])):
                     setMPStaticPL(None, str(member), change["start_date"])
         lastObject = change
+
+
+def updateMinistrers():
+    start_date = datetime(day=2, month=8, year=2014)
+    days = range((datetime.now()-start_date).days)
+    prev_ministers = []
+    for day in days:
+        today = start_date + timedelta(days=day)
+        print today
+        ministers = tryHard(API_URL + '/getIDsOfAllMinisters/' + today.strftime(API_DATE_FORMAT)).json()['ministers_ids']
+        diff = list(set(ministers) - set(prev_ministers))
+        if diff:
+            for person in diff:
+                print person
+                setMinsterStatic(None, str(person), today.strftime(API_DATE_FORMAT))
+            prev_ministers = ministers
 
 
 def runSettersMP(date_to):

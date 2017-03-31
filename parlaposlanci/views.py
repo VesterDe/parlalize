@@ -134,6 +134,49 @@ def getMPStaticPL(request, person_id, date_=None):
     return JsonResponse(data)
 
 
+# returns MP static data like PoliticalParty, age, ....
+def setMinsterStatic(request, person_id, date_=None):
+    if date_:
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+        data = tryHard(API_URL+'/getMinistrStatic/' + person_id + "/" + date_).json()
+    else:
+        date_of = datetime.now().date()
+        data = tryHard(API_URL+'/getMinistrStatic/' + person_id).json()
+
+    person = Person.objects.get(id_parladata=int(person_id))
+    if not data:
+        return JsonResponse({"status": 'Nothing iz well', "saved": False})
+    dic = dict()
+
+    if data['party']:
+        party = Organization.objects.get(id_parladata=data['party']['id'])
+    else:
+        party = None
+
+    if data['ministry']:
+        ministry = Organization.objects.get(id_parladata=data['ministry']['id'])
+    else:
+        ministry = None
+
+    result = saveOrAbortNew(model=MinisterStatic,
+                            created_for=date_of,
+                            person=person,
+                            age=data['age'],
+                            party=party,
+                            education=data['education'],
+                            previous_occupation=data['previous_occupation'],
+                            name=data['name'],
+                            district=data['district'],
+                            facebook=data['social']['facebook'],
+                            twitter=data['social']['twitter'],
+                            linkedin=data['social']['linkedin'],
+                            gov_id=data['gov_id'],
+                            gender=data['gender'],
+                            ministry=ministry)
+
+    return JsonResponse({"status":'All iz well', "saved":result})
+
+
 # Saves to DB percent of attended sessions of MP and
 # maximum and average of attended sessions
 def setPercentOFAttendedSession(request, person_id, date_=None):
@@ -1653,7 +1696,11 @@ def getQuestions(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y')
         questions = Question.objects.filter(person__id_parladata=person_id)
-        questions = [[question for question in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])] for t_date in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
+        questions = [[question
+                      for question
+                      in questions.filter(start_time__range=[t_date, t_date+timedelta(days=1)])]
+                     for t_date
+                     in questions.filter(start_time__lte=fdate).order_by('start_time').datetimes('start_time', 'day')]
     else:
         fdate = datetime.now()
         questions = Question.objects.filter(person__id_parladata=person_id)
@@ -1672,11 +1719,19 @@ def getQuestions(request, person_id, date_=None):
         lastDay = day[0].start_time.strftime(API_OUT_DATE_FORMAT)
         for question in day:
             created_at.append(question.created_at)
+            persons = []
+            orgs = []
+            for person in question.recipient_persons.all():
+                persons.append(getMinistryData(person.id_parladata, question.start_time.strftime(API_DATE_FORMAT)))
+            for org in question.recipient_organizations.all():
+                orgs.append(org.getOrganizationData())
             dayData['questions'].append({
                 'session_name': question.session.name if question.session else 'Unknown',
                 'id': question.id_parladata,
                 'title': question.title,
                 'recipient_text': question.recipient_text,
+                'recipient_persons': persons,
+                'recipient_orgs': orgs,
                 'url': question.content_link,
                 'session_id': question.session.id_parladata if question.session else 'Unknown'})
         out.append(dayData)
