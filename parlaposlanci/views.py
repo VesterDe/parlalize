@@ -427,13 +427,21 @@ def getLastActivity(request, person_id, date_=None):
                     sesData = question.session.getSessionData()
                 else:
                     sesData = None
+                persons = []
+                orgs = []
+                for person in question.recipient_persons.all():
+                    persons.append(getMinistryData(person.id_parladata, question.start_time.strftime(API_DATE_FORMAT)))
+                for org in question.recipient_organizations.all():
+                    orgs.append(org.getOrganizationData())
                 data.append({
                     'question_id': int(activity_ids[i]),
                     'type': types[i],
                     'session': sesData,
                     'title': question.title,
                     'recipient_text': question.recipient_text,
-                    'content_url': question.content_link
+                    'content_url': question.content_link,
+                    'recipient_persons': persons,
+                    'recipient_orgs': orgs,
                     })
         return {'date': day_activites.created_for.strftime(API_OUT_DATE_FORMAT), 'events': data}
 
