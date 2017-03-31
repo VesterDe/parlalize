@@ -174,8 +174,18 @@ class Question(Activity):
                                       help_text='Recipient name as written on dz-rs.si')
 
     def getQuestionData(self):
+        # fix import issue
+        from parlalize.utils import getMinistryData
+        persons = []
+        orgs = []
+        for person in self.recipient_persons.all():
+            persons.append(getMinistryData(person.id_parladata, self.start_time.strftime(API_DATE_FORMAT)))
+        for org in self.recipient_organizations.all():
+            orgs.append(org.getOrganizationData())
         return {'title': self.title,
                 'recipient_text': self.recipient_text,
+                'recipient_persons': persons,
+                'recipient_orgs': orgs,
                 'url': self.content_link,
                 'id': self.id_parladata}
 
