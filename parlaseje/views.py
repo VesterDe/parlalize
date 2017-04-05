@@ -16,6 +16,70 @@ from parlalize.utils import tryHard
 
 
 def getSpeech(request, speech_id):
+    """
+    * @api {get} /getSpeech/:speech_id Requests information of Speech
+    * @apiName GetSpeech
+    * @apiGroup Session
+    *
+    * @apiParam {speech_id} speech id is parameter which returns
+    *exactly specified speech
+    * @apiSuccess {Json} returns detiled data of specific speech
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getSpeech/1118139
+    * @apiSuccessExample {json} Example response:
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    103
+    ],
+    "name": "Violeta Tomić",
+    "gov_id": "P289",
+    "gender": "f",
+    "party": {
+    "acronym": "ZL",
+    "is_coalition": false,
+    "id": 8,
+    "name": "PS Združena Levica"
+    },
+    "type": "mp",
+    "id": 80,
+    "has_function": false
+    },
+    "created_at": "20.02.2017",
+    "created_for": "09.02.2017",
+    "results": {
+    "quote_id": null,
+    "content": "Spoštovani predsednik, hvala za besedo. Kolegice in kolegi! ...
+    "session": {
+    "name": "42. izredna seja",
+    "date_ts": "2017-02-02T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "2. 2. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 8972,
+    "in_review": false
+    },
+    "quoted_text": null,
+    "speech_id": 1118139,
+    "end_idx": null,
+    "start_idx": null
+    }
+    }
+    """
     speech = get_object_or_404(Speech, id_parladata=speech_id)
     out = {"speech_id": speech.id_parladata,
            "content": speech.content,
