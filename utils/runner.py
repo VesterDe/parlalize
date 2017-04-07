@@ -1384,8 +1384,10 @@ def fastUpdate(date_=None):
             speech.save()
         else:
             print "update speech"
+            person = Person.objects.get(id_parladata=int(dic['speaker']))
             speech = Speech.objects.filter(id_parladata=dic["id"])
             speech.update(content=dic['content'],
+                          person=person,
                           valid_from=dic['valid_from'],
                           valid_to=dic['valid_to'])
 
