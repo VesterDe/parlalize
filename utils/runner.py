@@ -1493,9 +1493,11 @@ def fastUpdate(date_=None):
     p_update += list(speeches.values_list("person__id_parladata", flat=True))
 
     questions = Question.objects.filter(updated_at__gt=lastQustionTime)
-    p_update += list(questions.values_list("person__id_parladata", flat=True))
+    q_update += list(questions.values_list("person__id_parladata", flat=True))
+    p_update += q_update
 
     updateLastActivity(list(set(p_update)))
+    recacheQuestions(list(set(q_update)))
     recacheWBs()
 
     t_delta = time() - start_time
@@ -1527,6 +1529,15 @@ def updateLastActivity(mps_ids):
         print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
         print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
         print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '?forceRender=true')
+
+
+def recacheQuestions(mps_ids):
+    print 'set last activity for: ', mps_ids
+    for mp in mps_ids:
+        print mp
+        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
+        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
+        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '?forceRender=true')
 
 
 def recacheWBs():
