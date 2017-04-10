@@ -1267,6 +1267,7 @@ def fastUpdate(date_=None):
     lastBallotTime = Ballot.objects.latest('updated_at').updated_at
     lastVoteTime = Vote.objects.latest('updated_at').updated_at
     lastSpeechTime = Speech.objects.latest('updated_at').updated_at
+    lastQustionTime = Question.objects.latest('updated_at').updated_at
 
     if date_:
         dates = [date_ + "_00:00" for i in range(5)]
@@ -1464,6 +1465,8 @@ def fastUpdate(date_=None):
     ballots = Ballot.objects.filter(updated_at__gt=lastBallotTime)
     s_update += list(ballots.values_list("vote__session__id_parladata", flat=True))
 
+    p_update = list(ballots.values_list("person__id_parladata", flat=True))
+
     if s_update:
         runSettersSessions(sessions_ids=list(set(s_update)))
 
@@ -1487,7 +1490,12 @@ def fastUpdate(date_=None):
         print "recache"
         updatePagesS(list(set(s_update)))
 
-    updateLastActivity()
+    p_update += list(speeches.values_list("person__id_parladata", flat=True))
+
+    questions = Question.objects.filter(updated_at__gt=lastQustionTime)
+    p_update += list(questions.values_list("person__id_parladata", flat=True))
+
+    updateLastActivity(list(set(p_update)))
     recacheWBs()
 
     t_delta = time() - start_time
@@ -1511,17 +1519,18 @@ def setListOfMembers(date_time):
     setListOfMembersTickers(None, start_time.strftime(API_DATE_FORMAT))
 
 
-def updateLastActivity():
-    mps = tryHard('https://data.parlameter.si/v1/getMPs/').json()
-    mps_ids = [mp['id'] for mp in mps]
+def updateLastActivity(mps_ids):
+    print 'set last activity for: ', mps_ids
     for mp in mps_ids:
         print mp
         print setLastActivity(None, str(mp))
-        print requests.get("https://glej.parlameter.si/p/zadnje-aktivnosti/" + str(mp) + "/?frame=true&altHeader=true&forceRender=true")
+        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
+        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
+        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '?forceRender=true')
 
 
 def recacheWBs():
     wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
     for wb in wbs:
         print wb
-        print requests.get("https://glej.parlameter.si/wb/getWorkingBodies/"+str(wb['id'])+"?frame=true&altHeader=true&forceRender=true")
+        print requests.get('https://glej.parlameter.si/wb/getWorkingBodies/'+str(wb['id'])+'?frame=true&altHeader=true&forceRender=true')
