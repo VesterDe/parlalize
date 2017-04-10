@@ -22,7 +22,7 @@ from parlaseje.utils import idsOfSession, getSesDates
 
 from multiprocessing import Pool
 
-from parlalize.utils import tryHard, datesGenerator
+from parlalize.utils import tryHard, datesGenerator, getPersonData
 import json
 
 from time import time
