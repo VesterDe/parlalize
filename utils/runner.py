@@ -1535,7 +1535,7 @@ def updateLastActivity(mps_ids):
 
 def recacheActivities(activity, mps_ids):
     print 'recache ', activity, mps_ids
-    orgs = list(set([getPersonData(mp)['party']['id'] from mp in mps_ids]))
+    orgs = list(set([getPersonData(mp)['party']['id'] for mp in mps_ids]))
     base_url = 'https://glej.parlameter.si/p/' + activity + '/'
     for mp in mps_ids:
         print mp
