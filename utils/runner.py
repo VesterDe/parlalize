@@ -1424,11 +1424,11 @@ def fastUpdate(date_=None):
             link = dic['link'] if dic['link'] else None
             person = Person.objects.get(id_parladata=int(dic['author_id']))
             if dic['recipient_id']:
-                rec_p = list(Person.objects.filter(id_parladata__in=int(dic['recipient_id'])))
+                rec_p = list(Person.objects.filter(id_parladata__in=dic['recipient_id']))
             else:
                 rec_p = None
             if dic['recipient_org_id']:
-                rec_org = list(Organization.objects.filter(id_parladata__in=int(dic['recipient_org_id'])))
+                rec_org = list(Organization.objects.filter(id_parladata__in=dic['recipient_org_id']))
             else:
                 rec_org = None
             question = Question(person=person,
