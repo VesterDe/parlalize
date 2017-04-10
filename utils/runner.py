@@ -1482,6 +1482,7 @@ def fastUpdate(date_=None):
     # add sesessions of updated speeches to recache
     speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
     s_update += list(speeches.values_list("session__id_parladata", flat=True))
+    s_p_update += list(speeches.values_list("person__id_parladata", flat=True))
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
     getSessionsList(None, date_, force_render=True)
@@ -1497,7 +1498,8 @@ def fastUpdate(date_=None):
     p_update += q_update
 
     updateLastActivity(list(set(p_update)))
-    recacheQuestions(list(set(q_update)))
+    recacheActivities('poslanska-vprasanja-in-pobude', list(set(q_update)))
+    recacheActivities('povezave-do-govorov', list(set(s_p_update)))
     recacheWBs()
 
     t_delta = time() - start_time
@@ -1531,13 +1533,25 @@ def updateLastActivity(mps_ids):
         print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '?forceRender=true')
 
 
-def recacheQuestions(mps_ids):
-    print 'set last activity for: ', mps_ids
+def recacheActivities(activity, mps_ids):
+    print 'recache ', activity, mps_ids
+    orgs = list(set([getPersonData(mp)['party']['id'] from mp in mps_ids]))
+    base_url = 'https://glej.parlameter.si/p/' + activity + '/'
     for mp in mps_ids:
         print mp
-        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
-        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
-        print requests.get('https://glej.parlameter.si/p/poslanska-vprasanja-in-pobude/' + str(mp) + '?forceRender=true')
+        url = base_url + str(mp)
+        print requests.get(url + '/?frame=true&altHeader=true&forceRender=true')
+        print requests.get(url + '/?embed=true&altHeader=true&forceRender=true')
+        print requests.get(url + '?forceRender=true')
+
+    print 'recache orgs ', activity, orgs
+    base_url = 'https://glej.parlameter.si/ps/' + activity + '/'
+    for org in orgs:
+        print org
+        url = base_url + str(org)
+        print requests.get(url + '/?frame=true&altHeader=true&forceRender=true')
+        print requests.get(url + '/?embed=true&altHeader=true&forceRender=true')
+        print requests.get(url + '?forceRender=true')
 
 
 def recacheWBs():
