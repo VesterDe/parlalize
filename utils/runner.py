@@ -1498,8 +1498,12 @@ def fastUpdate(date_=None):
     p_update += q_update
 
     updateLastActivity(list(set(p_update)))
-    recacheActivities('poslanska-vprasanja-in-pobude', list(set(q_update)))
-    recacheActivities('povezave-do-govorov', list(set(s_p_update)))
+    recacheActivities(('poslanska-vprasanja-in-pobude',
+                       'poslanska-vprasanja-in-pobude'),
+                      list(set(q_update)))
+    recacheActivities(('povezave-do-govorov',
+                       'vsi-govori-poslanske-skupine'),
+                      list(set(s_p_update)))
     recacheWBs()
 
     t_delta = time() - start_time
@@ -1534,9 +1538,9 @@ def updateLastActivity(mps_ids):
 
 
 def recacheActivities(activity, mps_ids):
-    print 'recache ', activity, mps_ids
+    print 'recache ', activity[0], mps_ids
     orgs = list(set([getPersonData(mp)['party']['id'] for mp in mps_ids]))
-    base_url = 'https://glej.parlameter.si/p/' + activity + '/'
+    base_url = 'https://glej.parlameter.si/p/' + activity[0] + '/'
     for mp in mps_ids:
         print mp
         url = base_url + str(mp)
@@ -1544,8 +1548,8 @@ def recacheActivities(activity, mps_ids):
         print requests.get(url + '/?embed=true&altHeader=true&forceRender=true')
         print requests.get(url + '?forceRender=true')
 
-    print 'recache orgs ', activity, orgs
-    base_url = 'https://glej.parlameter.si/ps/' + activity + '/'
+    print 'recache orgs ', activity[1], orgs
+    base_url = 'https://glej.parlameter.si/ps/' + activity[1] + '/'
     for org in orgs:
         print org
         url = base_url + str(org)
