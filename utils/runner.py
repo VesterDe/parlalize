@@ -1485,7 +1485,8 @@ def fastUpdate(date_=None):
     s_p_update = list(speeches.values_list("person__id_parladata", flat=True))
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
-    getSessionsList(None, date_, force_render=True)
+    if s_update:
+        getSessionsList(None, date_, force_render=True)
     print s_update
     if s_update:
         print "recache"
@@ -1494,7 +1495,7 @@ def fastUpdate(date_=None):
     p_update += list(speeches.values_list("person__id_parladata", flat=True))
 
     questions = Question.objects.filter(updated_at__gt=lastQustionTime)
-    q_update += list(questions.values_list("person__id_parladata", flat=True))
+    q_update = list(questions.values_list("person__id_parladata", flat=True))
     p_update += q_update
 
     updateLastActivity(list(set(p_update)))
