@@ -1482,7 +1482,7 @@ def fastUpdate(date_=None):
     # add sesessions of updated speeches to recache
     speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
     s_update += list(speeches.values_list("session__id_parladata", flat=True))
-    s_p_update += list(speeches.values_list("person__id_parladata", flat=True))
+    s_p_update = list(speeches.values_list("person__id_parladata", flat=True))
 
     date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
     getSessionsList(None, date_, force_render=True)
