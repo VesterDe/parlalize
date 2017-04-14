@@ -284,7 +284,7 @@ def getMotionOfSession(request, id_se, date=False):
             dates = []
             for card in votes:
                 print card
-                out.append({'session': session.getSessionData(),
+                out.append({'session': sesData,
                             'results': {'motion_id': card.id_parladata,
                                         'text': card.motion,
                                         'votes_for': card.votes_for,
@@ -300,7 +300,7 @@ def getMotionOfSession(request, id_se, date=False):
             out = []
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
         return JsonResponse({"results": out,
-                             "session": session.getSessionData(),
+                             "session": sesData,
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
