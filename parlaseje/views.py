@@ -428,7 +428,7 @@ def getMotionGraph(request, id_mo, date=False):
 
 
 def getMotionAnalize(request, motion_id):
-    model = get_object_or_404(Vote_graph, vote__id_parladata=motion_id)
+    model = get_object_or_404(Vote_analysis, vote__id_parladata=motion_id)
     vote = model.vote
     docs = vote.document_url
 
@@ -436,6 +436,15 @@ def getMotionAnalize(request, motion_id):
                'against': model.against,
                'abstain': model.abstain,
                'not_present': model.not_present}
+    stats = {'for': model.votes_for,
+             'against': model.against,
+             'abstain': model.abstain}
+    max_vote_opt = max(stats, key=stats.get)
+    if stats[max_vote_opt] == 0:
+        max_vote_percent_opt = 0
+        max_vote_opt = '/'
+    else:
+        max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for'])*100
     members = []
     for mp in model.mp_yes:
         members.append({'person': getPersonData(mp), 'option': 'for'})
@@ -447,10 +456,10 @@ def getMotionAnalize(request, motion_id):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     orgs = {}
-    tmp = {'for': {'score': 0, 'is_outlier': False},
-           'abstain': {'score': 0, 'is_outlier': False},
-           'against': {'score': 0, 'is_outlier': False},
-           'not_present': {'score': 0, 'is_outlier': False}}
+    tmp = {'for':  0,
+           'abstain': 0,
+           'against': 0,
+           'not_present': 0}
     for pg, val in model.pgs_yes.items():
         orgs[pg] = tmp.copy()
         orgs[pg]['for'] = val
@@ -472,24 +481,31 @@ def getMotionAnalize(request, motion_id):
         tmp = data.copy()
         tmp.pop('not_present', None)
         max_vote = max(tmp, key=tmp.get)
+        if tmp[max_vote] == 0:
+            max_vote_percent = 0
+            max_vote = '/'
+        else:
+            max_vote_percent = float(tmp[max_vote])/(tmp['abstain']+tmp['against']+tmp['for'])*100
         org = Organization.objects.get(id_parladata=org)
         orgs_data.append({'party': org.getOrganizationData(),
                           'votes': data,
                           'max': {'option': max_vote,
-                                  'score': data[max_vote]}})
+                                  'score': max_vote_percent}})
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
            'created_for': vote.created_for.strftime(API_DATE_FORMAT),
            'created_at': model.created_at.strftime(API_DATE_FORMAT),
            'name': vote.motion,
-           'result': {'option': vote.result,
-                      'value': 60,
+           'result': {'accept': vote.result,
+                      'value': max_vote_percent_opt,
+                      'max_opt': max_vote_opt,
                       'is_outlier': vote.is_outlier},
            'documents': docs if docs else [],
            'members': members,
            'parties': orgs_data,
-           'gov_side': [],
+           'gov_side': {'coalition': model.coal_opts,
+                        'opposition': model.oppo_opts},
            'all': options}
     return JsonResponse(out, safe=False)
 
