@@ -292,6 +292,7 @@ def getMotionOfSession(request, id_se, date=False):
                                         'abstain': card.abstain,
                                         'not_present': card.not_present,
                                         'result': card.result,
+                                        'is_outlier': card.is_outlier
                                         }
                             })
                 dates.append(card.created_at)
@@ -446,10 +447,10 @@ def getMotionAnalize(request, motion_id):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     orgs = {}
-    tmp = {'for': {'score': 0, 'controversy': True},
-           'abstain': {'score': 0, 'controversy': True},
-           'against': {'score': 0, 'controversy': True},
-           'not_present': {'score': 0, 'controversy': True}}
+    tmp = {'for': {'score': 0, 'is_outlier': False},
+           'abstain': {'score': 0, 'is_outlier': False},
+           'against': {'score': 0, 'is_outlier': False},
+           'not_present': {'score': 0, 'is_outlier': False}}
     for pg, val in model.pgs_yes.items():
         orgs[pg] = tmp.copy()
         orgs[pg]['for'] = val
@@ -484,7 +485,7 @@ def getMotionAnalize(request, motion_id):
            'name': vote.motion,
            'result': {'option': vote.result,
                       'value': 60,
-                      'controversy': True},
+                      'is_outlier': vote.is_outlier},
            'documents': docs if docs else [],
            'members': members,
            'parties': orgs_data,
