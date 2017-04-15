@@ -174,7 +174,11 @@ def saveOrAbortNew(model, **kwargs):
                 person_id = kwargs['person'].id_parladata
                 cards = model.objects.filter(person__id_parladata=person_id,
                                              created_for__lte=created_for)
-                lastDate = cards.latest('created_for').created_for
+                if cards:
+                    lastDate = cards.latest('created_for').created_for
+                else:
+                    lastDate = datetime.min
+
                 if savedModel.latest('created_for').created_for != lastDate:
                     save_it(model, created_for, **kwargs)
 
