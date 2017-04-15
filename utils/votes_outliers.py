@@ -141,7 +141,7 @@ def getPGsList(row, proti):
         pgs = [str(pg) for pg in list(proti[row.name].reset_index()['voterparty'])]
         return json.dumps(dict(Counter(pgs)))
     except:
-        return []
+        return json.dumps({})
 
 
 def getOptions(row):
