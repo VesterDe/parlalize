@@ -300,7 +300,9 @@ def getMotionOfSession(request, id_se, date=False):
         else:
             out = []
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
+        tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
+                             "tags": tags,
                              "session": session.getSessionData(),
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
