@@ -255,6 +255,9 @@ class Vote(Timestampable, models.Model):
                                      null=True,
                                      help_text='Start time')
 
+    is_outlier = models.NullBooleanField(default=False,
+                                         help_text='is outlier')
+
 
 class Vote_graph(Timestampable, models.Model):
 
