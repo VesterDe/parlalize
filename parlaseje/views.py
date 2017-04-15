@@ -460,18 +460,18 @@ def getMotionAnalize(request, motion_id):
            'abstain': 0,
            'against': 0,
            'not_present': 0}
-    for pg, val in model.pgs_yes.items():
+    for pg, val in json.loads(model.pgs_yes).items():
         orgs[pg] = tmp.copy()
         orgs[pg]['for'] = val
-    for pg, val in model.pgs_no.items():
+    for pg, val in json.loads(model.pgs_no).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['against'] = val
-    for pg, val in model.pgs_np.items():
+    for pg, val in json.loads(model.pgs_np).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['not_present'] = val
-    for pg, val in model.pgs_kvor.items():
+    for pg, val in json.loads(model.pgs_kvor).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['abstain'] = val
@@ -504,8 +504,8 @@ def getMotionAnalize(request, motion_id):
            'documents': docs if docs else [],
            'members': members,
            'parties': orgs_data,
-           'gov_side': {'coalition': model.coal_opts,
-                        'opposition': model.oppo_opts},
+           'gov_side': {'coalition': json.loads(model.coal_opts),
+                        'opposition': json.loads(model.oppo_opts)},
            'all': options}
     return JsonResponse(out, safe=False)
 
