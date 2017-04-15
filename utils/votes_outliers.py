@@ -133,7 +133,7 @@ def getMPsList(row, proti):
     try:
         return json.dumps(list(proti[row.name].reset_index()['voter']))
     except:
-        return []
+        return json.dumps([])
 
 
 def getPGsList(row, proti):
