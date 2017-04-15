@@ -305,6 +305,51 @@ class Vote_graph(Timestampable, models.Model):
     mp_np = JSONField(blank=True, null=True)
     mp_kvor = JSONField(blank=True, null=True)
 
+
+class Vote_analysis(Timestampable, models.Model):
+
+    session = models.ForeignKey('Session',
+                               blank=True, null=True,
+                               related_name='in_session_for_VA',
+                               help_text=_('Session '))
+
+    vote = models.ForeignKey('Vote',
+                               blank=True, null=True,
+                               related_name='analysis',
+                               help_text=_('Vote'))
+
+    created_for = models.DateField(_('date of vote'),
+                                    blank=True,
+                                    null=True,
+                                    help_text=_('date of vote'))
+
+    votes_for = models.IntegerField(blank=True, null=True,
+                                   help_text='Number of votes for')
+
+    against = models.IntegerField(blank=True, null=True,
+                                   help_text='Number votes againt')
+
+    abstain = models.IntegerField(blank=True, null=True,
+                                   help_text='Number votes abstain')
+
+    not_present = models.IntegerField(blank=True, null=True,
+                                   help_text='Number of MPs that warent on the session')
+
+    pgs_yes = JSONField(blank=True, null=True)
+    pgs_no = JSONField(blank=True, null=True)
+    pgs_np = JSONField(blank=True, null=True)
+    pgs_kvor = JSONField(blank=True, null=True)
+
+    mp_yes = JSONField(blank=True, null=True)
+    mp_no = JSONField(blank=True, null=True)
+    mp_np = JSONField(blank=True, null=True)
+    mp_kvor = JSONField(blank=True, null=True)
+
+    coal_opts = JSONField(blank=True, null=True)
+
+    oppo_opts = JSONField(blank=True, null=True)
+
+
 class AbsentMPs(Timestampable, models.Model):
 
     session = models.ForeignKey('Session',
