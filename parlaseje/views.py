@@ -292,7 +292,8 @@ def getMotionOfSession(request, id_se, date=False):
                                         'abstain': card.abstain,
                                         'not_present': card.not_present,
                                         'result': card.result,
-                                        'is_outlier': card.is_outlier
+                                        'is_outlier': card.is_outlier,
+                                        'tags': card.tags
                                         }
                             })
                 dates.append(card.created_at)
