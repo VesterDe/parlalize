@@ -425,6 +425,74 @@ def getMotionGraph(request, id_mo, date=False):
     else:
         raise Http404("Nismo našli kartice")
 
+
+def getMotionAnalize(request, motion_id):
+    model = get_object_or_404(Vote_graph, vote__id_parladata=motion_id)
+    vote = model.vote
+    docs = vote.document_url
+
+    options = {'for': model.votes_for,
+               'against': model.against,
+               'abstain': model.abstain,
+               'not_present': model.not_present}
+    members = []
+    for mp in model.mp_yes:
+        members.append({'person': getPersonData(mp), 'option': 'for'})
+    for mp in model.mp_no:
+        members.append({'person': getPersonData(mp), 'option': 'against'})
+    for mp in model.mp_np:
+        members.append({'person': getPersonData(mp), 'option': 'not_present'})
+    for mp in model.mp_kvor:
+        members.append({'person': getPersonData(mp), 'option': 'abstain'})
+
+    orgs = {}
+    tmp = {'for': {'score': 0, 'controversy': True},
+           'abstain': {'score': 0, 'controversy': True},
+           'against': {'score': 0, 'controversy': True},
+           'not_present': {'score': 0, 'controversy': True}}
+    for pg, val in model.pgs_yes.items():
+        orgs[pg] = tmp.copy()
+        orgs[pg]['for'] = val
+    for pg, val in model.pgs_no.items():
+        if pg not in orgs.keys():
+            orgs[pg] = tmp.copy()
+        orgs[pg]['against'] = val
+    for pg, val in model.pgs_np.items():
+        if pg not in orgs.keys():
+            orgs[pg] = tmp.copy()
+        orgs[pg]['not_present'] = val
+    for pg, val in model.pgs_kvor.items():
+        if pg not in orgs.keys():
+            orgs[pg] = tmp.copy()
+        orgs[pg]['abstain'] = val
+
+    orgs_data = []
+    for org, data in orgs.items():
+        tmp = data.copy()
+        tmp.pop('not_present', None)
+        max_vote = max(tmp, key=tmp.get)
+        org = Organization.objects.get(id_parladata=org)
+        orgs_data.append({'party': org.getOrganizationData(),
+                          'votes': data,
+                          'max': {'option': max_vote,
+                                  'score': data[max_vote]}})
+
+    out = {'id': motion_id,
+           'session': model.session.getSessionData(),
+           'created_for': vote.created_for.strftime(API_DATE_FORMAT),
+           'created_at': model.created_at.strftime(API_DATE_FORMAT),
+           'name': vote.motion,
+           'result': {'option': vote.result,
+                      'value': 60,
+                      'controversy': True},
+           'documents': docs if docs else [],
+           'members': members,
+           'parties': orgs_data,
+           'gov_side': [],
+           'all': options}
+    return JsonResponse(out, safe=False)
+
+
 def setAbsentMPs(request, id_se):
     votes = tryHard(API_URL + '/getVotesOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
