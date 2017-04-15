@@ -446,13 +446,13 @@ def getMotionAnalize(request, motion_id):
     else:
         max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for'])*100
     members = []
-    for mp in model.mp_yes:
+    for mp in json.loads(model.mp_yes):
         members.append({'person': getPersonData(mp), 'option': 'for'})
-    for mp in model.mp_no:
+    for mp in json.loads(model.mp_no):
         members.append({'person': getPersonData(mp), 'option': 'against'})
-    for mp in model.mp_np:
+    for mp in json.loads(model.mp_np):
         members.append({'person': getPersonData(mp), 'option': 'not_present'})
-    for mp in model.mp_kvor:
+    for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     orgs = {}
