@@ -11,6 +11,7 @@ import json
 from collections import Counter
 
 from parlaseje.models import Vote_analysis
+from parlalize.settings import API_URL
 
 
 def setOutliers():
@@ -38,10 +39,10 @@ def setOutliers():
 
 def setMotionAnalize(session_id):
     session = get_object_or_404(Session, id_parladata=session_id)
-    url = 'http://localhost:8000/v1/getVotesOfSessionTable/' + str(session_id) + '/'
+    url = API_URL + '/getVotesOfSessionTable/' + str(session_id) + '/'
     data = pd.read_json(url)
-    coalition = requests.get('https://data.parlameter.si/v1/getCoalitionPGs').json()['coalition']
-    orgs = requests.get('https://data.parlameter.si/v1/getAllPGsExt/')
+    coalition = requests.get(API_URL + '/getCoalitionPGs').json()['coalition']
+    orgs = requests.get(API_URL + '/getAllPGsExt/')
     data['option_ni'] = 0
     data['option_za'] = 0
     data['option_proti'] = 0
