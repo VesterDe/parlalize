@@ -17,7 +17,7 @@ from parlalize.utils import tryHard
 
 def getSpeech(request, speech_id):
     """
-    * @api {get} /getSpeech/:speech_id Requests information of Speech
+    * @api {get} /getSpeech/{speech_id} Requests information of Speech
     * @apiName GetSpeech
     * @apiGroup Session
     *
@@ -100,6 +100,141 @@ def getSpeech(request, speech_id):
 
 
 def getSpeechesOfSession(request, session_id):
+    """
+    * @api {get} /getSpeechesOfSession/{session_id} Requests information of speeches on session.
+    * @apiName getSpeechesOfSession
+    * @apiGroup Session
+    *
+    * @apiParam {session_id} session id is parameter which returns
+    *specific session
+    * @apiSuccess {Json} returns detiled data of all speeches on session.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getSpeechesOfSession/9408
+    * @apiSuccessExample {json} Example response:
+    {
+    "created_for": "05.04.2017",
+    "session": {
+    "name": "33. redna seja",
+    "date_ts": "2017-04-05T02:00:00",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    }
+    ],
+    "date": "5. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    },
+    "id": 9408,
+    "in_review": true
+    },
+    "created_at": "16.04.2017",
+    "results": [
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    36
+    ],
+    "name": "Jan Škoberne",
+    "gov_id": "P301",
+    "gender": "m",
+    "party": {
+    "acronym": "SD",
+    "is_coalition": true,
+    "id": 7,
+    "name": "PS Socialni Demokrati"
+    },
+    "type": "mp",
+    "id": 1356,
+    "has_function": false
+    },
+    "results": {
+    "quote_id": null,
+    "content": "Spoštovane kolegice in kolegi, dragi in cenjeni gostje, dobro jutro, dobrodošli! ...
+    "session": {
+    "name": "33. redna seja",
+    "date_ts": "2017-04-05T02:00:00",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    }
+    ],
+    "date": "5. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    },
+    "id": 9408,
+    "in_review": true
+    },
+    "quoted_text": null,
+    "speech_id": 1176731,
+    "end_idx": null,
+    "start_idx": null
+    }
+    },
+    {
+    "person": {
+    "is_active": null,
+    "district": null,
+    "name": "Tina Brecelj",
+    "gov_id": "G1373",
+    "gender": null,
+    "party": {
+    "acronym": null,
+    "is_coalition": null,
+    "id": null,
+    "name": null
+    },
+    "type": "visitor",
+    "id": 1373,
+    "has_function": false
+    },
+    "results": {
+    "quote_id": null,
+    "content": "Najlepša hvala gospod predsednik za besedo. Spoštovane poslanke, poslanci, spoštovani gostje,...
+    "session": {
+    "name": "33. redna seja",
+    "date_ts": "2017-04-05T02:00:00",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    }
+    ],
+    "date": "5. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    },
+    "id": 9408,
+    "in_review": true
+    },
+    "quoted_text": null,
+    "speech_id": 1176732,
+    "end_idx": null,
+    "start_idx": null
+    }
+    }
+    }
+    """
     session = get_object_or_404(Session, id_parladata=session_id)
     speeches_queryset = Speech.getValidSpeeches(datetime.now())
     speeches = speeches_queryset.filter(session=session).order_by("start_time",
@@ -128,6 +263,50 @@ def getSpeechesOfSession(request, session_id):
 
 
 def getSpeechesIDsOfSession(request, session_id):
+    """
+    * @api {get} /getSpeechesIDsOfSession/{session_id} Requests IDs of all speeches on specific session.
+    * @apiName getSpeechesIDsOfSession
+    * @apiGroup Session
+    *
+    * @apiParam {session_id} session id is parameter which returns
+    *specific session
+    * @apiSuccess {Json} returns IDs of speeches on specific session
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getSpeechesIDsOfSession/9408
+    * @apiSuccessExample {json} Example response:
+    {
+    "created_for": "05.04.2017",
+    "session": {
+    "name": "33. redna seja",
+    "date_ts": "2017-04-05T02:00:00",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    }
+    ],
+    "date": "5. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    },
+    "id": 9408,
+    "in_review": true
+    },
+    "created_at": "16.04.2017",
+    "results": [
+    1176731,
+    1176732,
+    1176733,
+    1176734,
+    ...
+    ]}
+    """
     session = get_object_or_404(Session, id_parladata=session_id)
 
     speeches = Speech.getValidSpeeches(datetime.now())
@@ -145,6 +324,7 @@ def getSpeechesIDsOfSession(request, session_id):
 
 
 def getSessionSpeeches(request, session_id):
+    # pomoje se lahk zbrise
     out = []
     session = Session.objects.get(id_parladata=session_id)
     speeches = Speech.getValidSpeeches(datetime.now())
@@ -162,9 +342,11 @@ def getSessionSpeeches(request, session_id):
     return JsonResponse(result, safe=False)
 
 
-def setMotionOfSession(request, id_se):
-    motion = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
-    session = Session.objects.get(id_parladata=id_se)
+def setMotionOfSession(request, session_id):
+    """Stores all motions with detiled data of specific sesison.
+    """
+    motion = tryHard(API_URL + '/motionOfSession/' + str(session_id) + '/').json()
+    session = Session.objects.get(id_parladata=session_id)
     yes = 0
     no = 0
     kvorum = 0
@@ -226,9 +408,11 @@ def setMotionOfSession(request, id_se):
     return JsonResponse({'alliswell': True})
 
 
-def setMotionOfSessionGraph(request, id_se):
-    motion = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
-    session = Session.objects.get(id_parladata=id_se)
+def setMotionOfSessionGraph(request, session_id):
+    """Stores all motions with detiled data of specific sesison.
+    """
+    motion = tryHard(API_URL + '/motionOfSession/' + str(session_id) + '/').json()
+    session = Session.objects.get(id_parladata=session_id)
     yes = 0
     no = 0
     kvorum = 0
@@ -327,13 +511,86 @@ def setMotionOfSessionGraph(request, id_se):
     return JsonResponse({'alliswell': True})
 
 
-def getMotionOfSession(request, id_se, date=False):
+def getMotionOfSession(request, session_id, date=False):
+    """
+    * @api {get} /getMotionOfSession/{session_id}/{?date} Requests information of all motions on specific session.
+    * @apiName getMotionOfSession
+    * @apiGroup Session
+    *
+    * @apiParam {speech_id} session id is parameter which returns
+    *exactly specified session
+    * @apiSuccess {Json} returns detiled data of all motions on specific session
+    * @apiParam {date} date Optional date.
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9408
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9408/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    {
+    "created_at": null,
+    "created_for": "05.04.2017",
+    "session": {
+    "name": "33. redna seja",
+    "date_ts": "2017-04-05T02:00:00",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    }
+    ],
+    "date": "5. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 25,
+    "name": "Odbor za pravosodje"
+    },
+    "id": 9408,
+    "in_review": true
+    },
+    "results": [],
+    "tags": [
+    "Komisija za nadzor javnih financ",
+    "Kolegij predsednika Državnega zbora",
+    "Komisija za narodni skupnosti",
+    "Komisija za odnose s Slovenci v zamejstvu in po svetu",
+    "Komisija za poslovnik",
+    "Mandatno-volilna komisija",
+    "Odbor za delo, družino, socialne zadeve in invalide",
+    "Odbor za finance in monetarno politiko",
+    "Odbor za gospodarstvo",
+    "Odbor za infrastrukturo, okolje in prostor",
+    "Odbor za izobraževanje, znanost, šport in mladino",
+    "Odbor za kmetijstvo, gozdarstvo in prehrano",
+    "Odbor za kulturo",
+    "Odbor za notranje zadeve, javno upravo in lokalno samoupravo",
+    "Odbor za obrambo",
+    "Odbor za pravosodje",
+    "Odbor za zadeve Evropske unije",
+    "Odbor za zdravstvo",
+    "Odbor za zunanjo politiko",
+    "Preiskovalna komisija o ugotavljanju zlorab v slovenskem bančnem sistemu ter ugotavljanju vzrokov in",
+    "Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji",
+    "Ustavna komisija",
+    "Proceduralna glasovanja",
+    "Zunanja imenovanja",
+    "Poslanska vprašanja",
+    "Komisija za nadzor obveščevalnih in varnostnih služb",
+    "Preiskovalne komisije",
+    "Komisija za peticije ter za človekove pravice in enake možnosti",
+    "Interpelacija",
+    " Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investicij"
+    ]
+    }
+    """
     out = []
     created_at = None
-    if Session.objects.filter(id_parladata=int(id_se)):
-        session = Session.objects.get(id_parladata=int(id_se))
-        if Vote.objects.filter(session__id_parladata=id_se):
-            model = Vote.objects.filter(session__id_parladata=id_se)
+    if Session.objects.filter(id_parladata=int(session_id)):
+        session = Session.objects.get(id_parladata=int(session_id))
+        if Vote.objects.filter(session__id_parladata=session_id):
+            model = Vote.objects.filter(session__id_parladata=session_id)
             dates = []
             for card in model:
                 print card
@@ -361,6 +618,7 @@ def getMotionOfSession(request, id_se, date=False):
 
 
 def getMotionOfSessionVotes(request, votes):
+    # pomoje se lahk izbrise
     out = []
     votes = votes.split(',')
     for vote in votes:
@@ -384,6 +642,62 @@ def getMotionOfSessionVotes(request, votes):
 
 
 def getMotionGraph(request, id_mo, date=False):
+    """
+    * @api {get} /getMotionGraph/{id_mo}/{?date} Requests information of specific motion.
+    * @apiName getMotionGraph
+    * @apiGroup Session
+    *
+    * @apiParam {id_mo} session id is parameter which returns
+    *exactly specified motion
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns detiled data of motion
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getMotionGraph/6900
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getMotionGraph/6900/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    {
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    },
+    "all": {
+    "kvorum": {
+    "breakdown": [],
+    "option": "kvorum",
+    "total_votes": 0
+    },
+    "not_present": {},
+    "against": {},
+    "for": {}
+    },
+    "created_for": "20.03.2017",
+    "name": "Dnevni red v celoti",
+    "documents": [],
+    "created_at": "21.03.2017",
+    "required": "62",
+    "id": "6900",
+    "result": true
+    }
+    """
     out = []
     if VoteDetailed.objects.filter(vote__id_parladata=id_mo):
         if date:
@@ -481,9 +795,11 @@ def getMotionGraph(request, id_mo, date=False):
         raise Http404("Nismo našli kartice")
 
 
-def setAbsentMPs(request, id_se):
-    votes = tryHard(API_URL + '/getVotesOfSession/' + str(id_se) + '/').json()
-    session = Session.objects.get(id_parladata=id_se)
+def setAbsentMPs(request, session_id):
+    """Stores absent MPs of specific session
+    """
+    votes = tryHard(API_URL + '/getVotesOfSession/' + str(session_id) + '/').json()
+    session = Session.objects.get(id_parladata=session_id)
     mps = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
 
     mpsID = []
@@ -504,8 +820,26 @@ def setAbsentMPs(request, id_se):
     return JsonResponse({'alliswell': True})
 
 
-def getAbsentMPs(request, id_se, date=False):
-    session = get_object_or_404(Session, id_parladata=id_se)
+def getAbsentMPs(request, session_id, date=False):
+    # Ne uporabljamo damo ven?
+    """
+    * @api {get} /getAbsentMPs/{session_id}/{?date} Requests information of all absent MPs on specific sesion.
+    * @apiName getAbsentMPs
+    * @apiGroup Session
+    *
+    * @apiParam {session_id} session id is parameter which returns
+    *exactly specified session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data of all absent MPs on specific session.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getAbsentMPs/9408
+    * @apiExample {curl} Example with date:
+        curl -i hhttps://analize.parlameter.si/v1/s/getAbsentMPs/9408/21.12.2016
+    * @apiSuccessExample {json} Example response:
+
+    """
+    session = get_object_or_404(Session, id_parladata=session_id)
     try:
         if date:
             date_ = datetime.strptime(date, API_DATE_FORMAT)
@@ -528,10 +862,12 @@ def getAbsentMPs(request, id_se, date=False):
                          "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
 
 
-def setPresenceOfPG(request, id_se):
-    votes = tryHard(API_URL + '/getVotesOfSession/' + str(id_se) + '/').json()
-    motions = tryHard(API_URL + '/motionOfSession/' + str(id_se) + '/').json()
-    session = Session.objects.get(id_parladata=id_se)
+def setPresenceOfPG(request, session_id):
+    """ Stores presence of PGs on specific session
+    """
+    votes = tryHard(API_URL + '/getVotesOfSession/' + str(session_id) + '/').json()
+    motions = tryHard(API_URL + '/motionOfSession/' + str(session_id) + '/').json()
+    session = Session.objects.get(id_parladata=session_id)
     membersOfPG = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
 
     allTimePGs = tryHard(API_URL + '/getAllPGsExt/').json().keys()
@@ -570,14 +906,67 @@ def setPresenceOfPG(request, id_se):
     return JsonResponse({'alliswell': True})
 
 
-def getPresenceOfPG(request, id_se, date=False):
+def getPresenceOfPG(request, session_id, date=False):
+    """
+    * @api {get} /getPresenceOfPG/{session_id}/{?date} Requests information of presence of PGs on specific session
+    * @apiName getPresenceOfPG
+    * @apiGroup Session
+    *
+    * @apiParam {session_id} session id is parameter which returns
+    *exactly specified session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data presence of PGs on specific session
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getPresenceOfPG/9379
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getPresenceOfPG/9379/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    {
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    },
+    "created_at": "12.04.2017",
+    "created_for": "20.03.2017",
+    "results": [
+    {
+    "organization": {
+    "acronym": "IMNS",
+    "is_coalition": false,
+    "id": 2,
+    "name": "PS italijanske in madžarske narodne skupnosti"
+    },
+    "percent": 96
+    },
+    ...
+    ]
+    }
+    """
     results = []
     try:
         if date:
-            presence = PresenceOfPG.objects.get(session__id_parladata=id_se,
+            presence = PresenceOfPG.objects.get(session__id_parladata=session_id,
                                                 start_time__lte=datetime.strptime(date, '%d.%m.%Y'))
         else:
-            presence = PresenceOfPG.objects.filter(session__id_parladata=id_se)
+            presence = PresenceOfPG.objects.filter(session__id_parladata=session_id)
             presence = presence.latest("created_at")
 
             for p in presence.presence[0]:
@@ -593,6 +982,8 @@ def getPresenceOfPG(request, id_se, date=False):
 
 
 def setSpeechesOnSession(request, date=False):
+    """ Stores all speeches of all MPs.
+    """
     if date:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.strptime(date, '%d.%m.%Y')))
         mps = tryHard(API_URL + '/getMPs/' + date).json()
@@ -615,6 +1006,58 @@ def setSpeechesOnSession(request, date=False):
 
 
 def getMinSpeechesOnSession(request, date=False):
+    """
+    * @api {get} /getMinSpeechesOnSession/{?date} Requests data who has the less speeches on sessions.
+    * @apiName getMinSpeechesOnSession
+    * @apiGroup Session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data who has the less speeches on sessions.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getMinSpeechesOnSession
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getMinSpeechesOnSession/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    [
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    84
+    ],
+    "name": "Vlasta Počkaj",
+    "gov_id": "P303",
+    "gender": "f",
+    "party": {
+    "acronym": "SMC",
+    "is_coalition": true,
+    "id": 1,
+    "name": "PS Stranka modernega centra"
+    },
+    "type": "mp",
+    "id": 2934,
+    "has_function": false
+    },
+    "speeches": 0.0007552870090634441
+    },
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    85
+    ],
+    "name": "Teja Ljubič",
+    "gov_id": "P304",
+    "gender": "f",
+    "party": {
+    "acronym": "SMC",
+    "is_coalition": true,
+    "id": 1,
+    "name": "PS Stranka modernega centra"
+    },
+    ...
+    ]
+    """
     results = []
     try:
         if date:
@@ -638,6 +1081,64 @@ def getMinSpeechesOnSession(request, date=False):
 
 
 def getMaxSpeechesOnSession(request, date=False):
+    """
+    * @api {get} /getMaxSpeechesOnSession/{?date} Requests data who has the most speeches on sessions.
+    * @apiName getMaxSpeechesOnSession
+    * @apiGroup Session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data who has the most speeches on sessions.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getMaxSpeechesOnSession
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getMaxSpeechesOnSession/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    [
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    76
+    ],
+    "name": "Milan Brglez",
+    "gov_id": "P243",
+    "gender": "m",
+    "party": {
+    "acronym": "SMC",
+    "is_coalition": true,
+    "id": 1,
+    "name": "PS Stranka modernega centra"
+    },
+    "type": "mp",
+    "id": 11,
+    "has_function": true
+    },
+    "speeches": 6.601963746223565
+    },
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    93
+    ],
+    "name": "Primož Hainz",
+    "gov_id": "P255",
+    "gender": "m",
+    "party": {
+    "acronym": "DeSUS",
+    "is_coalition": true,
+    "id": 3,
+    "name": "PS Demokratska Stranka Upokojencev Slovenije"
+    },
+    "type": "mp",
+    "id": 29,
+    "has_function": true
+    },
+    "speeches": 3.270392749244713
+    },
+    ...
+    ]
+    """
     results = []
     try:
         if date:
@@ -662,6 +1163,8 @@ def getMaxSpeechesOnSession(request, date=False):
 
 
 def setQuote(request, speech_id, start_pos, end_pos):
+    """Stores quotes of specific speech.
+    """
     speech = get_object_or_404(Speech, id_parladata=speech_id)
     quote = Quote(speech=speech,
                   first_char=start_pos,
@@ -673,6 +1176,70 @@ def setQuote(request, speech_id, start_pos, end_pos):
 
 
 def getQuote(request, quote_id):
+    """
+    * @api {get} /getQuote/{quote_id} Requests specific quote of speech.
+    * @apiName getQuote
+    * @apiGroup Session
+    *
+    * @apiParam {quote_id} quote id is parameter which returns
+    *exactly specified quote
+    * @apiSuccess {Json} returns specific quote of speech.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getQuote/354
+    * @apiSuccessExample {json} Example response:
+    {
+    "person": {
+    "is_active": false,
+    "district": [
+    76
+    ],
+    "name": "Milan Brglez",
+    "gov_id": "P243",
+    "gender": "m",
+    "party": {
+    "acronym": "SMC",
+    "is_coalition": true,
+    "id": 1,
+    "name": "PS Stranka modernega centra"
+    },
+    "type": "mp",
+    "id": 11,
+    "has_function": true
+    },
+    "created_at": "16.04.2017",
+    "created_for": "16.04.2017",
+    "results": {
+    "quote_id": 354,
+    "content": "Spoštovane kolegice poslanke in kolegi poslanci, gospe in gospodje! ...
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    },
+    "quoted_text": "pozdravljam. Prehajamo na določitev dnevnega reda 28. seje Državnega zbora....
+    "speech_id": 1178191,
+    "end_idx": 1947,
+    "start_idx": 898
+    }
+    }
+    """
     quote = get_object_or_404(Quote, id=quote_id)
     return JsonResponse({"person": getPersonData(quote.speech.person.id_parladata, quote.speech.session.start_time.strftime(API_DATE_FORMAT)),
                          "created_for": quote.created_at.strftime(API_DATE_FORMAT),
@@ -687,6 +1254,123 @@ def getQuote(request, quote_id):
 
 
 def getLastSessionLanding(request, date_=None):
+    """
+    * @api {get} /getLastSessionLanding/{?date} Requests data of last session.
+    * @apiName getLastSessionLanding
+    * @apiGroup Session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data of last session.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getLastSessionLanding
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getLastSessionLanding/21.12.2016
+    * @apiSuccessExample {json} Example response:
+    {
+    "created_for": "20.03.2017",
+    "presence": [
+    {
+    "org": {
+    "acronym": "PS NP",
+    "is_coalition": false,
+    "id": 109,
+    "name": "PS nepovezanih poslancev "
+    },
+    "percent": 100
+    },
+    {
+    "org": {
+    "acronym": "SMC",
+    "is_coalition": true,
+    "id": 1,
+    "name": "PS Stranka modernega centra"
+    },
+    "percent": 99
+    },
+    ...
+    "created_at": "16.04.2017",
+    "tfidf": {
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    },
+    "date": "20. 3. 2017",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    }
+    ],
+    "id": 9379,
+    "in_review": true
+    },
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    },
+    "motions": [
+    {
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    },
+    "date": "20. 3. 2017",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    }
+    ],
+    "id": 9379,
+    "in_review": true
+    },
+    "results": {
+    "abstain": 0,
+    "tags": [
+    "Proceduralna glasovanja"
+    ],
+    "text": "Dnevni red v celoti",
+    "motion_id": 6900,
+    "against": 1,
+    "votes_for": 83,
+    "is_outlier": true,
+    "not_present": 6,
+    "result": true
+    }
+    }
+    }
+    """
     if date_:
         fdate = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -726,6 +1410,93 @@ def getLastSessionLanding(request, date_=None):
 
 
 def getSessionsByClassification(request):
+    """
+    * @api {get} /getSessionsByClassification/ Requests data of all session by classification.
+    * @apiName getSessionsByClassification
+    * @apiGroup Session
+    * @apiSuccess {Json} returns data of all session by classification.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getSessionsByClassification
+    * @apiSuccessExample {json} Example response:
+    {
+    "kolegij": [
+    {
+    "votes": false,
+    "name": "91. redna seja",
+    "date_ts": "2017-04-13T02:00:00",
+    "speeches": true,
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 9,
+    "name": "Kolegij predsednika državnega zbora"
+    }
+    ],
+    "date": "13. 4. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 9,
+    "name": "Kolegij predsednika državnega zbora"
+    },
+    "id": 9419,
+    "in_review": true
+    },
+    "dt": [
+    {
+    "acronym": "",
+    "sessions": [
+    {
+    "votes": false,
+    "name": "39. redna seja",
+    "date_ts": "2017-03-31T02:00:00",
+    "speeches": false,
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 101,
+    "name": "Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji v blok 6 Termoelektrarne Šoštanj"
+    }
+    ],
+    "date": "31. 3. 2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "id": 101,
+    "name": "Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji v blok 6 Termoelektrarne Šoštanj"
+    },
+    "id": 9397,
+    "in_review": false
+    },
+    "dz": [
+    {
+    "votes": true,
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "speeches": true,
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    }
+    }
+    """
     COUNCIL_ID = 9
     DZ = 95
     working_bodies = ["odbor", "komisija", "preiskovalna komisija"]
@@ -800,6 +1571,8 @@ def getSessionsList(request, date_=None, force_render=False):
 
 
 def setTFIDF(request, session_id):
+    """Stores TFIDF analysis.
+    """
     date_of = datetime.now().date()
     url = "https://isci.parlameter.si/tfidf/s/" + str(session_id)
     data = tryHard(url).json()
@@ -815,6 +1588,60 @@ def setTFIDF(request, session_id):
 
 
 def getTFIDF(request, session_id):
+    """
+    * @api {get} /getTFIDF/{session_id} Requests data of TFIDF analysis..
+    * @apiName getTFIDF
+    * @apiGroup Session
+    * @apiParam {date} date Optional date.
+    * @apiSuccess {Json} returns data of TFIDF analysis.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getTFIDF/
+    * @apiSuccessExample {json} Example response:
+    {
+    "created_at": "22.03.2017",
+    "created_for": "22.03.2017",
+    "session": {
+    "name": "28. redna seja",
+    "date_ts": "2017-03-20T01:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "20. 3. 2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 9379,
+    "in_review": true
+    },
+    "results": [
+    {
+    "term": "filharmonija",
+    "scores": {
+    "tf": 18,
+    "df": 28,
+    "tf-idf": 0.6428571428571429
+    }
+    },
+    {
+    "term": "Plečnikov",
+    "scores": {
+    "tf": 15,
+    "df": 55,
+    "tf-idf": 0.2727272727272727
+    }
+    }
+    ]
+    }
+    """
     card = Tfidf.objects.filter(session__id_parladata=session_id,
                                 is_visible=True)
     if card:
@@ -846,6 +1673,31 @@ def getTFIDF(request, session_id):
 
 
 def getWorkingBodies(request):
+    """
+    * @api {get} /getWorkingBodies/ Requests data of all working bodies.
+    * @apiName getWorkingBodies
+    * @apiGroup Session
+    * 
+    * @apiSuccess {Json} returns data of all working bodies.
+    * 
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getWorkingBodies
+    * @apiSuccessExample {json} Example response:
+    [
+    {
+    "id": 101,
+    "name": "Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji v blok 6 Termoelektrarne Šoštanj"
+    },
+    {
+    "id": 106,
+    "name": "Preiskovalna komisija o ugotavljanju zlorab v slovenskem zdravstvenem sistemu na področju prodaje in nakupa žilnih opornic"
+    },
+    {
+    "id": 105,
+    "name": "Komisija za nadzor obveščevalnih in varnostnih služb"
+    }
+    ]
+    """
     working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
     orgs = Organization.objects.filter(classification__in=working_bodies)
     data = []
