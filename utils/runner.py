@@ -824,9 +824,9 @@ def updateLastDay(date_=None):
     except:
         client.captureException()
 
-    votes = Vote.objects.filter(session_date__lte=to_date)
+    votes = Vote.objects.filter(session__date__lte=to_date)
     lastVoteDay = votes.latest("created_for").created_for
-    speeches = Speech.objects.filter(session_date__lte=to_date)
+    speeches = Speech.objects.filter(session__date__lte=to_date)
     lastSpeechDay = speeches.latest("start_time").start_time
 
     runForTwoDays = True
