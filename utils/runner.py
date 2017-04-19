@@ -820,7 +820,7 @@ def updateLastDay(date_=None):
         to_date = date_
     try:
         print "sessions"
-        runSettersSessions()
+        #runSettersSessions()
     except:
         client.captureException()
 
