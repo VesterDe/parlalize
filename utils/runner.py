@@ -559,7 +559,7 @@ def onDateMPCardRunner(date_=None):
     # Runner for setters ALL
     all_in_one_setters = [
         setAverageNumberOfSpeechesPerSessionAll,
-        setVocabularySizeAndSpokenWords,
+        #setVocabularySizeAndSpokenWords,
         setCompass,
     ]
 
