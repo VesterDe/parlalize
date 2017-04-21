@@ -23,8 +23,46 @@ def getSpeech(request, speech_id):
     *
     * @apiParam {speech_id} speech id is parameter which returns
     *exactly specified speech
-    * @apiSuccess {Json} returns detiled data of specific speech
-    * 
+    * @@apiSuccess {Json} This function returns detiled data of specific speech.
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} person.id The person's Parladata id.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    *
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    *
+    * @apiSuccess {Object} results
+    * @apiSuccess {Integer} results.quote_id Id of quote if exists.
+    * @apiSuccess {String} results.content Content of speech.
+    *
+    * @apiSuccess {Object} results.session object
+    * @apiSuccess {String} results.session.name Name of session.
+    * @apiSuccess {Date} results.session.date_ts Date and time of session.
+    * @apiSuccess {Date} results.session.date Date of session.
+    * @apiSuccess {Integer} results.session.id Id of session.
+    * @apiSuccess {Boolean} results.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} results.session.orgs Organization object
+    * @apiSuccess {String} results.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} results.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} results.session.orgs.id Id of organization
+    * @apiSuccess {Integer} results.session.orgs.name Name of organization
+    *
+    * @apiSuccess {String} results.quoted_text Content of quoted text.
+    * @apiSuccess {String} results.speech_id Id of speech.
+    * @apiSuccess {String} results.end_idx End intex of quoted text.
+    * @apiSuccess {String} results.start_idx End intex of quoted text.
+    *
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getSpeech/1118139
     * @apiSuccessExample {json} Example response:
@@ -108,7 +146,57 @@ def getSpeechesOfSession(request, session_id):
     * @apiParam {session_id} session id is parameter which returns
     *specific session
     * @apiSuccess {Json} returns detiled data of all speeches on session.
-    * 
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    *
+    * @apiSuccess {Object[]} results Array of persons and speeches of session.
+    * @apiSuccess {Object} results.person person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} results.person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.person.name MP's full name.
+    * @apiSuccess {String} results.person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.person.party.name The party's name.
+    * @apiSuccess {String} results.person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} results.person.id The person's Parladata id.
+    * @apiSuccess {Boolean} results.person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} results.results
+    * @apiSuccess {Integer} results.results.quote_id Id of quote if exists.
+    * @apiSuccess {String} results.results.content Content of speech.
+    *
+    * @apiSuccess {Object} results.results.session object
+    * @apiSuccess {String} results.results.session.name Name of session.
+    * @apiSuccess {Date} results.results.session.date_ts Date and time of session.
+    * @apiSuccess {Date} results.results.session.date Date of session.
+    * @apiSuccess {Integer} results.results.session.id Id of session.
+    * @apiSuccess {Boolean} results.results.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} results.results.session.orgs Organization object
+    * @apiSuccess {String} results.results.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} results.results.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} results.results.session.orgs.id Id of organization
+    * @apiSuccess {Integer} results.results.session.orgs.name Name of organization
+    *
+    * @apiSuccess {String} results.results.quoted_text Content of quoted text.
+    * @apiSuccess {String} results.results.speech_id Id of speech.
+    * @apiSuccess {String} results.results.end_idx End intex of quoted text.
+    * @apiSuccess {String} results.results.start_idx End intex of quoted text.
+    *
+    *
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getSpeechesOfSession/9408
     * @apiSuccessExample {json} Example response:
@@ -271,7 +359,21 @@ def getSpeechesIDsOfSession(request, session_id):
     * @apiParam {session_id} session id is parameter which returns
     *specific session
     * @apiSuccess {Json} returns IDs of speeches on specific session
-    * 
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {Integer} results IDs of all speeches on session.
+    *
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getSpeechesIDsOfSession/9408
     * @apiSuccessExample {json} Example response:
@@ -521,6 +623,44 @@ def getMotionOfSession(request, session_id, date=False):
     *exactly specified session
     * @apiSuccess {Json} returns detiled data of all motions on specific session
     * @apiParam {date} date Optional date.
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {Integer} results IDs of all speeches on session.
+    * @apiSuccess {Object} results object
+    * @apiSuccess {Object} results.session object
+    * @apiSuccess {String} results.session.name Name of session.
+    * @apiSuccess {Date} results.session.date_ts Date and time of session.
+    * @apiSuccess {Date} results.session.date Date of session.
+    * @apiSuccess {Integer} results.session.id Id of session.
+    * @apiSuccess {Boolean} results.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} results.session.orgs Organization object
+    * @apiSuccess {String} results.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} results.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} results.session.orgs.id Id of organization
+    * @apiSuccess {Integer} results.session.orgs.name Name of organization
+    * @apiSuccess {Integer} results.results IDs of all speeches on session.
+    * @apiSuccess {Object} results.results object
+    * @apiSuccess {Integer} results.abstain Number of MPs that abstain on voting.
+    * @apiSuccess {Integer} results.against Number of MPs that are against on voting.
+    * @apiSuccess {Integer} results.motion_id ID of motion.
+    * @apiSuccess {String} results.text Text of motion
+    * @apiSuccess {String[]} results.tags Array of tags of motion.
+    * @apiSuccess {Boolean} results.is_outlier ??????????????????
+    * @apiSuccess {Integer} results.not_present Number of MPs that were not present.
+    * @apiSuccess {Integer} results.votes_for Number of MPs that voted with yes.
+    * @apiSuccess {Boolean} results.result True or False if the motion was successful.
+    * @apiSuccess {String[]} results.tags Array of tags of motion.
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9408
     * @apiExample {curl} Example with date:
