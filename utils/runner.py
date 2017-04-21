@@ -1254,7 +1254,7 @@ def updatePagesS(ses_list=None):
             print "Timeout"
 
 
-def fastUpdate(date_=None):
+def fastUpdate(fast=True, date_=None):
     start_time = time()
     new_redna_seja = []
     lockFile = open('parser.lock', 'w+')
@@ -1498,16 +1498,17 @@ def fastUpdate(date_=None):
     q_update = list(questions.values_list("person__id_parladata", flat=True))
     p_update += q_update
 
-    """ preventino zakomentirano da ne bo kej fejlal
-    updateLastActivity(list(set(p_update)))
-    recacheActivities(('poslanska-vprasanja-in-pobude',
-                       'poslanska-vprasanja-in-pobude'),
-                      list(set(q_update)))
-    recacheActivities(('povezave-do-govorov',
-                       'vsi-govori-poslanske-skupine'),
-                      list(set(s_p_update)))
-    recacheWBs()
-    """
+    # if "fast" fastUpdate then skip update last activites
+    if not fast:
+        updateLastActivity(list(set(p_update)))
+        recacheActivities(('poslanska-vprasanja-in-pobude',
+                           'poslanska-vprasanja-in-pobude'),
+                          list(set(q_update)))
+        recacheActivities(('povezave-do-govorov',
+                           'vsi-govori-poslanske-skupine'),
+                          list(set(s_p_update)))
+        recacheWBs()
+
     t_delta = time() - start_time
     client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
 
