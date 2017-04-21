@@ -1498,6 +1498,7 @@ def fastUpdate(date_=None):
     q_update = list(questions.values_list("person__id_parladata", flat=True))
     p_update += q_update
 
+    """ preventino zakomentirano da ne bo kej fejlal
     updateLastActivity(list(set(p_update)))
     recacheActivities(('poslanska-vprasanja-in-pobude',
                        'poslanska-vprasanja-in-pobude'),
@@ -1506,7 +1507,7 @@ def fastUpdate(date_=None):
                        'vsi-govori-poslanske-skupine'),
                       list(set(s_p_update)))
     recacheWBs()
-
+    """
     t_delta = time() - start_time
     client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
 
