@@ -372,7 +372,7 @@ def getSpeechesIDsOfSession(request, session_id):
     * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
     * @apiSuccess {Integer} session.orgs.id Id of organization
     * @apiSuccess {Integer} session.orgs.name Name of organization
-    * @apiSuccess {Integer} results IDs of all speeches on session.
+    * @apiSuccess {Integer[]} results IDs of all speeches on session.
     *
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getSpeechesIDsOfSession/9408
@@ -662,9 +662,9 @@ def getMotionOfSession(request, session_id, date=False):
     * @apiSuccess {Boolean} results.result True or False if the motion was successful.
     * @apiSuccess {String[]} results.tags Array of tags of motion.
     * @apiExample {curl} Example:
-        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9408
+        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9427
     * @apiExample {curl} Example with date:
-        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9408/21.12.2016
+        curl -i https://analize.parlameter.si/v1/s/getMotionOfSession/9427/21.12.2016
     * @apiSuccessExample {json} Example response:
     {
     "created_at": null,
@@ -791,7 +791,117 @@ def getMotionGraph(request, id_mo, date=False):
     *exactly specified motion
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns detiled data of motion
-    * 
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {String} name Name of motion
+    * @apiSuccess {String} id Motions id
+    * @apiSuccess {String} required Number of required votes to pass the motion.
+    * @apiSuccess {Boolean} result Result of motion.
+    * @apiSuccess {String[]} documents Links to the documents of motion.
+    * @apiSuccess {Object} all object
+    * @apiSuccess {Object} all.kvorum object
+    * @apiSuccess {String} all.kvorum.option Name of option
+    * @apiSuccess {Integer} all.kvorum.total_votes Total votes for this option
+    * @apiSuccess {Object[]} all.kvorum.breakdown   
+    * @apiSuccess {Object} all.kvorum.breakdown.pg
+    * @apiSuccess {String} rall.kvorum.breakdown.pg.acronym Organization acronym
+    * @apiSuccess {Boolean} rall.kvorum.breakdown.pg.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} all.kvorum.breakdown.pg.id Id of organization
+    * @apiSuccess {Integer} all.kvorum.breakdown.pg.name Name of organization
+    * @apiSuccess {Object[]} all.kvorum.breakdown.mps MP's person object 
+    * @apiSuccess {Boolean} all.kvorum.breakdown.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} all.kvorum.breakdown.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} all.kvorum.breakdown.mps.name MP's full name.
+    * @apiSuccess {String} all.kvorum.breakdown.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} all.kvorum.breakdown.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} all.kvorum.breakdown.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} all.kvorum.breakdown.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} all.kvorum.breakdown.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} all.kvorum.breakdown.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} all.kvorum.breakdown.mps.party.name The party's name.
+    * @apiSuccess {String} all.kvorum.breakdown.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} all.kvorum.breakdown.mps.id The person's Parladata id.
+    * @apiSuccess {Boolean} all.kvorum.breakdown.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} all.not_present object
+    * @apiSuccess {String} all.not_present.option Name of option
+    * @apiSuccess {Integer} all.not_present.total_votes Total votes for this option
+    * @apiSuccess {Object[]} all.not_present.breakdown   
+    * @apiSuccess {Object} all.not_present.breakdown.pg
+    * @apiSuccess {String} rall.not_present.breakdown.pg.acronym Organization acronym
+    * @apiSuccess {Boolean} rall.not_present.breakdown.pg.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} all.not_present.breakdown.pg.id Id of organization
+    * @apiSuccess {Integer} all.not_present.breakdown.pg.name Name of organization
+    * @apiSuccess {Object[]} all.not_present.breakdown.mps MP's person object 
+    * @apiSuccess {Boolean} all.not_present.breakdown.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} all.not_present.breakdown.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} all.not_present.breakdown.mps.name MP's full name.
+    * @apiSuccess {String} all.not_present.breakdown.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} all.not_present.breakdown.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} all.not_present.breakdown.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} all.not_present.breakdown.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} all.not_present.breakdown.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} all.not_present.breakdown.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} all.not_present.breakdown.mps.party.name The party's name.
+    * @apiSuccess {String} all.not_present.breakdown.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} all.not_present.breakdown.mps.id The person's Parladata id.
+    * @apiSuccess {Boolean} all.not_present.breakdown.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} all.against object
+    * @apiSuccess {String} all.against.option Name of option
+    * @apiSuccess {Integer} all.against.total_votes Total votes for this option
+    * @apiSuccess {Object[]} all.against.breakdown   
+    * @apiSuccess {Object} all.against.breakdown.pg
+    * @apiSuccess {String} rall.against.breakdown.pg.acronym Organization acronym
+    * @apiSuccess {Boolean} rall.against.breakdown.pg.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} all.against.breakdown.pg.id Id of organization
+    * @apiSuccess {Integer} all.against.breakdown.pg.name Name of organization
+    * @apiSuccess {Object[]} all.against.breakdown.mps MP's person object 
+    * @apiSuccess {Boolean} all.against.breakdown.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} all.against.breakdown.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} all.against.breakdown.mps.name MP's full name.
+    * @apiSuccess {String} all.against.breakdown.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} all.against.breakdown.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} all.against.breakdown.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} all.against.breakdown.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} all.against.breakdown.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} all.against.breakdown.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} all.against.breakdown.mps.party.name The party's name.
+    * @apiSuccess {String} all.against.breakdown.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} all.against.breakdown.mps.id The person's Parladata id.
+    * @apiSuccess {Boolean} all.against.breakdown.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Object} all.for object
+    * @apiSuccess {String} all.for.option Name of option
+    * @apiSuccess {Integer} all.for.total_votes Total votes for this option
+    * @apiSuccess {Object[]} all.for.breakdown   
+    * @apiSuccess {Object} all.for.breakdown.pg
+    * @apiSuccess {String} rall.for.breakdown.pg.acronym Organization acronym
+    * @apiSuccess {Boolean} rall.for.breakdown.pg.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} all.for.breakdown.pg.id Id of organization
+    * @apiSuccess {Integer} all.for.breakdown.pg.name Name of organization
+    * @apiSuccess {Object[]} all.for.breakdown.mps MP's person object 
+    * @apiSuccess {Boolean} all.for.breakdown.mps.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} all.for.breakdown.mps.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} all.for.breakdown.mps.name MP's full name.
+    * @apiSuccess {String} all.for.breakdown.mps.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} all.for.breakdown.mps.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} all.for.breakdown.mps.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} all.for.breakdown.mps.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} all.for.breakdown.mps.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} all.for.breakdown.mps.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} all.for.breakdown.mps.party.name The party's name.
+    * @apiSuccess {String} all.for.breakdown.mps.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} all.for.breakdown.mps.id The person's Parladata id.
+    * @apiSuccess {Boolean} all.for.breakdown.mps.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getMotionGraph/6900
     * @apiExample {curl} Example with date:
@@ -1056,7 +1166,26 @@ def getPresenceOfPG(request, session_id, date=False):
     *exactly specified session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data presence of PGs on specific session
-    * 
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {Object[]} results 
+    * @apiSuccess {Integer} results.percent Percent of presence on session for each PG.
+    * @apiSuccess {Object} results.organization
+    * @apiSuccess {String} results.organization.acronym Organization acronym
+    * @apiSuccess {Boolean} results.organization.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} results.organization.id Id of organization
+    * @apiSuccess {Integer} results.organization.name Name of organization
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getPresenceOfPG/9379
     * @apiExample {curl} Example with date:
@@ -1152,6 +1281,21 @@ def getMinSpeechesOnSession(request, date=False):
     * @apiGroup Session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data who has the less speeches on sessions.
+    * @apiSuccess {Object} person MP's person object 
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} person.id The person's Parladata id.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Integer} speeches Number of speeches per session.
     * 
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getMinSpeechesOnSession
@@ -1227,7 +1371,21 @@ def getMaxSpeechesOnSession(request, date=False):
     * @apiGroup Session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data who has the most speeches on sessions.
-    * 
+    * @apiSuccess {Object} person MP's person object 
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} person.id The person's Parladata id.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    * @apiSuccess {Integer} speeches Number of speeches per session.
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getMaxSpeechesOnSession
     * @apiExample {curl} Example with date:
@@ -1324,7 +1482,44 @@ def getQuote(request, quote_id):
     * @apiParam {quote_id} quote id is parameter which returns
     *exactly specified quote
     * @apiSuccess {Json} returns specific quote of speech.
-    * 
+    * @apiSuccess {Object} person MP's person object (comes with most calls).
+    * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} person.name MP's full name.
+    * @apiSuccess {String} person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} person.party.name The party's name.
+    * @apiSuccess {String} person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} person.id The person's Parladata id.
+    * @apiSuccess {Boolean} person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+    *
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    *
+    * @apiSuccess {Object} results
+    * @apiSuccess {Integer} results.quote_id Id of quote if exists.
+    * @apiSuccess {String} results.content Content of speech.
+    *
+    * @apiSuccess {Object} results.session object
+    * @apiSuccess {String} results.session.name Name of session.
+    * @apiSuccess {Date} results.session.date_ts Date and time of session.
+    * @apiSuccess {Date} results.session.date Date of session.
+    * @apiSuccess {Integer} results.session.id Id of session.
+    * @apiSuccess {Boolean} results.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} results.session.orgs Organization object
+    * @apiSuccess {String} results.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} results.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} results.session.orgs.id Id of organization
+    * @apiSuccess {Integer} results.session.orgs.name Name of organization
+    *
+    * @apiSuccess {String} results.quoted_text Content of quoted text.
+    * @apiSuccess {String} results.speech_id Id of speech.
+    * @apiSuccess {String} results.end_idx End intex of quoted text.
+    * @apiSuccess {String} results.start_idx End intex of quoted text.
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getQuote/354
     * @apiSuccessExample {json} Example response:
@@ -1399,8 +1594,71 @@ def getLastSessionLanding(request, date_=None):
     * @apiName getLastSessionLanding
     * @apiGroup Session
     * @apiParam {date} date Optional date.
-    * @apiSuccess {Json} returns data of last session.
-    * 
+    * @apiSuccess {Json} returns data like presence, tfidf and all motions of last session.
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} presence
+    * @apiSuccess {Integer} presence.percent Percent of presence on session for each PG.
+    * @apiSuccess {Object} presence.org
+    * @apiSuccess {String} presence.org.acronym Organization acronym
+    * @apiSuccess {Boolean} presence.org.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} presence.org.id Id of organization
+    * @apiSuccess {Integer} presence.org.name Name of organization
+    * @apiSuccess {Object} tfidf
+    * @apiSuccess {date} tfidf.created_at When was this data created?
+    * @apiSuccess {date} tfidf.created_for For when was this data created?
+    * @apiSuccess {Object} tfidf.session object
+    * @apiSuccess {String} tfidf.session.name Name of session.
+    * @apiSuccess {Date} tfidf.session.date_ts Date and time of session.
+    * @apiSuccess {Date} tfidf.session.date Date of session.
+    * @apiSuccess {Integer} tfidf.session.id Id of session.
+    * @apiSuccess {Boolean} tfidf.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} tfidf.session.orgs Organization object
+    * @apiSuccess {String} tfidf.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} tfidf.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} tfidf.session.orgs.id Id of organization
+    * @apiSuccess {Integer} tfidf.session.orgs.name Name of organization
+    * @apiSuccess {Object[]} tfidf.results
+    * @apiSuccess {String} tfidf.results.term Term that is analyzed.
+    * @apiSuccess {Object} tfidf.results.scores Scores of TFIDF
+    * @apiSuccess {Integer} tfidf.results.scores.tf Term frequency
+    * @apiSuccess {Integer} tfidf.results.scores.df Document frequency
+    * @apiSuccess {Integer} tfidf.results.scores.tf-idf Term frequency / Document frequency
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {String} session.orgs.name Name of organization
+    * @apiSuccess {Object[]} motion
+    * @apiSuccess {Object} motion.results.session object
+    * @apiSuccess {String} motion.results.session.name Name of session.
+    * @apiSuccess {Date} motion.results.session.date_ts Date and time of session.
+    * @apiSuccess {Date} motion.results.session.date Date of session.
+    * @apiSuccess {Integer} motion.results.session.id Id of session.
+    * @apiSuccess {Boolean} motion.results.session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} motion.results.session.orgs Organization object
+    * @apiSuccess {String} motion.results.session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} motion.results.session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} motion.results.session.orgs.id Id of organization
+    * @apiSuccess {Integer} motion.results.session.orgs.name Name of organization
+    * @apiSuccess {Integer} motion.results.results IDs of all speeches on session.
+    * @apiSuccess {Object} motion.results.results object
+    * @apiSuccess {Integer} motion.results.abstain Number of MPs that abstain on voting.
+    * @apiSuccess {Integer} motion.results.against Number of MPs that are against on voting.
+    * @apiSuccess {Integer} motion.results.motion_id ID of motion.
+    * @apiSuccess {String} motion.results.text Text of motion
+    * @apiSuccess {String[]} motion.results.tags Array of tags of motion.
+    * @apiSuccess {Boolean} motion.results.is_outlier ??????????????????
+    * @apiSuccess {Integer} motion.results.not_present Number of MPs that were not present.
+    * @apiSuccess {Integer} motion.results.votes_for Number of MPs that voted with yes.
+    * @apiSuccess {Boolean} motion.results.result True or False if the motion was successful.
+    * @apiSuccess {String[]} motion.results.tags Array of tags of motion.
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getLastSessionLanding
     * @apiExample {curl} Example with date:
@@ -1555,7 +1813,45 @@ def getSessionsByClassification(request):
     * @apiName getSessionsByClassification
     * @apiGroup Session
     * @apiSuccess {Json} returns data of all session by classification.
-    * 
+    * @apiSuccess {Object[]} kolegij Classification of session
+    * @apiSuccess {String} kolegij.name Name of session.
+    * @apiSuccess {Date} kolegij.date_ts Date and time of session.
+    * @apiSuccess {Date} kolegij.date Date of session.
+    * @apiSuccess {Integer} kolegij.id Id of session.
+    * @apiSuccess {Boolean} kolegij.in_review Returns true or false if session is in review.
+    * @apiSuccess {Boolean} kolegij.votes Returns true or false if session has votes.
+    * @apiSuccess {Boolean} kolegij.speeches Returns true or false if session has speeches.
+    * @apiSuccess {Object[]} kolegij.orgs Organization object
+    * @apiSuccess {String} kolegij.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} kolegij.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} kolegij.orgs.id Id of organization
+    * @apiSuccess {Integer} kolegij.orgs.name Name of organization
+    * @apiSuccess {Object[]} dt Classification of session
+    * @apiSuccess {String} dt.name Name of session.
+    * @apiSuccess {Date} dt.date_ts Date and time of session.
+    * @apiSuccess {Date} dt.date Date of session.
+    * @apiSuccess {Integer} dt.id Id of session.
+    * @apiSuccess {Boolean} dt.in_review Returns true or false if session is in review.
+    * @apiSuccess {Boolean} dt.votes Returns true or false f session has votes.
+    * @apiSuccess {Boolean} dt.speeches Returns true or false if session has speeches.
+    * @apiSuccess {Object[]} dt.orgs Organization object
+    * @apiSuccess {String} dt.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} dt.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} dt.orgs.id Id of organization
+    * @apiSuccess {Integer} dt.orgs.name Name of organization
+    * @apiSuccess {Object[]} dz Classification of session
+    * @apiSuccess {String} dz.name Name of session.
+    * @apiSuccess {Date} dz.date_ts Date and time of session.
+    * @apiSuccess {Date} dz.date Date of session.
+    * @apiSuccess {Integer} dz.id Id of session.
+    * @apiSuccess {Boolean} dz.in_review Returns true or false if session is in review.
+    * @apiSuccess {Boolean} dz.votes Returns true or false f session has votes.
+    * @apiSuccess {Boolean} dz.speeches Returns true or false if session has speeches.
+    * @apiSuccess {Object[]} dz.orgs Organization object
+    * @apiSuccess {String} dz.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} dz.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} dz.orgs.id Id of organization
+    * @apiSuccess {Integer} dz.orgs.name Name of organization
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getSessionsByClassification
     * @apiSuccessExample {json} Example response:
@@ -1662,6 +1958,37 @@ def getSessionsByClassification(request):
 
 
 def getSessionsList(request, date_=None, force_render=False):
+    """
+    * @api {get} /getSessionsList/ Requests data of all sessions.
+    * @apiName getSessionsList
+    * @apiGroup Session
+    * @apiParam {date} date Optional date.
+    * @apiParam {Boolean} force_render Optional force render.
+    * @apiSuccess {Json} returns data of all sessions.
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Date} session.updated_at_ts Date of session. ????
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Boolean} session.speeches Return true or false if session has speeches.
+    * @apiSuccess {Boolean} session.votes Return true or false if session has votes_for.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getSessionsList/
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/s/getSessionsList/21.12.2016
+    * @apiExample {curl} Example with force_render:
+        curl -i https://analize.parlameter.si/v1/s/getSessionsList/True
+    * @apiSuccessExample {json} Example response:
+    """
     COUNCIL_ID = 9
     DZ = 95
     working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
@@ -1734,9 +2061,27 @@ def getTFIDF(request, session_id):
     * @apiGroup Session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data of TFIDF analysis.
-    * 
+    * @apiSuccess {date} created_at When was this data created?
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {Object[]} results
+    * @apiSuccess {String} results.term Term that is analyzed.
+    * @apiSuccess {Object} results.scores Scores of TFIDF
+    * @apiSuccess {Integer} results.scores.tf Term frequency
+    * @apiSuccess {Integer} results.scores.df Document frequency
+    * @apiSuccess {Integer} results.scores.tf-idf Term frequency / Document frequency
     * @apiExample {curl} Example:
-        curl -i https://analize.parlameter.si/v1/s/getTFIDF/
+        curl -i https://analize.parlameter.si/v1/s/getTFIDF/9379
     * @apiSuccessExample {json} Example response:
     {
     "created_at": "22.03.2017",
@@ -1819,9 +2164,10 @@ def getWorkingBodies(request):
     * @apiGroup Session
     * 
     * @apiSuccess {Json} returns data of all working bodies.
-    * 
+    * @apiSuccess {Integer} id Id of working bodie.
+    * @apiSuccess {String} name Name of working bodie.
     * @apiExample {curl} Example:
-        curl -i https://analize.parlameter.si/v1/s/getWorkingBodies
+        curl -i     
     * @apiSuccessExample {json} Example response:
     [
     {
