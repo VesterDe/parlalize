@@ -2,7 +2,7 @@
 
 import requests
 from parlaposlanci.views import setMPStaticPL
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, slack_token
 from parlalize.utils import getPGIDs, findDatesFromLastCard, getAllStaticData
 from datetime import datetime, timedelta
 from django.apps import apps
@@ -24,6 +24,7 @@ from multiprocessing import Pool
 
 from parlalize.utils import tryHard, datesGenerator, getPersonData
 import json
+from slackclient import SlackClient
 
 from time import time
 
@@ -796,6 +797,7 @@ def updateCacheforList(date_=None):
     Method which runs once per day (cron job)
     for recache cache with short lifetime
     """
+    sc = SlackClient(slack_token)
     try:
         if not date_:
             date_ = (datetime.now() + timedelta(days=1)).strftime(API_DATE_FORMAT)
@@ -808,7 +810,9 @@ def updateCacheforList(date_=None):
     except:
         client.captureException()
 
-    client.captureMessage('Zgeneriru sem cache za nasledn dan')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Zgeneriru sem cache za nasledn dan.')
 
     return 1
 
@@ -1255,12 +1259,15 @@ def updatePagesS(ses_list=None):
 
 
 def fastUpdate(fast=True, date_=None):
+    sc = SlackClient(slack_token)
     start_time = time()
     new_redna_seja = []
     lockFile = open('parser.lock', 'w+')
     lockFile.write('LOCKED')
     lockFile.close()
-    client.captureMessage('Start fast update at: ' + str(datetime.now()))
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start fast update at: ' + str(datetime.now()))
 
     dates = []
 
@@ -1454,7 +1461,12 @@ def fastUpdate(fast=True, date_=None):
         updatePersonStatus()
 
     t_delta = time() - start_time
-    client.captureMessage('End fast update (' + str(t_delta) + ' s) and start update sessions cards at: ' + str(datetime.now()))
+    text = ('End fast update (' + str(t_delta) + ' s) and start',
+            'update sessions cards at: ' + str(datetime.now()) + '')
+
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     print "sessions"
     s_update = []
@@ -1471,7 +1483,11 @@ def fastUpdate(fast=True, date_=None):
         runSettersSessions(sessions_ids=list(set(s_update)))
 
     t_delta = time() - start_time
-    client.captureMessage('End creating cards (' + str(t_delta) + ' s) and start creating recache: ' + str(datetime.now()))
+    text = ('End creating cards (' + str(t_delta) + ' s) and start',
+            'creating recache: ' + str(datetime.now()) + '')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     lockFile = open('parser.lock', 'w+')
     lockFile.write('UNLOCKED')
@@ -1510,14 +1526,23 @@ def fastUpdate(fast=True, date_=None):
         recacheWBs()
 
     t_delta = time() - start_time
-    client.captureMessage('End fastUpdate everything (' + str(t_delta) + ' s): ' + str(datetime.now()))
+    text = ('End fastUpdate everything (' + str(t_delta) + ' s): ',
+            '' + str(datetime.now()) + '')
+
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     for session in new_redna_seja:
         # run cards
-        client.captureMessage('New redna seja: ' + session.name + ' Start creating cards')
+        sc.api_call("chat.postMessage",
+                    channel="#parlalize_notif",
+                    text='New redna seja: ' + session.name + ' Start creating cards')
         updateLastDay(session.date)
         setListOfMembers(sessions['start_time'])
-        client.captureMessage('New P and PG cards was created.')
+        sc.api_call("chat.postMessage",
+                    channel="#parlalize_notif",
+                    text='New P and PG cards was created.')
 
 
 def setListOfMembers(date_time):
