@@ -1300,7 +1300,7 @@ def fastUpdate(fast=True, date_=None):
     print 'Persons: ', len(data['persons'])
     print 'Questions: ', len(data['questions'])
 
-    text = ('Received data: \n',
+    text = ('Received data: \n'
             'Speeches: ' + str(len(data['speeches'])) + '\n'
             'Sessions: ' + str(len(data['sessions'])) + '\n'
             'Persons: ' + str(len(data['persons'])) + '\n'
