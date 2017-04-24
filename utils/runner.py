@@ -1300,11 +1300,11 @@ def fastUpdate(fast=True, date_=None):
     print 'Persons: ', len(data['persons'])
     print 'Questions: ', len(data['questions'])
 
-    text = ('Received data',
-            'Speeches: ' + str(len(data['speeches'])) + '',
-            'Sessions: ' + str(len(data['sessions'])) + '',
-            'Persons: ' + str(len(data['persons'])) + '',
-            'Questions: ' + str(len(data['questions'])) + '')
+    text = ('Received data: \n',
+            'Speeches: ' + str(len(data['speeches'])) + '\n',
+            'Sessions: ' + str(len(data['sessions'])) + '\n',
+            'Persons: ' + str(len(data['persons'])) + '\n',
+            'Questions: ' + str(len(data['questions'])) + '\n')
     sc.api_call("chat.postMessage",
                 channel="#parlalize_notif",
                 text=text)
