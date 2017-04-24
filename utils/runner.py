@@ -1470,7 +1470,7 @@ def fastUpdate(fast=True, date_=None):
         updatePersonStatus()
 
     t_delta = time() - start_time
-    text = ('End fast update (' + str(t_delta) + ' s) and start',
+    text = ('End fast update (' + str(t_delta) + ' s) and start'
             'update sessions cards at: ' + str(datetime.now()) + '')
 
     sc.api_call("chat.postMessage",
@@ -1492,7 +1492,7 @@ def fastUpdate(fast=True, date_=None):
         runSettersSessions(sessions_ids=list(set(s_update)))
 
     t_delta = time() - start_time
-    text = ('End creating cards (' + str(t_delta) + ' s) and start',
+    text = ('End creating cards (' + str(t_delta) + ' s) and start'
             'creating recache: ' + str(datetime.now()) + '')
     sc.api_call("chat.postMessage",
                 channel="#parlalize_notif",
@@ -1535,7 +1535,7 @@ def fastUpdate(fast=True, date_=None):
         recacheWBs()
 
     t_delta = time() - start_time
-    text = ('End fastUpdate everything (' + str(t_delta) + ' s): ',
+    text = ('End fastUpdate everything (' + str(t_delta) + ' s): '
             '' + str(datetime.now()) + '')
 
     sc.api_call("chat.postMessage",
