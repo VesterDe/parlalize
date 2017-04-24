@@ -1300,6 +1300,15 @@ def fastUpdate(fast=True, date_=None):
     print 'Persons: ', len(data['persons'])
     print 'Questions: ', len(data['questions'])
 
+    text = ('Received data',
+            'Speeches: ' + str(len(data['speeches'])) + '',
+            'Sessions: ' + str(len(data['sessions'])) + '',
+            'Persons: ' + str(len(data['persons'])) + '',
+            'Questions: ' + str(len(data['questions'])) + '')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
+
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
     # Persons
