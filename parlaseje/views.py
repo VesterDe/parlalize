@@ -1086,8 +1086,6 @@ def getAbsentMPs(request, session_id, date=False):
         curl -i https://analize.parlameter.si/v1/s/getAbsentMPs/9408
     * @apiExample {curl} Example with date:
         curl -i hhttps://analize.parlameter.si/v1/s/getAbsentMPs/9408/21.12.2016
-    * @apiSuccessExample {json} Example response:
-
     """
     session = get_object_or_404(Session, id_parladata=session_id)
     try:
@@ -1988,6 +1986,61 @@ def getSessionsList(request, date_=None, force_render=False):
     * @apiExample {curl} Example with force_render:
         curl -i https://analize.parlameter.si/v1/s/getSessionsList/True
     * @apiSuccessExample {json} Example response:
+    {
+"created_at": "24.04.2017",
+"created_for": "24.04.2017",
+"sessions": [
+{
+"updated_at_ts": "2017-04-24T20:39:11.782",
+"speeches": true,
+"name": "29. redna seja",
+"date_ts": "2017-04-20T02:00:00",
+"votes": true,
+"updated_at": "24.04.2017",
+"org": {
+"acronym": "DZ",
+"is_coalition": false,
+"name": "Državni zbor",
+"id": 95
+},
+"date": "20. 4. 2017",
+"orgs": [
+{
+"acronym": "DZ",
+"is_coalition": false,
+"name": "Državni zbor",
+"id": 95
+}
+],
+"id": 9427,
+"in_review": true
+},
+{
+"updated_at_ts": "2017-04-20T01:26:40.675",
+"speeches": true,
+"name": "93. redna seja",
+"date_ts": "2017-04-19T02:00:00",
+"votes": false,
+"updated_at": "20.04.2017",
+"org": {
+"acronym": "",
+"is_coalition": false,
+"name": "Kolegij predsednika državnega zbora",
+"id": 9
+},
+"date": "19. 4. 2017",
+"orgs": [
+{
+"acronym": "",
+"is_coalition": false,
+"name": "Kolegij predsednika državnega zbora",
+"id": 9
+}
+],
+"id": 9424,
+"in_review": true
+}
+}
     """
     COUNCIL_ID = 9
     DZ = 95
