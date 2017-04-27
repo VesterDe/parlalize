@@ -214,8 +214,7 @@ def getSpeechesOfPG(request, pg_id, date_=False):
         date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
 
-    speeches_q = Speech.getValidSpeeches(date_of + timedelta(hours=23,
-                                                             minutes=59))
+    speeches_q = Speech.getValidSpeeches(date_of + timedelta(days=1))
 
     membersOfPGRanges = reversed(tryHard(API_URL+'/getMembersOfPGsRanges' + ("/"+date_ if date_ else "")).json())
     out = []
