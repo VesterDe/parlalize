@@ -17,12 +17,10 @@ from parlalize.utils import tryHard
 
 def getSpeech(request, speech_id):
     """
-    * @api {get} /getSpeech/{speech_id} Requests information of Speech
+    * @api {get} /getSpeech/{speech_id} Requests information of speech.
     * @apiName GetSpeech
     * @apiGroup Session
-    *
-    * @apiParam {speech_id} speech id is parameter which returns
-    *exactly specified speech
+    * @apiParam {speech_id} speech id is parameter which returns exactly specified speech
     * @@apiSuccess {Json} This function returns detiled data of specific speech.
     * @apiSuccess {Object} person MP's person object (comes with most calls).
     * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
@@ -142,9 +140,7 @@ def getSpeechesOfSession(request, session_id):
     * @api {get} /getSpeechesOfSession/{session_id} Requests information of speeches on session.
     * @apiName getSpeechesOfSession
     * @apiGroup Session
-    *
-    * @apiParam {session_id} session id is parameter which returns
-    *specific session
+    * @apiParam {session_id} session id is parameter which returns specific session
     * @apiSuccess {Json} returns detiled data of all speeches on session.
     * @apiSuccess {date} created_at When was this data created?
     * @apiSuccess {date} created_for For when was this data created?
@@ -355,9 +351,7 @@ def getSpeechesIDsOfSession(request, session_id):
     * @api {get} /getSpeechesIDsOfSession/{session_id} Requests IDs of all speeches on specific session.
     * @apiName getSpeechesIDsOfSession
     * @apiGroup Session
-    *
-    * @apiParam {session_id} session id is parameter which returns
-    *specific session
+    * @apiParam {session_id} session id is parameter which returns specific session
     * @apiSuccess {Json} returns IDs of speeches on specific session
     * @apiSuccess {date} created_at When was this data created?
     * @apiSuccess {date} created_for For when was this data created?
@@ -618,9 +612,7 @@ def getMotionOfSession(request, session_id, date=False):
     * @api {get} /getMotionOfSession/{session_id}/{?date} Requests information of all motions on specific session.
     * @apiName getMotionOfSession
     * @apiGroup Session
-    *
-    * @apiParam {speech_id} session id is parameter which returns
-    *exactly specified session
+    * @apiParam {speech_id} session id is parameter which returns exactly specified session
     * @apiSuccess {Json} returns detiled data of all motions on specific session
     * @apiParam {date} date Optional date.
     * @apiSuccess {date} created_at When was this data created?
@@ -656,7 +648,7 @@ def getMotionOfSession(request, session_id, date=False):
     * @apiSuccess {Integer} results.motion_id ID of motion.
     * @apiSuccess {String} results.text Text of motion
     * @apiSuccess {String[]} results.tags Array of tags of motion.
-    * @apiSuccess {Boolean} results.is_outlier ??????????????????
+    * @apiSuccess {Boolean} results.is_outlier Analaysis if person is outlier.
     * @apiSuccess {Integer} results.not_present Number of MPs that were not present.
     * @apiSuccess {Integer} results.votes_for Number of MPs that voted with yes.
     * @apiSuccess {Boolean} results.result True or False if the motion was successful.
@@ -786,9 +778,7 @@ def getMotionGraph(request, id_mo, date=False):
     * @api {get} /getMotionGraph/{id_mo}/{?date} Requests information of specific motion.
     * @apiName getMotionGraph
     * @apiGroup Session
-    *
-    * @apiParam {id_mo} session id is parameter which returns
-    *exactly specified motion
+    * @apiParam {id_mo} session id is parameter which returns exactly specified motion
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns detiled data of motion
     * @apiSuccess {date} created_at When was this data created?
@@ -1073,12 +1063,10 @@ def setAbsentMPs(request, session_id):
 def getAbsentMPs(request, session_id, date=False):
     # Ne uporabljamo damo ven?
     """
-    * @api {get} /getAbsentMPs/{session_id}/{?date} Requests information of all absent MPs on specific sesion.
+    * @api {get} /getAbsentMPs/{session_id}/{?date} Requests information of all absent MPs on specific session.
     * @apiName getAbsentMPs
     * @apiGroup Session
-    *
-    * @apiParam {session_id} session id is parameter which returns
-    *exactly specified session
+    * @apiParam {session_id} session id is parameter which returns exactly specified session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data of all absent MPs on specific session.
     * 
@@ -1156,12 +1144,10 @@ def setPresenceOfPG(request, session_id):
 
 def getPresenceOfPG(request, session_id, date=False):
     """
-    * @api {get} /getPresenceOfPG/{session_id}/{?date} Requests information of presence of PGs on specific session
+    * @api {get} /getPresenceOfPG/{session_id}/{?date} Requests information of presence of PGs on specific session.
     * @apiName getPresenceOfPG
     * @apiGroup Session
-    *
-    * @apiParam {session_id} session id is parameter which returns
-    *exactly specified session
+    * @apiParam {session_id} session id is parameter which returns exactly specified session
     * @apiParam {date} date Optional date.
     * @apiSuccess {Json} returns data presence of PGs on specific session
     * @apiSuccess {date} created_at When was this data created?
@@ -1476,9 +1462,7 @@ def getQuote(request, quote_id):
     * @api {get} /getQuote/{quote_id} Requests specific quote of speech.
     * @apiName getQuote
     * @apiGroup Session
-    *
-    * @apiParam {quote_id} quote id is parameter which returns
-    *exactly specified quote
+    * @apiParam {quote_id} quote id is parameter which returns exactly specified quote
     * @apiSuccess {Json} returns specific quote of speech.
     * @apiSuccess {Object} person MP's person object (comes with most calls).
     * @apiSuccess {Boolean} person.is_active Answer the question: Is this MP currently active?
@@ -1652,7 +1636,7 @@ def getLastSessionLanding(request, date_=None):
     * @apiSuccess {Integer} motion.results.motion_id ID of motion.
     * @apiSuccess {String} motion.results.text Text of motion
     * @apiSuccess {String[]} motion.results.tags Array of tags of motion.
-    * @apiSuccess {Boolean} motion.results.is_outlier ??????????????????
+    * @apiSuccess {Boolean} motion.results.is_outlier Analaysis if person is outlier.
     * @apiSuccess {Integer} motion.results.not_present Number of MPs that were not present.
     * @apiSuccess {Integer} motion.results.votes_for Number of MPs that voted with yes.
     * @apiSuccess {Boolean} motion.results.result True or False if the motion was successful.
@@ -1807,7 +1791,7 @@ def getLastSessionLanding(request, date_=None):
 
 def getSessionsByClassification(request):
     """
-    * @api {get} /getSessionsByClassification/ Requests data of all session by classification.
+    * @api {get} /getSessionsByClassification/ Requests data of all sessions by classification.
     * @apiName getSessionsByClassification
     * @apiGroup Session
     * @apiSuccess {Json} returns data of all session by classification.
@@ -1969,7 +1953,7 @@ def getSessionsList(request, date_=None, force_render=False):
     * @apiSuccess {String} session.name Name of session.
     * @apiSuccess {Date} session.date_ts Date and time of session.
     * @apiSuccess {Date} session.date Date of session.
-    * @apiSuccess {Date} session.updated_at_ts Date of session. ????
+    * @apiSuccess {Date} session.updated_at_ts Last update of session.
     * @apiSuccess {Integer} session.id Id of session.
     * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
     * @apiSuccess {Boolean} session.speeches Return true or false if session has speeches.
@@ -1987,60 +1971,60 @@ def getSessionsList(request, date_=None, force_render=False):
         curl -i https://analize.parlameter.si/v1/s/getSessionsList/True
     * @apiSuccessExample {json} Example response:
     {
-"created_at": "24.04.2017",
-"created_for": "24.04.2017",
-"sessions": [
-{
-"updated_at_ts": "2017-04-24T20:39:11.782",
-"speeches": true,
-"name": "29. redna seja",
-"date_ts": "2017-04-20T02:00:00",
-"votes": true,
-"updated_at": "24.04.2017",
-"org": {
-"acronym": "DZ",
-"is_coalition": false,
-"name": "Državni zbor",
-"id": 95
-},
-"date": "20. 4. 2017",
-"orgs": [
-{
-"acronym": "DZ",
-"is_coalition": false,
-"name": "Državni zbor",
-"id": 95
-}
-],
-"id": 9427,
-"in_review": true
-},
-{
-"updated_at_ts": "2017-04-20T01:26:40.675",
-"speeches": true,
-"name": "93. redna seja",
-"date_ts": "2017-04-19T02:00:00",
-"votes": false,
-"updated_at": "20.04.2017",
-"org": {
-"acronym": "",
-"is_coalition": false,
-"name": "Kolegij predsednika državnega zbora",
-"id": 9
-},
-"date": "19. 4. 2017",
-"orgs": [
-{
-"acronym": "",
-"is_coalition": false,
-"name": "Kolegij predsednika državnega zbora",
-"id": 9
-}
-],
-"id": 9424,
-"in_review": true
-}
-}
+    "created_at": "24.04.2017",
+    "created_for": "24.04.2017",
+    "sessions": [
+    {
+    "updated_at_ts": "2017-04-24T20:39:11.782",
+    "speeches": true,
+    "name": "29. redna seja",
+    "date_ts": "2017-04-20T02:00:00",
+    "votes": true,
+    "updated_at": "24.04.2017",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    },
+    "date": "20. 4. 2017",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "name": "Državni zbor",
+    "id": 95
+    }
+    ],
+    "id": 9427,
+    "in_review": true
+    },
+    {
+    "updated_at_ts": "2017-04-20T01:26:40.675",
+    "speeches": true,
+    "name": "93. redna seja",
+    "date_ts": "2017-04-19T02:00:00",
+    "votes": false,
+    "updated_at": "20.04.2017",
+    "org": {
+    "acronym": "",
+    "is_coalition": false,
+    "name": "Kolegij predsednika državnega zbora",
+    "id": 9
+    },
+    "date": "19. 4. 2017",
+    "orgs": [
+    {
+    "acronym": "",
+    "is_coalition": false,
+    "name": "Kolegij predsednika državnega zbora",
+    "id": 9
+    }
+    ],
+    "id": 9424,
+    "in_review": true
+    }
+    }
     """
     COUNCIL_ID = 9
     DZ = 95
@@ -2109,7 +2093,7 @@ def setTFIDF(request, session_id):
 
 def getTFIDF(request, session_id):
     """
-    * @api {get} /getTFIDF/{session_id} Requests data of TFIDF analysis..
+    * @api {get} /getTFIDF/{session_id} Requests data of TFIDF analysis.
     * @apiName getTFIDF
     * @apiGroup Session
     * @apiParam {date} date Optional date.
@@ -2215,7 +2199,6 @@ def getWorkingBodies(request):
     * @api {get} /getWorkingBodies/ Requests data of all working bodies.
     * @apiName getWorkingBodies
     * @apiGroup Session
-    * 
     * @apiSuccess {Json} returns data of all working bodies.
     * @apiSuccess {Integer} id Id of working bodie.
     * @apiSuccess {String} name Name of working bodie.
