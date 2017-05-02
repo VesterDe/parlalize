@@ -1261,6 +1261,8 @@ def updatePagesS(ses_list=None):
 def fastUpdate(fast=True, date_=None):
     sc = SlackClient(slack_token)
     start_time = time()
+    yesterday = (datetime.now()-timedelta(days=1)).date()
+    yesterday = datetime.combine(yesterday, datetime.min.time())
     new_redna_seja = []
     lockFile = open('parser.lock', 'w+')
     lockFile.write('LOCKED')
@@ -1505,7 +1507,10 @@ def fastUpdate(fast=True, date_=None):
     # recache
 
     # add sesessions of updated speeches to recache
-    speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
+    if fast:
+        speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
+    else:
+        speeches = Speech.objects.filter(updated_at__gt=yesterday)
     s_update += list(speeches.values_list("session__id_parladata", flat=True))
     s_p_update = list(speeches.values_list("person__id_parladata", flat=True))
 
@@ -1519,7 +1524,10 @@ def fastUpdate(fast=True, date_=None):
 
     p_update += list(speeches.values_list("person__id_parladata", flat=True))
 
-    questions = Question.objects.filter(updated_at__gt=lastQustionTime)
+    if fast:
+        questions = Question.objects.filter(updated_at__gt=lastQustionTime)
+    else:
+        questions = Question.objects.filter(updated_at__gt=yesterday)
     q_update = list(questions.values_list("person__id_parladata", flat=True))
     p_update += q_update
 
