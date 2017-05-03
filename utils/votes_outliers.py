@@ -150,11 +150,11 @@ def getOptions(row):
                                   row['option_kvorum'])
     stats = {'for': row['option_za'],
              'against': row['option_proti'],
-             'absent': row['option_kvorum']}
+             'bastain': row['option_kvorum']}
     max_opt = max(stats, key=stats.get)
     return json.dumps({'for': row['option_za'],
                        'against': row['option_proti'],
-                       'absent': row['option_kvorum'],
+                       'abstein': row['option_kvorum'],
                        'not_present': row['option_ni'],
                        'max_opt': max_opt,
                        'maxOptPerc': maxOptionPercent})
