@@ -187,6 +187,7 @@ def updateBallots():
                              id_parladata=dic['id'])
             ballots.save()
         else:
+            vote = Vote.objects.get(id_parladata=dic['vote'])
             ballot = Ballot.objects.get(id_parladata=dic["id"])
             ballot.start_time = vote.start_time
             ballot.save()
