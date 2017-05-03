@@ -293,7 +293,8 @@ def getMotionOfSession(request, id_se, date=False):
                                         'abstain': card.abstain,
                                         'not_present': card.not_present,
                                         'result': card.result,
-                                        'is_outlier': card.is_outlier
+                                        'is_outlier': card.is_outlier,
+                                        'tags': card.tags
                                         }
                             })
                 dates.append(card.created_at)
@@ -301,8 +302,9 @@ def getMotionOfSession(request, id_se, date=False):
         else:
             out = []
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
+        tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
-                             "session": sesData,
+                             "session": session.getSessionData(),
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
@@ -447,13 +449,13 @@ def getMotionAnalize(request, motion_id):
     else:
         max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for'])*100
     members = []
-    for mp in model.mp_yes:
+    for mp in json.loads(model.mp_yes):
         members.append({'person': getPersonData(mp), 'option': 'for'})
-    for mp in model.mp_no:
+    for mp in json.loads(model.mp_no):
         members.append({'person': getPersonData(mp), 'option': 'against'})
-    for mp in model.mp_np:
+    for mp in json.loads(model.mp_np):
         members.append({'person': getPersonData(mp), 'option': 'not_present'})
-    for mp in model.mp_kvor:
+    for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     orgs = {}
@@ -461,18 +463,18 @@ def getMotionAnalize(request, motion_id):
            'abstain': 0,
            'against': 0,
            'not_present': 0}
-    for pg, val in model.pgs_yes.items():
+    for pg, val in json.loads(model.pgs_yes).items():
         orgs[pg] = tmp.copy()
         orgs[pg]['for'] = val
-    for pg, val in model.pgs_no.items():
+    for pg, val in json.loads(model.pgs_no).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['against'] = val
-    for pg, val in model.pgs_np.items():
+    for pg, val in json.loads(model.pgs_np).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['not_present'] = val
-    for pg, val in model.pgs_kvor.items():
+    for pg, val in json.loads(model.pgs_kvor).items():
         if pg not in orgs.keys():
             orgs[pg] = tmp.copy()
         orgs[pg]['abstain'] = val
@@ -498,15 +500,15 @@ def getMotionAnalize(request, motion_id):
            'created_for': vote.created_for.strftime(API_DATE_FORMAT),
            'created_at': model.created_at.strftime(API_DATE_FORMAT),
            'name': vote.motion,
-           'result': {'accept': vote.result,
+           'result': {'accepted': vote.result,
                       'value': max_vote_percent_opt,
                       'max_opt': max_vote_opt,
                       'is_outlier': vote.is_outlier},
            'documents': docs if docs else [],
            'members': members,
            'parties': orgs_data,
-           'gov_side': {'coalition': model.coal_opts,
-                        'opposition': model.oppo_opts},
+           'gov_side': {'coalition': json.loads(model.coal_opts),
+                        'opposition': json.loads(model.oppo_opts)},
            'all': options}
     return JsonResponse(out, safe=False)
 

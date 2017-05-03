@@ -2,7 +2,7 @@
 
 import requests
 from parlaposlanci.views import setMPStaticPL
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, slack_token
 from parlalize.utils import getPGIDs, findDatesFromLastCard
 from datetime import datetime, timedelta
 from django.apps import apps
@@ -25,10 +25,12 @@ from .votes import VotesAnalysis
 from parlalize.utils import tryHard, datesGenerator, printProgressBar, getPersonData
 
 import json
+from slackclient import SlackClient
 
 from time import time
 
 DZ = 95
+
 
 # parlaposlanci runner methods #
 
@@ -91,7 +93,7 @@ def onDateMPCardRunner(date_=None):
     # Runner for setters ALL
     all_in_one_setters = [
         setAverageNumberOfSpeechesPerSessionAll,
-        setVocabularySizeAndSpokenWords,
+        #setVocabularySizeAndSpokenWords,
         setCompass,
     ]
 
@@ -266,13 +268,18 @@ def updateWB():
     return 'all is fine :D WB so settani'
 
 
-def fastUpdate(date_=None):
+def fastUpdate(fast=True, date_=None):
+    sc = SlackClient(slack_token)
     start_time = time()
+    yesterday = (datetime.now()-timedelta(days=1)).date()
+    yesterday = datetime.combine(yesterday, datetime.min.time())
     new_redna_seja = []
     lockFile = open('parser.lock', 'w+')
     lockFile.write('LOCKED')
     lockFile.close()
-    client.captureMessage('Start fast update at: ' + str(datetime.now()))
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start fast update at: ' + str(datetime.now()))
 
     dates = []
 
@@ -304,6 +311,15 @@ def fastUpdate(date_=None):
     print 'Sessions: ', len(data['sessions'])
     print 'Persons: ', len(data['persons'])
     print 'Questions: ', len(data['questions'])
+
+    text = ('Received data: \n'
+            'Speeches: ' + str(len(data['speeches'])) + '\n'
+            'Sessions: ' + str(len(data['sessions'])) + '\n'
+            'Persons: ' + str(len(data['persons'])) + '\n'
+            'Questions: ' + str(len(data['questions'])) + '\n')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     sdate = datetime.now().strftime(API_DATE_FORMAT)
 
@@ -419,7 +435,7 @@ def fastUpdate(date_=None):
             ballots = Ballot(person=person,
                              option=dic['option'],
                              vote=vote,
-                             start_time=vote.session.start_time,
+                             start_time=vote.start_time,
                              end_time=None,
                              id_parladata=dic['id'])
             ballots.save()
@@ -467,11 +483,13 @@ def fastUpdate(date_=None):
         updatePersonStatus()
 
     t_delta = time() - start_time
-    msg = ('End fast update ('
-           '' + str(t_delta) + ''
-           ' s) and start update sessions cards at: '
-           '' + str(datetime.now()) + '')
-    client.captureMessage(msg)
+
+    text = ('End fast update (' + str(t_delta) + ' s) and start'
+            'update sessions cards at: ' + str(datetime.now()) + '')
+
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     print 'sessions'
     s_update = []
@@ -489,11 +507,12 @@ def fastUpdate(date_=None):
         runSettersSessions(sessions_ids=list(set(s_update)))
 
     t_delta = time() - start_time
-    msg = ('End creating cards ('
-           '' + str(t_delta) + ''
-           ' s) and start creating recache: '
-           '' + str(datetime.now()) + '')
-    client.captureMessage(msg)
+
+    text = ('End creating cards (' + str(t_delta) + ' s) and start'
+            'creating recache: ' + str(datetime.now()) + '')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     lockFile = open('parser.lock', 'w+')
     lockFile.write('UNLOCKED')
@@ -502,7 +521,10 @@ def fastUpdate(date_=None):
     # recache
 
     # add sesessions of updated speeches to recache
-    speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
+    if fast:
+        speeches = Speech.objects.filter(updated_at__gt=lastSpeechTime)
+    else:
+        speeches = Speech.objects.filter(updated_at__gt=yesterday)
     s_update += list(speeches.values_list("session__id_parladata", flat=True))
     s_p_update = list(speeches.values_list("person__id_parladata", flat=True))
 
@@ -516,34 +538,44 @@ def fastUpdate(date_=None):
 
     p_update += list(speeches.values_list("person__id_parladata", flat=True))
 
-    questions = Question.objects.filter(updated_at__gt=lastQustionTime)
+    if fast:
+        questions = Question.objects.filter(updated_at__gt=lastQustionTime)
+    else:
+        questions = Question.objects.filter(updated_at__gt=yesterday)
     q_update = list(questions.values_list("person__id_parladata", flat=True))
     p_update += q_update
 
-    updateLastActivity(list(set(p_update)))
-    recacheActivities(('poslanska-vprasanja-in-pobude',
-                       'poslanska-vprasanja-in-pobude'),
-                      list(set(q_update)))
-    recacheActivities(('povezave-do-govorov',
-                       'vsi-govori-poslanske-skupine'),
-                      list(set(s_p_update)))
-    recacheWBs()
+    # if "fast" fastUpdate then skip update last activites
+    if not fast:
+        updateLastActivity(list(set(p_update)))
+        recacheActivities(('poslanska-vprasanja-in-pobude',
+                           'poslanska-vprasanja-in-pobude'),
+                          list(set(q_update)))
+        recacheActivities(('povezave-do-govorov',
+                           'vsi-govori-poslanske-skupine'),
+                          list(set(s_p_update)))
+        recacheWBs()
 
     t_delta = time() - start_time
-    msg = ('End fastUpdate everything ('
-           '' + str(t_delta) + ' s): '
-           '' + str(datetime.now()) + '')
-    client.captureMessage(msg)
+
+    text = ('End fastUpdate everything (' + str(t_delta) + ' s): '
+            '' + str(datetime.now()) + '')
+
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text=text)
 
     for session in new_redna_seja:
         # run cards
-        msg = ('New redna seja: '
-               '' + session.name + ''
-               ' Start creating cards')
-        client.captureMessage(msg)
+        sc.api_call("chat.postMessage",
+                    channel="#parlalize_notif",
+                    text='New redna seja: ' + session.name + ' Start creating cards')
+
         updateLastDay(session.date)
         setListOfMembers(sessions['start_time'])
-        client.captureMessage('New P and PG cards was created.')
+        sc.api_call("chat.postMessage",
+                    channel="#parlalize_notif",
+                    text='New P and PG cards was created.')
 
 
 def setListOfMembers(date_time):
