@@ -152,9 +152,11 @@ def getOptions(row):
              'against': row['option_proti'],
              'abstain': row['option_kvorum']}
     max_opt = max(stats, key=stats.get)
+    outliers = ['abstain', 'for', 'against'].remove(max_opt)
     return json.dumps({'for': row['option_za'],
                        'against': row['option_proti'],
                        'abstain': row['option_kvorum'],
                        'not_present': row['option_ni'],
                        'max_opt': max_opt,
+                       'outliers': outliers,
                        'maxOptPerc': maxOptionPercent})
