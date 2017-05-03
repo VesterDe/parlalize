@@ -182,10 +182,14 @@ def updateBallots():
             ballots = Ballot(person=person,
                              option=dic['option'],
                              vote=vote,
-                             start_time=vote.session.start_time,
+                             start_time=vote.start_time,
                              end_time=None,
                              id_parladata=dic['id'])
             ballots.save()
+        else:
+            ballot = Ballot.objects.get(id=dic["id"])
+            ballot.start_time = vote.start_time
+            ballot.save()
     return 1
 
 
@@ -1424,7 +1428,7 @@ def fastUpdate(fast=True, date_=None):
             ballots = Ballot(person=person,
                              option=dic['option'],
                              vote=vote,
-                             start_time=vote.session.start_time,
+                             start_time=vote.start_time,
                              end_time=None,
                              id_parladata=dic['id'])
             ballots.save()
