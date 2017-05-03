@@ -304,7 +304,8 @@ def getMotionOfSession(request, id_se, date=False):
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
         tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
-                             "session": session.getSessionData(),
+                             "session": sesData,
+                             "tags": tags,
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
@@ -518,7 +519,6 @@ def setAbsentMPs(request, id_se):
     session = Session.objects.get(id_parladata=id_se)
     mps = tryHard(API_URL+'/getMembersOfPGsOnDate/'+ session.start_time.strftime(API_DATE_FORMAT)).json()
 
-
     mpsID = []
     if len(votes) != 0:
         mpsID = reduce(lambda x,y: x+y,mps.values())
@@ -561,6 +561,7 @@ def getAbsentMPs(request, id_se, date=False):
                          "session": session.getSessionData(),
                          "created_at": absentMembers.created_at.strftime(API_DATE_FORMAT),
                          "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
+
 
 def setPresenceOfPG(request, id_se):
     votes = tryHard(API_URL+'/getVotesOfSession/'+str(id_se)+'/').json()
@@ -619,9 +620,6 @@ def setPresenceOfPG(request, id_se):
             for result in results:"""
 
 
-
-
-
     result = saveOrAbortNew(model=PresenceOfPG,
                             created_for=session.start_time,
                             presence=[final],
@@ -629,6 +627,7 @@ def setPresenceOfPG(request, id_se):
                             )
 
     return JsonResponse({'alliswell': True})
+
 
 def getPresenceOfPG(request, id_se, date=False):
     results = []

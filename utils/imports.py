@@ -167,7 +167,7 @@ def updateBallots():
             ballots = Ballot(person=person,
                              option=dic['option'],
                              vote=vote,
-                             start_time=vote.session.start_time,
+                             start_time=vote.start_time,
                              end_time=None,
                              id_parladata=dic['id'])
             ballots.save()

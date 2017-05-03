@@ -89,6 +89,7 @@ def updateCacheforList(date_=None):
     Method which runs once per day (cron job)
     for recache cache with short lifetime
     """
+    sc = SlackClient(slack_token)
     try:
         if not date_:
             tomorrow = datetime.now() + timedelta(days=1)
@@ -102,7 +103,9 @@ def updateCacheforList(date_=None):
     except:
         client.captureException()
 
-    client.captureMessage('Zgeneriru sem cache za nasledn dan')
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Zgeneriru sem cache za nasledn dan.')
 
     return 1
 
