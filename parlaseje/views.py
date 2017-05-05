@@ -842,7 +842,7 @@ def getSessionsList(request, date_=None, force_render=False):
             else:
                 last_day = session['date_ts']
                 # TODO zbrisi ta umazn fix ko se dodajo empty state-si
-                continue
+                # continue
             session.update({"updated_at": last_day.strftime(API_DATE_FORMAT)})
             session.update({"updated_at_ts": last_day})
             if Vote.objects.filter(session__id_parladata=session["id"]):
