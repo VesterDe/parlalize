@@ -498,7 +498,7 @@ def getMotionAnalize(request, motion_id):
             orgs_data.append({'party': org.getOrganizationData(),
                               'votes': data,
                               'max': {'option': max_vote,
-                                      'score': max_vote_percent}
+                                      'score': max_vote_percent},
                               'outliers': outliers})
     orgs_data = sorted(orgs_data, key=lambda party: sum(party['votes'].values()))
 
