@@ -158,7 +158,7 @@ def getOptions(row, side):
              'abstain': row['option_kvorum'],
              'not_present': row['option_ni']}
     max_opt = max(stats, key=stats.get)
-    max_ids = [key for key, val in tmp.iteritems() if val == max(tmp.values())]
+    max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
     if len(max_ids) > 1:
         if 'not_present' in max_ids:
             max_ids.remove('not_present')
