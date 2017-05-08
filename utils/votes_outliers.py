@@ -80,8 +80,8 @@ def setMotionAnalize(session_id):
     all_votes['pg_ni'] = all_votes.apply(lambda row: getPGsList(row, pg_ni), axis=1)
     all_votes['pg_kvorum'] = all_votes.apply(lambda row: getPGsList(row, pg_kvorum), axis=1)
 
-    all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row), axis=1)
-    all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row), axis=1)
+    all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'coal'), axis=1)
+    all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'oppo'), axis=1)
 
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
@@ -144,20 +144,39 @@ def getPGsList(row, proti):
         return json.dumps({})
 
 
-def getOptions(row):
+def getOptions(row, side):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
-                                  row['option_kvorum'])
+                                  row['option_kvorum'],
+                                  row['option_ni'])
     stats = {'for': row['option_za'],
              'against': row['option_proti'],
-             'abstain': row['option_kvorum']}
+             'abstain': row['option_kvorum'],
+             'not_present': row['option_ni']}
     max_opt = max(stats, key=stats.get)
-    outliers = ['abstain', 'for', 'against']
-    outliers.remove(max_opt)
+    max_ids = [key for key, val in tmp.iteritems() if val == max(tmp.values())]
+    if len(max_ids) > 1:
+        if 'not_present' in max_ids:
+            max_ids.remove('not_present')
+            if len(max_ids) > 1:
+                max_vote = 'cant_compute'
+            else:
+                max_vote = max_ids[0]
+        else:
+            max_vote = 'cant_compute'
+    else:
+        max_vote = max_ids[0]
+    if side == 'oppo':
+        outliers = [opt for opt in ['for', 'against'] if stats[opt] not 0]
+    else:
+        outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt] not 0]
+    for opt in max_ids:
+        if opt in outliers:
+            outliers.remove(opt)
     return json.dumps({'for': row['option_za'],
                        'against': row['option_proti'],
                        'abstain': row['option_kvorum'],
                        'not_present': row['option_ni'],
-                       'max_opt': max_opt,
+                       'max_opt': max_vote,
                        'outliers': outliers,
                        'maxOptPerc': maxOptionPercent})
