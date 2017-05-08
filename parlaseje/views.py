@@ -482,16 +482,27 @@ def getMotionAnalize(request, motion_id):
     orgs_data = []
     for org, data in orgs.items():
         tmp = data.copy()
-        tmp.pop('not_present', None)
         max_vote = max(tmp, key=tmp.get)
-        if tmp[max_vote] == 0:
-            max_vote_percent = 0
-            max_vote = '/'
+        max_ids = [key for key, val in tmp.iteritems() if val == max(tmp.values())]
+        all_votes = (tmp['abstain']+tmp['against']+tmp['for']+tmp['not_present'])
+        if len(max_ids) > 1:
+            if 'not_present' in max_ids:
+                max_ids.remove('not_present')
+                if len(max_ids) > 1:
+                    max_vote = 'cant_compute'
+                else:
+                    max_vote = max_ids[0]
+            else:
+                max_vote = 'cant_compute'
         else:
-            max_vote_percent = float(tmp[max_vote])/(tmp['abstain']+tmp['against']+tmp['for'])*100
+            max_vote = max_ids[0]
 
-        outliers = ['abstain', 'for', 'against']
-        outliers.remove(max_vote)
+        max_vote_percent = float(tmp[max_ids[0]])/all_votes*100
+
+        outliers = [opt for opt in ['abstain', 'for', 'against'] if data[opt]]
+        for opt in max_ids:
+            if opt in outliers:
+                outliers.remove(opt)
 
         org = Organization.objects.get(id_parladata=org)
         if org.classification == 'poslanska skupina':
@@ -500,7 +511,7 @@ def getMotionAnalize(request, motion_id):
                               'max': {'option': max_vote,
                                       'score': max_vote_percent},
                               'outliers': outliers})
-    orgs_data = sorted(orgs_data, key=lambda party: sum(party['votes'].values()))
+    orgs_data = sorted(orgs_data, key=lambda party: sum(party['votes'].values()), reverse=True)
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
