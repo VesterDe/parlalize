@@ -17,7 +17,7 @@ import math
 from kvalifikatorji.scripts import countWords, getCountListPG, getScores, problematicno, privzdignjeno, preprosto
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.paginator import Paginator
 from parlalize.utils import tryHard
 
 # Create your views here.
@@ -1556,3 +1556,35 @@ def getPresenceThroughTime(request, party_id, date_=None):
     }
 
     return JsonResponse(out, safe=False)
+
+def setIntraDisunion(request):
+    for vote in Vote_analysis:
+        for org, val in vote.pgs_max.items():
+            saved = saveOrAbortNew(model=IntraDisunion,
+                                   organization=Organization.objects.get(id_parladata=org),
+                                   vote=vote,
+                                   maximum=val)
+
+    return JsonResponse({'alliswell': True, "status": 'OK'})
+
+
+def getIntraDisunion(request):
+    out = []
+    for votes in IntraDisunion.objects.all():
+        out.append({"organization": votes.organization.getOrganizationData(),
+                    "vote": {"text": vote.text,
+                             "motion": vote.motion,
+                             "result": vote.result,
+                             "date": start_time}})
+    return JsonResponse(Paginator(out, 50), safe=False)
+
+
+def getIntraDisunionOrg(request, org_id):
+    out = []
+    for votes in IntraDisunion.objects.filter(organizations__id_parladata = org_id):
+        out.append({"organization": votes.organization.getOrganizationData(),
+                    "vote": {"text": vote.text,
+                             "motion": vote.motion,
+                             "result": vote.result,
+                             "date": start_time}})
+    return JsonResponse(Paginator(out, 50), safe=False)

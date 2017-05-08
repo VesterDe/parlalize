@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 from behaviors.models import Timestampable, Versionable
 from parlalize.settings import API_URL, API_DATE_FORMAT, API_OUT_DATE_FORMAT
+from parlaskupine.models import Organization
 
 # converting datetime to popolo
 class PopoloDateTimeField(models.DateTimeField):
@@ -199,6 +200,11 @@ class Ballot(Activity):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain')
+
+    org_voter = models.ForeignKey('parlaskupine.Organization',
+                                  blank=True, null=True,
+                                  related_name='OrganizationVoter',
+                                  help_text=_('Organization voter'))
 
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
