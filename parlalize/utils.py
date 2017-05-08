@@ -15,21 +15,21 @@ import time
 import csv
 from django.core.cache import cache
 
+
 def tryHard(url):
     data = None
     counter = 0
     while data is None:
         try:
-            if counter > 10:
-                client.captureMessage(url+" je zahinavu več ko 10x.")
+            if counter > 2:
+                client.captureMessage(url+' je zahinavu več ko 2x.')
                 return
             data = requests.get(url)
         except:
             counter += 1
-            time.sleep(30)
+            time.sleep(5)
             pass
     return data
-
 
 
 def voteToLogical(vote):

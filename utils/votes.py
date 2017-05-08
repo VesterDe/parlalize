@@ -6,6 +6,7 @@ import numpy as np
 
 from parlalize.utils import tryHard
 
+
 class RangeVotes(object):
 
     membersInPGs = None
