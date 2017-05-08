@@ -167,7 +167,7 @@ def getOptions(row, side):
     else:
         max_vote = max_ids[0]
     if side == 'oppo':
-        outliers = [opt for opt in ['for', 'against'] if stats[opt] not 0]
+        outliers = [opt for opt in ['for', 'against'] if stats[opt]]
     else:
         outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt]]
     for opt in max_ids:
