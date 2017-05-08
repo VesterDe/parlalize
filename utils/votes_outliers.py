@@ -122,11 +122,15 @@ def setMotionAnalize(session_id):
                           oppo_opts=all_votes.loc[vote_id, 'oppo']).save()
 
 
-def getPercent(a, b, c):
+def getPercent(a, b, c, d=None):
     a = 0 if pd.isnull(a) else a
     b = 0 if pd.isnull(b) else b
     c = 0 if pd.isnull(c) else c
-    return max(a, b, c) / float(sum([a, b, c]))*100
+    if d:
+        d = 0 if pd.isnull(d) else d
+        return max(a, b, c, d) / float(sum([a, b, c, d]))*100
+    else:
+        return max(a, b, c) / float(sum([a, b, c]))*100
 
 
 def getMPsList(row, proti):
