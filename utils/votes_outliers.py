@@ -83,9 +83,14 @@ def setMotionAnalize(session_id):
     all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'coal'), axis=1)
     all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'oppo'), axis=1)
 
+    parties = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getOptions(row, 'ps'), axis=1)
+
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
+        party_data = {}
+        for party in parties[vote_id].keys():
+            party_data[party] = parties[vote_id][party]
         print all_votes.loc[vote_id, 'pg_za']
         if vote_a:
             vote_a.update(votes_for=all_votes.loc[vote_id, 'option_za'],
@@ -96,6 +101,7 @@ def setMotionAnalize(session_id):
                           pgs_no=all_votes.loc[vote_id, 'pg_proti'],
                           pgs_np=all_votes.loc[vote_id, 'pg_ni'],
                           pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
+                          pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
                           mp_np=all_votes.loc[vote_id, 'm_ni'],
@@ -114,6 +120,7 @@ def setMotionAnalize(session_id):
                           pgs_no=all_votes.loc[vote_id, 'pg_proti'],
                           pgs_np=all_votes.loc[vote_id, 'pg_ni'],
                           pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
+                          pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
                           mp_np=all_votes.loc[vote_id, 'm_ni'],
@@ -128,9 +135,17 @@ def getPercent(a, b, c, d=None):
     c = 0 if pd.isnull(c) else c
     if d:
         d = 0 if pd.isnull(d) else d
-        return max(a, b, c, d) / float(sum([a, b, c, d]))*100
+        devizer = float(sum([a, b, c, d]))
+        if devizer:
+            return max(a, b, c, d) / devizer * 100
+        else:
+          return 0
     else:
-        return max(a, b, c) / float(sum([a, b, c]))*100
+        devizer = float(sum([a, b, c]))
+        if devizer:
+            return max(a, b, c) / devizer * 100
+        else:
+            return 0
 
 
 def getMPsList(row, proti):
@@ -177,10 +192,14 @@ def getOptions(row, side):
     for opt in max_ids:
         if opt in outliers:
             outliers.remove(opt)
-    return json.dumps({'for': row['option_za'],
-                       'against': row['option_proti'],
-                       'abstain': row['option_kvorum'],
-                       'not_present': row['option_ni'],
-                       'max_opt': max_vote,
-                       'outliers': outliers,
-                       'maxOptPerc': maxOptionPercent})
+    return json.dumps({'votes': {
+                                 'for': row['option_za'],
+                                 'against': row['option_proti'],
+                                 'abstain': row['option_kvorum'],
+                                 'not_present': row['option_ni'],
+                                 },
+                       'max': {
+                               'max_opt': max_vote,
+                               'maxOptPerc': maxOptionPercent
+                               },
+                       'outliers': outliers})
