@@ -460,8 +460,8 @@ def getMotionAnalize(request, motion_id):
 
     tmp_data = model.pgs_data
     orgs_data = {}
-    for org in orgs_data:
-        org_obj = Organization.objects.get(id_parladata=org)
+    for org in tmp_data:
+        org_obj = Organization.objects.get(id_parladata=int(org))
         if org_obj.classification == 'poslanska skupina':
             orgs_data[org] = json.loads(tmp_data[org])
             orgs_data[org]['party'] = org_obj.getOrganizationData()
