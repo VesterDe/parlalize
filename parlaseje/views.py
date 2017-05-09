@@ -464,7 +464,7 @@ def getMotionAnalize(request, motion_id):
         orgs_data[org] = json.loads(orgs_data[org])
         orgs_data[org]['party'] = org_obj.getOrganizationData()
 
-    orgs_data = orted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
+    orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
