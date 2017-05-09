@@ -1557,16 +1557,6 @@ def getPresenceThroughTime(request, party_id, date_=None):
 
     return JsonResponse(out, safe=False)
 
-def setIntraDisunion(request):
-    for vote in Vote_analysis:
-        for org, val in vote.pgs_max.items():
-            saved = saveOrAbortNew(model=IntraDisunion,
-                                   organization=Organization.objects.get(id_parladata=org),
-                                   vote=vote,
-                                   maximum=val)
-
-    return JsonResponse({'alliswell': True, "status": 'OK'})
-
 
 def getIntraDisunion(request):
     out = []
@@ -1587,4 +1577,6 @@ def getIntraDisunionOrg(request, org_id):
                              "motion": vote.motion,
                              "result": vote.result,
                              "date": start_time}})
+
+    # https://docs.djangoproject.com/en/1.11/topics/pagination/
     return JsonResponse(Paginator(out, 50), safe=False)
