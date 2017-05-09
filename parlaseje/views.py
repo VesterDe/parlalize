@@ -458,60 +458,12 @@ def getMotionAnalize(request, motion_id):
     for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
-    orgs = {}
-    tmp = {'for':  0,
-           'abstain': 0,
-           'against': 0,
-           'not_present': 0}
-    for pg, val in json.loads(model.pgs_yes).items():
-        orgs[pg] = tmp.copy()
-        orgs[pg]['for'] = val
-    for pg, val in json.loads(model.pgs_no).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['against'] = val
-    for pg, val in json.loads(model.pgs_np).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['not_present'] = val
-    for pg, val in json.loads(model.pgs_kvor).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['abstain'] = val
-
-    orgs_data = []
-    for org, data in orgs.items():
-        tmp = data.copy()
-        max_vote = max(tmp, key=tmp.get)
-        max_ids = [key for key, val in tmp.iteritems() if val == max(tmp.values())]
-        all_votes = (tmp['abstain']+tmp['against']+tmp['for']+tmp['not_present'])
-        if len(max_ids) > 1:
-            if 'not_present' in max_ids:
-                max_ids.remove('not_present')
-                if len(max_ids) > 1:
-                    max_vote = 'cant_compute'
-                else:
-                    max_vote = max_ids[0]
-            else:
-                max_vote = 'cant_compute'
-        else:
-            max_vote = max_ids[0]
-
-        max_vote_percent = float(tmp[max_ids[0]])/all_votes*100
-
-        outliers = [opt for opt in ['abstain', 'for', 'against'] if data[opt]]
-        for opt in max_ids:
-            if opt in outliers:
-                outliers.remove(opt)
-
+    orgs_data = json.loads(model.pgs_data)
+    for org in orgs_data:
         org = Organization.objects.get(id_parladata=org)
-        if org.classification == 'poslanska skupina':
-            orgs_data.append({'party': org.getOrganizationData(),
-                              'votes': data,
-                              'max': {'option': max_vote,
-                                      'score': max_vote_percent},
-                              'outliers': outliers})
-    orgs_data = sorted(orgs_data, key=lambda party: sum(party['votes'].values()), reverse=True)
+        orgs_data[org]['party'] = org.getOrganizationData()
+
+    orgs_data = orted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
