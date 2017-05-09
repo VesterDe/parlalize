@@ -458,11 +458,13 @@ def getMotionAnalize(request, motion_id):
     for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
-    orgs_data = model.pgs_data
+    tmp_data = model.pgs_data
+    orgs_data = {}
     for org in orgs_data:
         org_obj = Organization.objects.get(id_parladata=org)
-        orgs_data[org] = json.loads(orgs_data[org])
-        orgs_data[org]['party'] = org_obj.getOrganizationData()
+        if org_obj.classification == 'poslanska skupina':
+            orgs_data[org] = json.loads(tmp_data[org])
+            orgs_data[org]['party'] = org_obj.getOrganizationData()
 
     orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
