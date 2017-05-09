@@ -460,8 +460,9 @@ def getMotionAnalize(request, motion_id):
 
     orgs_data = model.pgs_data
     for org in orgs_data:
-        org = Organization.objects.get(id_parladata=org)
-        orgs_data[org]['party'] = org.getOrganizationData()
+        org_obj = Organization.objects.get(id_parladata=org)
+        orgs_data[org] = json.loads(orgs_data[org])
+        orgs_data[org]['party'] = org_obj.getOrganizationData()
 
     orgs_data = orted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
