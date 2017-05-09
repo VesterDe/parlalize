@@ -458,7 +458,7 @@ def getMotionAnalize(request, motion_id):
     for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
-    orgs_data = json.loads(model.pgs_data)
+    orgs_data = model.pgs_data
     for org in orgs_data:
         org = Organization.objects.get(id_parladata=org)
         orgs_data[org]['party'] = org.getOrganizationData()
