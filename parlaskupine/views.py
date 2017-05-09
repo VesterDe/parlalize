@@ -1571,12 +1571,11 @@ def getIntraDisunion(request):
 
 def getIntraDisunionOrg(request, org_id):
     out = []
-    for votes in IntraDisunion.objects.filter(organizations__id_parladata = org_id):
+    for votes in IntraDisunion.objects.filter(organization__id_parladata = org_id):
         out.append({"organization": votes.organization.getOrganizationData(),
                     "vote": {"text": vote.text,
                              "motion": vote.motion,
                              "result": vote.result,
                              "date": start_time}})
 
-    # https://docs.djangoproject.com/en/1.11/topics/pagination/
     return JsonResponse(Paginator(out, 50), safe=False)

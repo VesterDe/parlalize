@@ -100,8 +100,8 @@ urlpatterns = patterns('',
     url(r'^getPresenceThroughTime/(?P<party_id>\d+)/(?P<date_>[\w].+)', getPresenceThroughTime),
     url(r'^getPresenceThroughTime/(?P<party_id>\d+)', getPresenceThroughTime),
 
-    url(r'^getPresenceThroughTime/(?P<org_id>\d+)/)', getIntraDisunionOrg),
-    url(r'^getPresenceThroughTime/)', getIntraDisunion),
+    url(r'^getIntraDisunion/(?P<org_id>\d+)', getIntraDisunionOrg),
+    url(r'^getIntraDisunion/', getIntraDisunion),
 
     url(r'^getPGsIDs', getPGsIDs),
 
