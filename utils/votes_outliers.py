@@ -80,12 +80,17 @@ def setMotionAnalize(session_id):
     all_votes['pg_ni'] = all_votes.apply(lambda row: getPGsList(row, pg_ni), axis=1)
     all_votes['pg_kvorum'] = all_votes.apply(lambda row: getPGsList(row, pg_kvorum), axis=1)
 
-    all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row), axis=1)
-    all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row), axis=1)
+    all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'coal'), axis=1)
+    all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'oppo'), axis=1)
+
+    parties = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getOptions(row, 'ps'), axis=1)
 
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
+        party_data = {}
+        for party in parties[vote_id].keys():
+            party_data[party] = parties[vote_id][party]
         print all_votes.loc[vote_id, 'pg_za']
         if vote_a:
             vote_a.update(votes_for=all_votes.loc[vote_id, 'option_za'],
@@ -96,6 +101,7 @@ def setMotionAnalize(session_id):
                           pgs_no=all_votes.loc[vote_id, 'pg_proti'],
                           pgs_np=all_votes.loc[vote_id, 'pg_ni'],
                           pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
+                          pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
                           mp_np=all_votes.loc[vote_id, 'm_ni'],
@@ -114,6 +120,7 @@ def setMotionAnalize(session_id):
                           pgs_no=all_votes.loc[vote_id, 'pg_proti'],
                           pgs_np=all_votes.loc[vote_id, 'pg_ni'],
                           pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
+                          pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
                           mp_np=all_votes.loc[vote_id, 'm_ni'],
@@ -122,11 +129,23 @@ def setMotionAnalize(session_id):
                           oppo_opts=all_votes.loc[vote_id, 'oppo']).save()
 
 
-def getPercent(a, b, c):
+def getPercent(a, b, c, d=None):
     a = 0 if pd.isnull(a) else a
     b = 0 if pd.isnull(b) else b
     c = 0 if pd.isnull(c) else c
-    return max(a, b, c) / float(sum([a, b, c]))*100
+    if d:
+        d = 0 if pd.isnull(d) else d
+        devizer = float(sum([a, b, c, d]))
+        if devizer:
+            return max(a, b, c, d) / devizer * 100
+        else:
+          return 0
+    else:
+        devizer = float(sum([a, b, c]))
+        if devizer:
+            return max(a, b, c) / devizer * 100
+        else:
+            return 0
 
 
 def getMPsList(row, proti):
@@ -144,20 +163,43 @@ def getPGsList(row, proti):
         return json.dumps({})
 
 
-def getOptions(row):
+def getOptions(row, side):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
-                                  row['option_kvorum'])
+                                  row['option_kvorum'],
+                                  row['option_ni'])
     stats = {'for': row['option_za'],
              'against': row['option_proti'],
-             'abstain': row['option_kvorum']}
+             'abstain': row['option_kvorum'],
+             'not_present': row['option_ni']}
     max_opt = max(stats, key=stats.get)
-    outliers = ['abstain', 'for', 'against']
-    outliers.remove(max_opt)
-    return json.dumps({'for': row['option_za'],
-                       'against': row['option_proti'],
-                       'abstain': row['option_kvorum'],
-                       'not_present': row['option_ni'],
-                       'max_opt': max_opt,
-                       'outliers': outliers,
-                       'maxOptPerc': maxOptionPercent})
+    max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
+    if len(max_ids) > 1:
+        if 'not_present' in max_ids:
+            max_ids.remove('not_present')
+            if len(max_ids) > 1:
+                max_vote = 'cant_compute'
+            else:
+                max_vote = max_ids[0]
+        else:
+            max_vote = 'cant_compute'
+    else:
+        max_vote = max_ids[0]
+    if side == 'oppo':
+        outliers = [opt for opt in ['for', 'against'] if stats[opt]]
+    else:
+        outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt]]
+    for opt in max_ids:
+        if opt in outliers:
+            outliers.remove(opt)
+    return json.dumps({'votes': {
+                                 'for': row['option_za'],
+                                 'against': row['option_proti'],
+                                 'abstain': row['option_kvorum'],
+                                 'not_present': row['option_ni'],
+                                 },
+                       'max': {
+                               'max_opt': max_vote,
+                               'maxOptPerc': maxOptionPercent
+                               },
+                       'outliers': outliers})

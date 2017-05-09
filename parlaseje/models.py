@@ -345,6 +345,7 @@ class Vote_analysis(Timestampable, models.Model):
     pgs_no = JSONField(blank=True, null=True)
     pgs_np = JSONField(blank=True, null=True)
     pgs_kvor = JSONField(blank=True, null=True)
+    pgs_data = JSONField(blank=True, null=True)
 
     mp_yes = JSONField(blank=True, null=True)
     mp_no = JSONField(blank=True, null=True)
