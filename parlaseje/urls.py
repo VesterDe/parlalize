@@ -45,8 +45,6 @@ urlpatterns = patterns(
 
     url(r'^getTFIDF/(?P<session_id>\d+)', getTFIDF),
 
-    url(r'^getMotionOfSessionVotes/(?P<votes>[\w,]+)$', getMotionOfSessionVotes),
-
     url(r'^getLastSessionLanding(/(?P<date_>[\w].+))?', getLastSessionLanding),
 
     url(r'^getSessionsByClassification/', getSessionsByClassification),
