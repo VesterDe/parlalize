@@ -36,7 +36,7 @@ def setBasicInfOfPG(request, pg_id, date_):
         headOfPG = Person.objects.get(id_parladata=int(data['HeadOfPG']))
     else:
         headOfPG = None
-   
+
     if data['ViceOfPG']:
         for vice in data['ViceOfPG']:
             if vice != None:
@@ -47,16 +47,16 @@ def setBasicInfOfPG(request, pg_id, date_):
                 viceOfPG.append(None)
 
     result = saveOrAbortNew(model=PGStatic,
-                         created_for=date_of,
-                         organization=Organization.objects.get(id_parladata=int(pg_id)),
-                         headOfPG = headOfPG,
-                         viceOfPG = viceOfPG,
-                         numberOfSeats=data['NumberOfSeats'],
-                         allVoters=data['AllVoters'],
-                         facebook=data['Facebook'],
-                         twitter=data['Twitter'],
-                         email=data['Mail']
-                         )
+                            created_for=date_of,
+                            organization=Organization.objects.get(id_parladata=int(pg_id)),
+                            headOfPG=headOfPG,
+                            viceOfPG=viceOfPG,
+                            numberOfSeats=data['NumberOfSeats'],
+                            allVoters=data['AllVoters'],
+                            facebook=data['Facebook'],
+                            twitter=data['Twitter'],
+                            email=data['Mail']
+                            )
 
     return JsonResponse({'alliswell': True})
 
@@ -579,7 +579,7 @@ def getDeviationInOrg(request, pg_id, date_=None):
     if not date_:
         date_ = ''
     out_r = []
-    for result in json.loads(mostMatching.data):
+    for result in mostMatching.data:
         out_r.append({
             'ratio': result['ratio'],
             'person': getMPStaticPersonData(int(result['id']), date_)})

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import requests
 from parlaposlanci.views import setMPStaticPL
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, slack_token
