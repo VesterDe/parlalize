@@ -24,7 +24,7 @@ from raven.contrib.django.raven_compat.models import client
 from slugify import slugify
 from django.views.decorators.csrf import csrf_exempt
 
-from kompas2 import notes
+from utils.compass import getData as getCompassData
 
 from parlalize.utils import tryHard
 
@@ -1526,7 +1526,7 @@ def setCompass(request, date_=None):
     if not isNewVote:
         return JsonResponse({'alliswell': True, "status":'Ni glasovanja na ta dan', "saved": False})
 
-    data = notes.getData(date_of)
+    data = getCompassData(date_of)
     if data == []:
         return JsonResponse({"status": "no data"})
     #print data
