@@ -459,42 +459,15 @@ def getMotionAnalize(request, motion_id):
     for mp in json.loads(model.mp_kvor):
         members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
-    orgs = {}
-    tmp = {'for':  0,
-           'abstain': 0,
-           'against': 0,
-           'not_present': 0}
-    for pg, val in json.loads(model.pgs_yes).items():
-        orgs[pg] = tmp.copy()
-        orgs[pg]['for'] = val
-    for pg, val in json.loads(model.pgs_no).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['against'] = val
-    for pg, val in json.loads(model.pgs_np).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['not_present'] = val
-    for pg, val in json.loads(model.pgs_kvor).items():
-        if pg not in orgs.keys():
-            orgs[pg] = tmp.copy()
-        orgs[pg]['abstain'] = val
+    tmp_data = model.pgs_data
+    orgs_data = {}
+    for org in tmp_data:
+        org_obj = Organization.objects.get(id_parladata=int(org))
+        if org_obj.classification == 'poslanska skupina':
+            orgs_data[org] = json.loads(tmp_data[org])
+            orgs_data[org]['party'] = org_obj.getOrganizationData()
 
-    orgs_data = []
-    for org, data in orgs.items():
-        tmp = data.copy()
-        tmp.pop('not_present', None)
-        max_vote = max(tmp, key=tmp.get)
-        if tmp[max_vote] == 0:
-            max_vote_percent = 0
-            max_vote = '/'
-        else:
-            max_vote_percent = float(tmp[max_vote])/(tmp['abstain']+tmp['against']+tmp['for'])*100
-        org = Organization.objects.get(id_parladata=org)
-        orgs_data.append({'party': org.getOrganizationData(),
-                          'votes': data,
-                          'max': {'option': max_vote,
-                                  'score': max_vote_percent}})
+    orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
