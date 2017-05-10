@@ -9,7 +9,7 @@ from parlaskupine.views import getListOfPGs
 from parlaseje.views import getSessionsList
 from parlaseje.models import Session
 from parlalize.settings import API_DATE_FORMAT, BASE_URL
-from parlalize.utils import getAllStaticData
+from parlalize.utils import getAllStaticData, tryHard
 
 FR = '?forceRender=true'
 
