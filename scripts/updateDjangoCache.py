@@ -1,4 +1,5 @@
-from utils.runner import updateCacheforList
+from utils.recache import updateCacheforList
+
 
 def run():
-	updateCacheforList()
+    updateCacheforList()

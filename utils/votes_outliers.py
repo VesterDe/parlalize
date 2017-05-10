@@ -97,10 +97,6 @@ def setMotionAnalize(session_id):
                           against=all_votes.loc[vote_id, 'option_proti'],
                           abstain=all_votes.loc[vote_id, 'option_kvorum'],
                           not_present=all_votes.loc[vote_id, 'option_ni'],
-                          pgs_yes=all_votes.loc[vote_id, 'pg_za'],
-                          pgs_no=all_votes.loc[vote_id, 'pg_proti'],
-                          pgs_np=all_votes.loc[vote_id, 'pg_ni'],
-                          pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
                           pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
@@ -116,10 +112,6 @@ def setMotionAnalize(session_id):
                           against=all_votes.loc[vote_id, 'option_proti'],
                           abstain=all_votes.loc[vote_id, 'option_kvorum'],
                           not_present=all_votes.loc[vote_id, 'option_ni'],
-                          pgs_yes=all_votes.loc[vote_id, 'pg_za'],
-                          pgs_no=all_votes.loc[vote_id, 'pg_proti'],
-                          pgs_np=all_votes.loc[vote_id, 'pg_ni'],
-                          pgs_kvor=all_votes.loc[vote_id, 'pg_kvorum'],
                           pgs_data=party_data,
                           mp_yes=all_votes.loc[vote_id, 'm_za'],
                           mp_no=all_votes.loc[vote_id, 'm_proti'],
@@ -139,7 +131,7 @@ def getPercent(a, b, c, d=None):
         if devizer:
             return max(a, b, c, d) / devizer * 100
         else:
-          return 0
+            return 0
     else:
         devizer = float(sum([a, b, c]))
         if devizer:
