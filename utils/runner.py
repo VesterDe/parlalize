@@ -13,11 +13,12 @@ from parlaposlanci.models import Person, MPStaticPL, MembershipsOfMember, Averag
 from parlaskupine.views import setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, getListOfPGs, setPresenceThroughTime as setPresenceThroughTimePG
 from parlaskupine.models import Organization, WorkingBodies, MPOfPg, PGStatic
 
-from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
+from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph, Vote_analysis
 from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 from utils.recache import updatePagesS
 from utils.imports import update, updateDistricts
+from utils.votes_outliers import setMotionAnalize, setOutliers
 
 from .votes import VotesAnalysis
 
@@ -159,8 +160,11 @@ def runSettersSessions(date_to=None, sessions_ids=None):
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
         # AverageSpeeches: setSpeechesOnSession,
-        Vote_graph: setMotionOfSessionGraph
+        Vote_graph: setMotionOfSessionGraph,
+        Vote_analysis: setMotionAnalize,
     }
+    # set outliers for all votes
+    setOutliers()
     for model, setter in setters_models.items():
         if model != AverageSpeeches:
             # IDs = getSesIDs(dates[1],dates[-1])
