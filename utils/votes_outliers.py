@@ -108,7 +108,8 @@ def setMotionAnalize(session_id):
                 if intra:
                     intra.update(maximum=partyIntryDisunion[vote_id][party])
                 else:
-                    IntraDisunion(organization__id_parladata=party,
+                    org = Organization.objects.get(id_parladata=party)
+                    IntraDisunion(organization=org,
                                   vote=vote,
                                   maximum=partyIntryDisunion[vote_id][party]
                                   ).save()
