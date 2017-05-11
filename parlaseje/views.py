@@ -442,7 +442,8 @@ def getMotionAnalize(request, motion_id):
                'not_present': model.not_present}
     stats = {'for': model.votes_for,
              'against': model.against,
-             'abstain': model.abstain}
+             'abstain': model.abstain,
+             'not_present': model.not_present}
     max_vote_opt = max(stats, key=stats.get)
     if stats[max_vote_opt] == 0:
         max_vote_percent_opt = 0
