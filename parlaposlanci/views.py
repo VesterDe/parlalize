@@ -28,6 +28,36 @@ from utils.compass import getData as getCompassData
 
 from parlalize.utils import tryHard
 
+
+# get List of MPs
+def getMPsList(request, date_=None):
+    output = []
+    data = None
+    if date_:
+        while data is None:
+            try:
+                data = tryHard(API_URL+'/getMPs/'+date_)
+            except:
+                pass
+    else:
+        while data is None:
+            try:
+                data = tryHard(API_URL+'/getMPs/')
+            except:
+                pass
+
+    data = data.json()
+
+    output = [{'id': i['id'],
+               'image': i['image'],
+               'name': i['name'],
+               'membership': i['membership'],
+               'acronym': i['acronym'],
+               'district': i['district']} for i in data]
+
+    return JsonResponse(output, safe=False)
+
+
 # returns MP static data like PoliticalParty, age, ....
 def setMPStaticPL(request, person_id, date_=None):
     if date_:
