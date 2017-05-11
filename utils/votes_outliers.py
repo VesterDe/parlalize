@@ -58,7 +58,7 @@ def setMotionAnalize(session_id):
     #za proti ni kvorum
     all_votes = data.groupby('vote_id').sum()
 
-    all_votes['max_option_percent'] = all_votes.apply(lambda row: getPercent(row['option_za'], row['option_proti'], row['option_kvorum']), axis=1)
+    all_votes['max_option_percent'] = all_votes.apply(lambda row: getPercent(row['option_za'], row['option_proti'], row['option_kvorum'], row['option_ni']), axis=1)
 
     m_proti = data[data.option_proti == 1].groupby(['vote_id']).apply(lambda x: x["voter"])
     m_za = data[data.option_za == 1].groupby(['vote_id']).apply(lambda x: x["voter"])
