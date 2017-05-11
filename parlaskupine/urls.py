@@ -47,7 +47,6 @@ urlpatterns = patterns('',
     url(r'^setPresenceThroughTime/(?P<party_id>\d+)/(?P<date_>[\w].+)', setPresenceThroughTime),
     url(r'^setPresenceThroughTime/(?P<party_id>\d+)', setPresenceThroughTime),
 
-
     # getters
     # TJ
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)', getBasicInfOfPG),
@@ -100,6 +99,9 @@ urlpatterns = patterns('',
 
     url(r'^getPresenceThroughTime/(?P<party_id>\d+)/(?P<date_>[\w].+)', getPresenceThroughTime),
     url(r'^getPresenceThroughTime/(?P<party_id>\d+)', getPresenceThroughTime),
+
+    url(r'^getIntraDisunion/(?P<org_id>\d+)', getIntraDisunionOrg),
+    url(r'^getIntraDisunion/', getIntraDisunion),
 
     url(r'^getPGsIDs', getPGsIDs),
 

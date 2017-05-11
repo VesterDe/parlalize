@@ -17,7 +17,7 @@ import math
 from kvalifikatorji.scripts import countWords, getCountListPG, getScores, problematicno, privzdignjeno, preprosto
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.paginator import Paginator
 from parlalize.utils import tryHard
 
 # Create your views here.
@@ -1556,3 +1556,71 @@ def getPresenceThroughTime(request, party_id, date_=None):
     }
 
     return JsonResponse(out, safe=False)
+
+
+def getIntraDisunion(request):
+    out = {}
+
+    votes = Vote.objects.all().order_by('start_time')
+    paginator = Paginator(votes, 50)
+
+    page = request.GET.get('page', 1)
+    try:
+        votespag = paginator.page(page)
+    except PageNotAnInteger:
+        votespag = paginator.page(1)
+    except EmptyPage:
+        votespag = paginator.page(paginator.num_pages)
+
+    for vote in votespag:
+        intraD = vote.VoteintraDisunion.all()
+        for intra in intraD:
+            if intra.organization.acronym in out.keys:
+                obs = {"text": intra.text,
+                       "maximum": intra.maximum,
+                       "result": intra.result,
+                       "date": intra.start_time}
+                out[intra.organization.acronym]['vote'].append(obs)
+            else:
+                ob = {"organization": intra.organization.getOrganizationData(),
+                        "vote": [{"text": intra.text,
+                                  "maximum": intra.maximum,
+                                  "result": intra.result,
+                                  "date": intra.start_time}]}
+                out[intra.organization.acronym] = ob
+
+    return JsonResponse({'contacts': contacts}, safe=False)
+
+
+def getIntraDisunionOrg(request, org_id):
+    out = {}
+
+    votes = Vote.objects.all().order_by('start_time')
+    paginator = Paginator(votes, 50)
+
+    page = request.GET.get('page', 1)
+    try:
+        votespag = paginator.page(page)
+    except PageNotAnInteger:
+        votespag = paginator.page(1)
+    except EmptyPage:
+        votespag = paginator.page(paginator.num_pages)
+
+    for vote in votespag:
+        intraD = vote.VoteintraDisunion.all()
+        for intra in intraD:
+            if intra.organization.acronym in out.keys:
+                obs = {"text": intra.text,
+                       "maximum": intra.maximum,
+                       "result": intra.result,
+                       "date": intra.start_time}
+                out[intra.organization.acronym]['vote'].append(obs)
+            else:
+                ob = {"organization": intra.organization.getOrganizationData(),
+                        "vote": [{"text": intra.text,
+                                  "maximum": intra.maximum,
+                                  "result": intra.result,
+                                  "date": intra.start_time}]}
+                out[intra.organization.acronym] = ob
+
+    return JsonResponse({'contacts': contacts}, safe=False)
