@@ -12,7 +12,7 @@ from collections import Counter
 
 from parlaseje.models import Vote_analysis
 from parlalize.settings import API_URL
-from parlaskupine.models import Organization
+from parlaskupine.models import Organization, IntraDisunion
 
 
 def setOutliers():
