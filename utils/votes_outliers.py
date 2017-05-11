@@ -12,6 +12,7 @@ from collections import Counter
 
 from parlaseje.models import Vote_analysis
 from parlalize.settings import API_URL
+from parlaskupine.models import Organization
 
 
 def setOutliers():
@@ -38,10 +39,16 @@ def setOutliers():
 
 
 def setMotionAnalize(session_id):
+    """
+    setMotionAnalyze
+    setIntraDisunion
+    """
     session = get_object_or_404(Session, id_parladata=session_id)
     url = API_URL + '/getVotesOfSessionTable/' + str(session_id) + '/'
     data = pd.read_json(url)
     coalition = requests.get(API_URL + '/getCoalitionPGs').json()['coalition']
+    partys = Organization.objects.filter(classification='poslanska skupina')
+    paries_ids = partys.values_list('id_parladata', flat=True)
     orgs = requests.get(API_URL + '/getAllPGsExt/')
     data['option_ni'] = 0
     data['option_za'] = 0
@@ -85,12 +92,26 @@ def setMotionAnalize(session_id):
 
     parties = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getOptions(row, 'ps'), axis=1)
 
+    partyIntryDisunion = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
         party_data = {}
         for party in parties[vote_id].keys():
-            party_data[party] = parties[vote_id][party]
+            # save just parlimetary groups
+            if party in paries_ids:
+                party_data[party] = parties[vote_id][party]
+                # update/add IntraDisunion
+                intra = IntraDisunion.objects.filter(organization__id_parladata=party,
+                                                     vote=vote)
+                if intra:
+                    intra.update(maximum=partyIntryDisunion[vote_id][party])
+                else:
+                    IntraDisunion(organization__id_parladata=party,
+                                  vote=vote,
+                                  maximum=partyIntryDisunion[vote_id][party]
+                                  ).save()
         print all_votes.loc[vote_id, 'pg_za']
         if vote_a:
             vote_a.update(votes_for=all_votes.loc[vote_id, 'option_za'],
@@ -155,6 +176,13 @@ def getPGsList(row, proti):
         return json.dumps({})
 
 
+def getIntraDisunion(row):
+    maxOptionPercent = getPercent(row['option_za'],
+                                  row['option_proti'],
+                                  row['option_kvorum'])
+    return 100 - maxOptionPercent
+
+
 def getOptions(row, side):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
@@ -166,6 +194,7 @@ def getOptions(row, side):
              'not_present': row['option_ni']}
     max_opt = max(stats, key=stats.get)
     max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
+
     if len(max_ids) > 1:
         if 'not_present' in max_ids:
             max_ids.remove('not_present')
@@ -177,13 +206,18 @@ def getOptions(row, side):
             max_vote = 'cant_compute'
     else:
         max_vote = max_ids[0]
+
+    outliers = []
     if side == 'oppo':
-        outliers = [opt for opt in ['for', 'against'] if stats[opt]]
+        if max_vote != 'not_present':
+            outliers = [opt for opt in ['for', 'against'] if stats[opt]]
     else:
-        outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt]]
+        if max_vote != 'not_present':
+            outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt]]
     for opt in max_ids:
         if opt in outliers:
             outliers.remove(opt)
+
     return json.dumps({'votes': {
                                  'for': row['option_za'],
                                  'against': row['option_proti'],

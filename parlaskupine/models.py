@@ -5,7 +5,6 @@ from django.utils.translation import ugettext_lazy as _
 from parlaposlanci.models import *
 from parlaseje.models import *
 from jsonfield import JSONField
-
 from behaviors.models import Timestampable
 
 # converting datetime to popolo
@@ -333,7 +332,7 @@ class WorkingBodies(Timestampable, models.Model):
 
     organization = models.ForeignKey("Organization")
 
-    president = models.ForeignKey(Person,
+    president = models.ForeignKey('parlaposlanci.Person',
                                   blank=True, null=True,
                                   help_text=_('President'))
 
@@ -466,3 +465,21 @@ class PresenceThroughTime(Timestampable, models.Model):
                                    null=True,
                                    help_text=_('date of analize'))
     data = JSONField(blank=True, null=True)
+
+
+class IntraDisunion(Timestampable, models.Model):
+    organization = models.ForeignKey('Organization',
+                                     blank=True, null=True,
+                                     related_name='intraDisunion',
+                                     help_text=_('Org'))
+
+    vote = models.ForeignKey('parlaseje.Vote',
+                             blank=True, null=True,
+                             related_name='VoteintraDisunion',
+                             help_text=_('Vote'))
+
+    maximum = models.CharField(_('Maximum'),
+                               blank = True,
+                               null = True,
+                               max_length = 128,
+                               help_text=_('Maximum of organization disunion.'))
