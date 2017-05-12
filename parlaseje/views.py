@@ -280,11 +280,12 @@ def getMotionOfSession(request, id_se, date=False):
         session = Session.objects.get(id_parladata=int(id_se))
         votes = Vote.objects.filter(session__id_parladata=id_se,
                                     result__isnull=False).order_by("start_time")
+        sesData = session.getSessionData()
         if votes:
             dates = []
             for card in votes:
                 print card
-                out.append({'session': session.getSessionData(),
+                out.append({'session': sesData,
                             'results': {'motion_id': card.id_parladata,
                                         'text': card.motion,
                                         'votes_for': card.votes_for,
@@ -303,8 +304,8 @@ def getMotionOfSession(request, id_se, date=False):
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
         tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
+                             "session": sesData,
                              "tags": tags,
-                             "session": session.getSessionData(),
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
@@ -441,13 +442,14 @@ def getMotionAnalize(request, motion_id):
                'not_present': model.not_present}
     stats = {'for': model.votes_for,
              'against': model.against,
-             'abstain': model.abstain}
+             'abstain': model.abstain,
+             'not_present': model.not_present}
     max_vote_opt = max(stats, key=stats.get)
     if stats[max_vote_opt] == 0:
         max_vote_percent_opt = 0
         max_vote_opt = '/'
     else:
-        max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for'])*100
+        max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for']+stats['not_present'])*100
     members = []
     for mp in json.loads(model.mp_yes):
         members.append({'person': getPersonData(mp), 'option': 'for'})
@@ -491,7 +493,6 @@ def setAbsentMPs(request, id_se):
     session = Session.objects.get(id_parladata=id_se)
     mps = tryHard(API_URL+'/getMembersOfPGsOnDate/'+ session.start_time.strftime(API_DATE_FORMAT)).json()
 
-
     mpsID = []
     if len(votes) != 0:
         mpsID = reduce(lambda x,y: x+y,mps.values())
@@ -534,6 +535,7 @@ def getAbsentMPs(request, id_se, date=False):
                          "session": session.getSessionData(),
                          "created_at": absentMembers.created_at.strftime(API_DATE_FORMAT),
                          "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
+
 
 def setPresenceOfPG(request, id_se):
     votes = tryHard(API_URL+'/getVotesOfSession/'+str(id_se)+'/').json()
@@ -592,9 +594,6 @@ def setPresenceOfPG(request, id_se):
             for result in results:"""
 
 
-
-
-
     result = saveOrAbortNew(model=PresenceOfPG,
                             created_for=session.start_time,
                             presence=[final],
@@ -602,6 +601,7 @@ def setPresenceOfPG(request, id_se):
                             )
 
     return JsonResponse({'alliswell': True})
+
 
 def getPresenceOfPG(request, id_se, date=False):
     results = []

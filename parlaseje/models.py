@@ -340,11 +340,6 @@ class Vote_analysis(Timestampable, models.Model):
 
     not_present = models.IntegerField(blank=True, null=True,
                                    help_text='Number of MPs that warent on the session')
-
-    pgs_yes = JSONField(blank=True, null=True)
-    pgs_no = JSONField(blank=True, null=True)
-    pgs_np = JSONField(blank=True, null=True)
-    pgs_kvor = JSONField(blank=True, null=True)
     pgs_data = JSONField(blank=True, null=True)
 
     mp_yes = JSONField(blank=True, null=True)
