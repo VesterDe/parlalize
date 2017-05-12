@@ -93,10 +93,16 @@ def setMotionAnalize(session_id):
     parties = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getOptions(row, 'ps'), axis=1)
 
     partyIntryDisunion = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
-
+    # TODO: create save-ing for coalInter, oppoInter
+    coalInter = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    oppoInter = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    allInter = data.groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
+
+        vote.update(intra_disunion=allInter[vote_id])
+
         party_data = {}
         for party in parties[vote_id].keys():
             # save just parlimetary groups
