@@ -392,6 +392,56 @@ class MPStaticPL(Timestampable, models.Model):
 
     working_bodies_functions = JSONField(blank=True, null=True)
 
+
+class MinisterStatic(Timestampable, models.Model):
+    person = models.ForeignKey('Person', help_text=_('Person foreign key relationship'))
+
+    created_for = models.DateField(_('date of activity'),
+                                   blank=True,
+                                   null=True,
+                                   help_text=_('date of analize'))
+
+    age = models.IntegerField(blank=True, null=True, help_text=_('Person\'s age.'))
+
+    ministry = models.ForeignKey('parlaskupine.Organization',
+                                 blank=True,
+                                 null=True,
+                                 help_text=_('Parladata party id'),
+                                 related_name='ministry_ministers')
+
+    party = models.ForeignKey('parlaskupine.Organization',
+                              blank=True,
+                              null=True,
+                              help_text=_('Parladata party id'),
+                              related_name='party_ministers')
+
+    acronym = models.TextField(blank=True, null=True, help_text=_('Parliament group\'s acronym'))
+
+    education = models.TextField(blank=True, null=True, help_text=_('Person\'s education'))
+
+    previous_occupation = models.TextField(blank=True, null=True, help_text=_('Person\'s previous occupation'))
+
+    name = models.TextField(blank=True, null=True, help_text=_('Name'))
+
+    district = JSONField(blank=True, null=True, help_text=_('Voting district name.'))
+
+    facebook = models.TextField(blank=True, null=True, default=None, help_text=_('Facebook profile URL'))
+    twitter = models.TextField(blank=True, null=True, default=None, help_text=_('Twitter profile URL'))
+    linkedin = models.TextField(blank=True, null=True, default=None, help_text=_('Linkedin profile URL'))
+
+    party_name = models.TextField(blank=True, null=True, help_text=_('Party name'))
+
+    gov_id = models.CharField(_('gov id'),
+                              null=True,
+                              max_length=128,
+                              help_text=_('The ID of the official on the government website.')
+                              )
+
+    gender = models.CharField(max_length=1,
+                              default="f",
+                              help_text=_('Gender'))
+
+
 class MPStaticGroup(Timestampable, models.Model):
 
     person = models.ForeignKey('MPStaticPL', help_text=_('Person foreign key to MPStaticPL'))

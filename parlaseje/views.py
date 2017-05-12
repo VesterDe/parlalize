@@ -331,7 +331,8 @@ def getSpeechesOfSession(request, session_id):
                "session": speech.session.getSessionData(),
                "quoted_text": None,
                "end_idx": None,
-               "start_idx": None}
+               "start_idx": None,
+               "quote_id": None}
 
         result = {
             'person': getPersonData(speech.person.id_parladata,
@@ -441,17 +442,11 @@ def setMotionOfSession(request, session_id):
             if vote['option'] == str('ni'):
                 not_present = not_present + 1
         result = mot['result']
-        if not str(result).strip().isdigit():
-            result = resultOfMotion(yes,
-                                    no,
-                                    kvorum,
-                                    not_present,
-                                    mot['id'],
-                                    session.start_time)
 
         if Vote.objects.filter(id_parladata=mot['vote_id']):
             vote = Vote.objects.filter(id_parladata=mot['vote_id'])
             vote.update(created_for=session.start_time,
+                        start_time=mot['start_time'],
                         session=session,
                         motion=mot['text'],
                         tags=mot['tags'],
@@ -466,6 +461,7 @@ def setMotionOfSession(request, session_id):
         else:
             result = saveOrAbortNew(model=Vote,
                                     created_for=session.start_time,
+                                    start_time=mot['start_time'],
                                     session=session,
                                     motion=mot['text'],
                                     tags=mot['tags'],
@@ -525,13 +521,13 @@ def setMotionOfSessionGraph(request, session_id):
                 tabnp.append(vote['mp_id'])
 
         result = mot['result']
-        if not str(result).strip().isdigit():
-            result = resultOfMotion(yes,
-                                    no,
-                                    kvorum,
-                                    not_present,
-                                    mot['id'],
-                                    session.start_time)
+        # if not str(result).strip().isdigit():
+        #     result = resultOfMotion(yes,
+        #                             no,
+        #                             kvorum,
+        #                             not_present,
+        #                             mot['id'],
+        #                             session.start_time)
         vote = Vote.objects.get(id_parladata=mot['vote_id'])
         if VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id']):
             voteDetailed = VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id'])
@@ -705,9 +701,9 @@ def getMotionOfSession(request, session_id, date=False):
         if Vote.objects.filter(session__id_parladata=session_id):
             model = Vote.objects.filter(session__id_parladata=session_id)
             dates = []
-            for card in model:
+            for card in votes:
                 print card
-                out.append({'session': session.getSessionData(),
+                out.append({'session': sesData,
                             'results': {'motion_id': card.id_parladata,
                                         'text': card.motion,
                                         'votes_for': card.votes_for,
@@ -715,6 +711,8 @@ def getMotionOfSession(request, session_id, date=False):
                                         'abstain': card.abstain,
                                         'not_present': card.not_present,
                                         'result': card.result,
+                                        'is_outlier': card.is_outlier,
+                                        'tags': card.tags
                                         }
                             })
                 dates.append(card.created_at)
@@ -722,8 +720,10 @@ def getMotionOfSession(request, session_id, date=False):
         else:
             out = []
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
+        tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
-                             "session": session.getSessionData(),
+                             "session": sesData,
+                             "tags": tags,
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
     else:
@@ -975,6 +975,7 @@ def getMotionGraph(request, id_mo, date=False):
                   'total_votes': model[0].not_present,
                   'breakdown': option_np}
 
+        docs = model[0].vote.document_url
         out = {'id': id_mo,
                'created_for': model[0].vote.created_for.strftime(API_DATE_FORMAT),
                'created_at': model[0].created_at.strftime(API_DATE_FORMAT),
@@ -992,67 +993,61 @@ def getMotionGraph(request, id_mo, date=False):
         raise Http404("Nismo našli kartice")
 
 
-def setAbsentMPs(request, session_id):
-    """Stores absent MPs of specific session
-    """
-    votes = tryHard(API_URL + '/getVotesOfSession/' + str(session_id) + '/').json()
-    session = Session.objects.get(id_parladata=session_id)
-    mps = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
+def getMotionAnalize(request, motion_id):
+    model = get_object_or_404(Vote_analysis, vote__id_parladata=motion_id)
+    vote = model.vote
+    docs = vote.document_url
 
-    mpsID = []
-    if len(votes) != 0:
-        mpsID = reduce(lambda x, y: x + y, mps.values())
-        for vote in votes:
-            if vote['option'] != 'ni':
-                if vote['mp_id'] in mpsID:
-                    mpsID.remove(vote['mp_id'])
+    options = {'for': model.votes_for,
+               'against': model.against,
+               'abstain': model.abstain,
+               'not_present': model.not_present}
+    stats = {'for': model.votes_for,
+             'against': model.against,
+             'abstain': model.abstain,
+             'not_present': model.not_present}
+    max_vote_opt = max(stats, key=stats.get)
+    if stats[max_vote_opt] == 0:
+        max_vote_percent_opt = 0
+        max_vote_opt = '/'
+    else:
+        max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for']+stats['not_present'])*100
+    members = []
+    for mp in json.loads(model.mp_yes):
+        members.append({'person': getPersonData(mp), 'option': 'for'})
+    for mp in json.loads(model.mp_no):
+        members.append({'person': getPersonData(mp), 'option': 'against'})
+    for mp in json.loads(model.mp_np):
+        members.append({'person': getPersonData(mp), 'option': 'not_present'})
+    for mp in json.loads(model.mp_kvor):
+        members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
-        result = saveOrAbortNew(model=AbsentMPs,
-                                session=session,
-                                absentMPs=mpsID,
-                                created_for=session.start_time
-                                )
+    tmp_data = model.pgs_data
+    orgs_data = {}
+    for org in tmp_data:
+        org_obj = Organization.objects.get(id_parladata=int(org))
+        if org_obj.classification == 'poslanska skupina':
+            orgs_data[org] = json.loads(tmp_data[org])
+            orgs_data[org]['party'] = org_obj.getOrganizationData()
 
-        mpsID = []
-    return JsonResponse({'alliswell': True})
+    orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
-
-def getAbsentMPs(request, session_id, date=False):
-    # Ne uporabljamo damo ven?
-    """
-    * @api {get} /getAbsentMPs/{session_id}/{?date} Requests information of all absent MPs on specific session.
-    * @apiName getAbsentMPs
-    * @apiGroup Session
-    * @apiParam {session_id} session id is parameter which returns exactly specified session
-    * @apiParam {date} date Optional date.
-    * @apiSuccess {Json} returns data of all absent MPs on specific session.
-    * 
-    * @apiExample {curl} Example:
-        curl -i https://analize.parlameter.si/v1/s/getAbsentMPs/9408
-    * @apiExample {curl} Example with date:
-        curl -i hhttps://analize.parlameter.si/v1/s/getAbsentMPs/9408/21.12.2016
-    """
-    session = get_object_or_404(Session, id_parladata=session_id)
-    try:
-        if date:
-            date_ = datetime.strptime(date, API_DATE_FORMAT)
-            absentMembers = AbsentMPs.objects.get(session=session, start_time__lte=data_)
-        else:
-            absentMembers = AbsentMPs.objects.get(session=session)
-            date_ = datetime.now().date()
-            date = date_.strftime(API_DATE_FORMAT)
-        results = []
-
-        for abMP in absentMembers.absentMPs:
-            result = {"person": getPersonData(abMP, date)}
-            results.append(result)
-
-    except ObjectDoesNotExist:
-        raise Http404("Nismo našli kartice")
-    return JsonResponse({"results": results,
-                         "session": session.getSessionData(),
-                         "created_at": absentMembers.created_at.strftime(API_DATE_FORMAT),
-                         "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
+    out = {'id': motion_id,
+           'session': model.session.getSessionData(),
+           'created_for': vote.created_for.strftime(API_DATE_FORMAT),
+           'created_at': model.created_at.strftime(API_DATE_FORMAT),
+           'name': vote.motion,
+           'result': {'accepted': vote.result,
+                      'value': max_vote_percent_opt,
+                      'max_opt': max_vote_opt,
+                      'is_outlier': vote.is_outlier},
+           'documents': docs if docs else [],
+           'members': members,
+           'parties': orgs_data,
+           'gov_side': {'coalition': json.loads(model.coal_opts),
+                        'opposition': json.loads(model.oppo_opts)},
+           'all': options}
+    return JsonResponse(out, safe=False)
 
 
 def setPresenceOfPG(request, session_id):
@@ -2016,9 +2011,19 @@ def getSessionsList(request, date_=None, force_render=False):
             else:
                 last_day = session['date_ts']
                 # TODO zbrisi ta umazn fix ko se dodajo empty state-si
-                continue
+                # continue
             session.update({"updated_at": last_day.strftime(API_DATE_FORMAT)})
             session.update({"updated_at_ts": last_day})
+            if Vote.objects.filter(session__id_parladata=session["id"]):
+                is_vote = True
+            else:
+                is_vote = False
+            if Speech.objects.filter(session__id_parladata=session["id"]):
+                is_speech = True
+            else:
+                is_speech = False
+            session.update({"votes": is_vote,
+                            "speeches": is_speech})
             # joint sessions fix
             if session['id'] not in sessionsIds:
                 # TODO zbrisi ta umazn fix ko se dodajo empty state-si

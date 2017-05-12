@@ -8,6 +8,23 @@ from django.http import JsonResponse
 from parlalize.utils import tryHard
 
 
+def getGraphCardModel(model, id, date=None):
+    if date:
+        dateObj = datetime.strptime(date, '%d.%m.%Y')
+        modelObject = model.objects.filter(id_parladata=id,
+                                           created_at__lte=dateObj)
+    else:
+        modelObject = model.objects.filter(id_parladata=id,
+                                           created_at__lte=datetime.now())
+    if not modelObject:
+        raise Http404('Nismo našli kartice')
+    else:
+        newModel = model(**kwargs)
+        newModel.save()
+        return True
+    return False
+
+
 def saveOrAbort(model, **kwargs):
     savedModel = model.objects.filter(**kwargs)
     if savedModel:
@@ -36,15 +53,15 @@ def saveOrAbortMotion(model, **kwargs):
             tab.append(i['id_parladata'])
         for a in savedModel:
             if a.id_parladata in tab:
-                print "Not saved"
+                print 'Not saved'
             else:
                 newModel = model(**kwargs)
                 newModel.save()
-                print "Saved"
+                print 'Saved'
     else:
         newModel = model(**kwargs)
         newModel.save()
-        print "Saved"
+        print 'Saved'
 
 
 def saveOrAbortAbsent(model, **kwargs):
@@ -76,27 +93,35 @@ def saveOrAbortPres(model, **kwargs):
         for i in ids:
             tab.append(i['id_parladata'])
         if savedModel in tab:
-            print "Not saved"
+            print 'Not saved'
         else:
             newModel = model(**kwargs)
             newModel.save()
-            print "Saved"
+            print 'Saved'
     else:
         newModel = model(**kwargs)
         newModel.save()
-        print "Saved"
+        print 'Saved'
 
 
 def countBallots(vote):
     # count votes for, against, abstentions, misses
-    votesfor = len([ballot for ballot in vote.vote.all()
+    votesfor = len([ballot
+                    for ballot
+                    in vote.vote.all()
                     if ballot.option == 'za'])
-    votesagainst = len(
-        [ballot for ballot in vote.vote.all() if ballot.option == 'proti'])
-    votesabstained = len(
-        [ballot for ballot in vote.vote.all() if ballot.option == 'kvorum'])
-    votesmissing = len(
-        [ballot for ballot in vote.vote.all() if ballot.option == 'ni'])
+    votesagainst = len([ballot
+                        for ballot
+                        in vote.vote.all()
+                        if ballot.option == 'proti'])
+    votesabstained = len([ballot
+                         for ballot
+                         in vote.vote.all()
+                         if ballot.option == 'kvorum'])
+    votesmissing = len([ballot
+                        for ballot
+                        in vote.vote.all()
+                        if ballot.option == 'ni'])
 
     return {'for': votesfor,
             'against': votesagainst,
@@ -122,6 +147,7 @@ def updateVotes():
 
 def getSesIDs(start_date, end_date):
     result = []
+    data = tryHard(API_URL + '/getSessions/').json()
     session = Session.objects.all()
     for ids in session:
         result.append(ids.id_parladata)
@@ -130,6 +156,7 @@ def getSesIDs(start_date, end_date):
 
 def getSesDates(end_date):
     result = []
+    data = tryHard(API_URL + '/getSessions/').json()
     session = Session.objects.filter(start_time__lte=end_date)
     for ids in session:
         result.append(ids.start_time)
@@ -138,8 +165,9 @@ def getSesDates(end_date):
 
 def getSesCardModelNew(model, id, date=None):
     if date:
+        dateObj = datetime.strptime(date, '%d.%m.%Y')
         modelObject = model.objects.filter(session__id_parladata=id,
-                                           created_for__lte=datetime.strptime(date, '%d.%m.%Y'))
+                                           created_for__lte=dateObj)
     else:
         modelObject = model.objects.filter(session__id_parladata=id,
                                            created_for__lte=datetime.now())
@@ -175,11 +203,10 @@ def getSessionDataAPI(requests, session_id):
     if session:
         return JsonResponse(session[0].getSessionData())
     else:
-        return JsonResponse({
-            'name': "unkonwn",
-            'date': "unkonwn",
-            'id': "unkonwn",
-        })
+        return JsonResponse({'name': 'unkonwn',
+                             'date': 'unkonwn',
+                             'id': 'unkonwn',
+                             })
 
 
 def idsOfSession(model):

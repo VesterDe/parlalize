@@ -177,8 +177,18 @@ class Question(Activity):
                                       help_text='Recipient name as written on dz-rs.si')
 
     def getQuestionData(self):
+        # fix import issue
+        from parlalize.utils import getMinistryData
+        persons = []
+        orgs = []
+        for person in self.recipient_persons.all():
+            persons.append(getMinistryData(person.id_parladata, self.start_time.strftime(API_DATE_FORMAT)))
+        for org in self.recipient_organizations.all():
+            orgs.append(org.getOrganizationData())
         return {'title': self.title,
                 'recipient_text': self.recipient_text,
+                'recipient_persons': persons,
+                'recipient_orgs': orgs,
                 'url': self.content_link,
                 'id': self.id_parladata}
 
@@ -194,6 +204,11 @@ class Ballot(Activity):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain')
+
+    org_voter = models.ForeignKey('parlaskupine.Organization',
+                                  blank=True, null=True,
+                                  related_name='OrganizationVoter',
+                                  help_text=_('Organization voter'))
 
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
@@ -215,6 +230,7 @@ class Vote(Timestampable, models.Model):
 
     motion = models.TextField(blank=True, null=True,
                               help_text='The motion for which the vote took place')
+
 
     tags = JSONField(blank=True, null=True)
 
@@ -238,7 +254,15 @@ class Vote(Timestampable, models.Model):
                                        blank=True, null=True,
                                        help_text=_('id parladata'))
 
-    document_url = JSONField(blank=True, null=True)
+    document_url = JSONField(blank=True,
+                             null=True)
+
+    start_time = PopoloDateTimeField(blank=True,
+                                     null=True,
+                                     help_text='Start time')
+
+    is_outlier = models.NullBooleanField(default=False,
+                                         help_text='is outlier')
 
 
 class VoteDetailed(Timestampable, models.Model):
@@ -286,6 +310,46 @@ class VoteDetailed(Timestampable, models.Model):
     mp_no = JSONField(blank=True, null=True)
     mp_np = JSONField(blank=True, null=True)
     mp_kvor = JSONField(blank=True, null=True)
+
+
+class Vote_analysis(Timestampable, models.Model):
+
+    session = models.ForeignKey('Session',
+                               blank=True, null=True,
+                               related_name='in_session_for_VA',
+                               help_text=_('Session '))
+
+    vote = models.ForeignKey('Vote',
+                               blank=True, null=True,
+                               related_name='analysis',
+                               help_text=_('Vote'))
+
+    created_for = models.DateField(_('date of vote'),
+                                    blank=True,
+                                    null=True,
+                                    help_text=_('date of vote'))
+
+    votes_for = models.IntegerField(blank=True, null=True,
+                                   help_text='Number of votes for')
+
+    against = models.IntegerField(blank=True, null=True,
+                                   help_text='Number votes againt')
+
+    abstain = models.IntegerField(blank=True, null=True,
+                                   help_text='Number votes abstain')
+
+    not_present = models.IntegerField(blank=True, null=True,
+                                   help_text='Number of MPs that warent on the session')
+    pgs_data = JSONField(blank=True, null=True)
+
+    mp_yes = JSONField(blank=True, null=True)
+    mp_no = JSONField(blank=True, null=True)
+    mp_np = JSONField(blank=True, null=True)
+    mp_kvor = JSONField(blank=True, null=True)
+
+    coal_opts = JSONField(blank=True, null=True)
+
+    oppo_opts = JSONField(blank=True, null=True)
 
 
 class AbsentMPs(Timestampable, models.Model):

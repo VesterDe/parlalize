@@ -29,6 +29,10 @@ urlpatterns = patterns(
     url(r'^getSpeechesOfSession/(?P<session_id>\d+)', getSpeechesOfSession),
     url(r'^getSpeechesIDsOfSession/(?P<session_id>\d+)', getSpeechesIDsOfSession),
 
+    url(r'^getMotionOfSessionVotes/(?P<votes>[\w,]+)$', getMotionOfSessionVotes),
+
+    url(r'^getMotionAnalize/(?P<motion_id>\d+)', getMotionAnalize),
+
     url(r'^getAbsentMPs/(?P<session_id>\d+)', getAbsentMPs),
     url(r'^getAbsentMPs/(?P<session_id>\d+)/(?P<date>[\w].+)', getAbsentMPs),
 
