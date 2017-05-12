@@ -1562,13 +1562,14 @@ def getIntraDisunion(request):
     out = {}
     votesData = {}
     tab = []
+    votee = Vote.objects.all().order_by('start_time')
     for vote in Vote.objects.all().order_by('start_time'):
         votesData = {vote.id_parladata:{'text':vote.motion,
-                                        'result':vote.request,
+                                        'result':vote.result,
                                         'date':vote.start_time,
                                         'tag':Tag.objects.filter(id_parladata=vote.id_parladata)}}
         tab.append(votesData)
-    paginator = Paginator(tab, 50)                                    
+    paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1579,6 +1580,7 @@ def getIntraDisunion(request):
 
     for vote in votespag:
         intraD = vote.VoteintraDisunion.all()
+        print vote
         for intra in intraD:
             if intra.organization.acronym in out.keys:
                 obs = {"text": votesData[vote.id_parladata]['text'],
@@ -1597,7 +1599,13 @@ def getIntraDisunion(request):
                                   "tag": votesData[vote.id_parladata]['tag']
                                 }]}
                 out[intra.organization.acronym] = ob
-
+        '''out['dz']['vote'].append = {"organization": 'dz',
+                                    "vote": [{"text": votesData[vote.id_parladata]['text'],
+                                              "maximum": vote.maximum,
+                                              "result": votesData[vote.id_parladata]['result'],
+                                              "date": votesData[vote.id_parladata]['date'],
+                                              "tag": votesData[vote.id_parladata]['tag'] }]}
+        '''
     return JsonResponse({'contacts': out}, safe=False)
 
 
@@ -1605,13 +1613,14 @@ def getIntraDisunionOrg(request, org_id):
     out = {}
     votesData = {}
     tab = []
-    for vote in Vote.objects.filter(organizations__id_parladata=org_id).order_by('start_time'):
+    votee = Vote.objects.all().order_by('start_time')
+    for vote in Vote.objects.all().order_by('start_time'):
         votesData = {vote.id_parladata:{'text':vote.motion,
-                                        'result':vote.request,
+                                        'result':vote.result,
                                         'date':vote.start_time,
                                         'tag':Tag.objects.filter(id_parladata=vote.id_parladata)}}
         tab.append(votesData)
-    paginator = Paginator(tab, 50)                                    
+    paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1621,7 +1630,7 @@ def getIntraDisunionOrg(request, org_id):
         votespag = paginator.page(paginator.num_pages)
 
     for vote in votespag:
-        intraD = vote.VoteintraDisunion.all()
+        intraD = IntraDisunion.objects.filter(vote=vote)
         for intra in intraD:
                 ob = {"organization": Organization.objects.get(id_parladata=org_id).getOrganizationData(),
                         "vote": [{"text": votesData[vote.id_parladata]['text'],
