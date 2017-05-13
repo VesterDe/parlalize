@@ -1,8 +1,8 @@
 from parlalize.utils import tryHard
 from parlalize.settings import API_URL, API_DATE_FORMAT
-from parlaposlanci.models import Person
+from parlaposlanci.models import Person, District
 from parlaskupine.models import Organization
-from parlaseje.models import Session, Speech, Question, Ballot, Vote
+from parlaseje.models import Session, Speech, Question, Ballot, Vote, Question
 # parlalize initial runner methods #
 
 DZ = 95
