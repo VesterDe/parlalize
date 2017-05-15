@@ -465,11 +465,11 @@ def getMotionAnalize(request, motion_id):
     orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
     members = []
-    for option, members in [('for', json.loads(model.mp_yes)),
+    for option, members_ids in [('for', json.loads(model.mp_yes)),
                             ('against', json.loads(model.mp_no)),
                             ('not_present', json.loads(model.mp_np)),
                             ('abstain', json.loads(model.mp_kvor))]:
-        for mp in members:
+        for mp in members_ids:
             personData = getPersonData(mp)
             # set if person is outlier
             outlier = False
