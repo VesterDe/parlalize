@@ -469,7 +469,7 @@ def getMotionAnalize(request, motion_id):
                             ('against', json.loads(model.mp_no)),
                             ('not_present', json.loads(model.mp_np)),
                             ('abstain', json.loads(model.mp_kvor))]:
-        for mp in json.loads(model.mp_yes):
+        for mp in members:
             personData = getPersonData(mp)
             # set if person is outlier
             outlier = False
