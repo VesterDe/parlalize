@@ -209,14 +209,12 @@ def getPartyBallot(row):
 
     methodology: ignore not_present
     """
-    print row
     stats = {'za': row['option_za'],
              'proti': row['option_proti'],
              'kvorum': row['option_kvorum']}
     if max(stats.values()) == 0:
         return '[]'
     max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
-    print max_ids
     return json.dumps(max_ids)
 
 
