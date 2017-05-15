@@ -98,23 +98,23 @@ def setMotionAnalize(session_id):
                                  'voterparty']).sum().apply(lambda row: getPartyBallot(row), axis=1)
 
     partyIntryDisunion = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
-
     # TODO: create save-ing for coalInter, oppoInter
     coalInter = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
     oppoInter = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
     allInter = data.groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
 
-        vote.intra_disunion = allInter[vote_id]
-        vote.save()
-
         party_data = {}
+        has_outliers = False
         for party in parties[vote_id].keys():
             # save just parlimetary groups
             if party in paries_ids:
                 party_data[party] = parties[vote_id][party]
+                if party_data[party]['outliers']:
+                    has_outliers = True
                 # update/add IntraDisunion
                 intra = IntraDisunion.objects.filter(organization__id_parladata=party,
                                                      vote=vote)
@@ -139,6 +139,10 @@ def setMotionAnalize(session_id):
                                option=option,
                                start_time=vote.start_time,
                                session=vote.session).save()
+
+        vote.has_outlier_voters = has_outliers
+        vote.intra_disunion = allInter[vote_id]
+        vote.save()
         print all_votes.loc[vote_id, 'pg_za']
         if vote_a:
             vote_a.update(votes_for=all_votes.loc[vote_id, 'option_za'],
