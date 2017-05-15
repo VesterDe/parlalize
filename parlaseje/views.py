@@ -450,25 +450,35 @@ def getMotionAnalize(request, motion_id):
         max_vote_opt = '/'
     else:
         max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for']+stats['not_present'])*100
-    members = []
-    for mp in json.loads(model.mp_yes):
-        members.append({'person': getPersonData(mp), 'option': 'for'})
-    for mp in json.loads(model.mp_no):
-        members.append({'person': getPersonData(mp), 'option': 'against'})
-    for mp in json.loads(model.mp_np):
-        members.append({'person': getPersonData(mp), 'option': 'not_present'})
-    for mp in json.loads(model.mp_kvor):
-        members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     tmp_data = model.pgs_data
     orgs_data = {}
+    pg_outliers = {}
     for org in tmp_data:
         org_obj = Organization.objects.get(id_parladata=int(org))
         if org_obj.classification == 'poslanska skupina':
             orgs_data[org] = json.loads(tmp_data[org])
             orgs_data[org]['party'] = org_obj.getOrganizationData()
+            if orgs_data[org]['outliers']:
+                pg_outliers[org] = orgs_data[org]['outliers']
 
     orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
+
+    members = []
+    for option, members in [('for', json.loads(model.mp_yes)),
+                            ('against', json.loads(model.mp_no)),
+                            ('not_present', json.loads(model.mp_np)),
+                            ('abstain', json.loads(model.mp_kvor))]:
+        for mp in json.loads(model.mp_yes):
+            personData = getPersonData(mp)
+            # set if person is outlier
+            outlier = False
+            if personData['party']['id'] in pg_outliers.keys():
+                if option in pg_outliers[personData['party']['id']]:
+                    outlier = True
+            members.append({'person': personData,
+                            'option': option,
+                            'is_outlier': outlier})
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
