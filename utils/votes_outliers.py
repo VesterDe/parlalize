@@ -113,7 +113,7 @@ def setMotionAnalize(session_id):
             # save just parlimetary groups
             if party in paries_ids:
                 party_data[party] = parties[vote_id][party]
-                if party_data[party]['outliers']:
+                if json.loads(party_data[party])['outliers']:
                     has_outliers = True
                 # update/add IntraDisunion
                 intra = IntraDisunion.objects.filter(organization__id_parladata=party,
