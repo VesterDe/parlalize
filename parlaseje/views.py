@@ -294,7 +294,8 @@ def getMotionOfSession(request, id_se, date=False):
                                         'not_present': card.not_present,
                                         'result': card.result,
                                         'is_outlier': card.is_outlier,
-                                        'tags': card.tags
+                                        'tags': card.tags,
+                                        'has_outliers': card.has_outlier_voters
                                         }
                             })
                 dates.append(card.created_at)
@@ -328,8 +329,8 @@ def getMotionOfSessionVotes(request, votes):
                         'votes_for': vot.votes_for,
                         'against': vot.against,
                         'abstain': vot.abstain,
-                        'not_present':vot.not_present,
-                        'result':vot.result}
+                        'not_present': vot.not_present,
+                        'result': vot.result}
                 })
         else:
             out.append({'Error': "No vote"})
@@ -460,7 +461,7 @@ def getMotionAnalize(request, motion_id):
             orgs_data[org] = json.loads(tmp_data[org])
             orgs_data[org]['party'] = org_obj.getOrganizationData()
             if orgs_data[org]['outliers']:
-                pg_outliers[org] = orgs_data[org]['outliers']
+                pg_outliers[int(org)] = orgs_data[org]['outliers']
 
     orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
 
