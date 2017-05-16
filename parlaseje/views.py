@@ -6,7 +6,7 @@ import requests
 import json
 from django.http import JsonResponse
 from parlaseje.models import *
-from parlalize.settings import API_URL, API_DATE_FORMAT
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
 from parlaseje.utils import *
 from collections import defaultdict, Counter
 from math import fabs
@@ -50,6 +50,8 @@ def getSpeechesOfSession(request, session_id):
     sessionData = session.getSessionData()
     session_time = session.start_time.strftime(API_DATE_FORMAT)
 
+    personsStatic = tryHard(BASE_URL + "/utils/getAllStaticData/").json()
+
     data = []
     for speech in speeches:
         out = {"speech_id": speech.id_parladata,
@@ -59,10 +61,13 @@ def getSpeechesOfSession(request, session_id):
                "end_idx": None,
                "start_idx": None,
                "quote_id": None}
-
+        try:
+            personData = personsStatic['persons'][str(speech.person.id_parladata)]
+        except:
+            personData = getPersonData(speech.person.id_parladata,
+                                       session_time)
         result = {
-            'person': getPersonData(speech.person.id_parladata,
-                                    session_time),
+            'person': personData,
             'results': out
         }
         data.append(result)
