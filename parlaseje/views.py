@@ -47,11 +47,14 @@ def getSpeechesOfSession(request, session_id):
     speeches = speeches_queryset.filter(session=session).order_by("start_time",
                                                                   "order")
 
+    sessionData = session.getSessionData()
+    session_time = session.start_time.strftime(API_DATE_FORMAT)
+
     data = []
     for speech in speeches:
         out = {"speech_id": speech.id_parladata,
                "content": speech.content,
-               "session": speech.session.getSessionData(),
+               "session": sessionData,
                "quoted_text": None,
                "end_idx": None,
                "start_idx": None,
@@ -59,13 +62,13 @@ def getSpeechesOfSession(request, session_id):
 
         result = {
             'person': getPersonData(speech.person.id_parladata,
-                                    speech.session.start_time.strftime(API_DATE_FORMAT)),
+                                    session_time),
             'results': out
         }
         data.append(result)
 
-    return JsonResponse({"session": session.getSessionData(),
-                         "created_for": session.start_time.strftime(API_DATE_FORMAT),
+    return JsonResponse({"session": sessionData,
+                         "created_for": session_time,
                          "created_at": datetime.today().strftime(API_DATE_FORMAT),
                          "results": data})
 
