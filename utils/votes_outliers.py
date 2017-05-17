@@ -99,9 +99,12 @@ def setMotionAnalize(session_id):
 
     partyIntryDisunion = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
     # TODO: create save-ing for coalInter, oppoInter
-    coalInter = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
-    oppoInter = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    coalInterCalc = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    oppoInterCalc = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
     allInter = data.groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+
+    opozition = Organization.objects.get(name="Opozicija")
+    coalition = Organization.objects.get(name="Koalicija")
 
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
@@ -139,6 +142,27 @@ def setMotionAnalize(session_id):
                                option=option,
                                start_time=vote.start_time,
                                session=vote.session).save()
+
+        opoIntra = IntraDisunion.objects.filter(organization=opozition,
+                                                vote=vote)
+        coalIntra = IntraDisunion.objects.filter(organization=coalition,
+                                                 vote=vote)
+
+        if opoIntra:
+            opoIntra.update(maximum=oppoInterCalc[vote_id])
+        else:
+            IntraDisunion(organization=opozition,
+                          vote=vote,
+                          maximum=oppoInterCalc[vote_id]
+                          ).save()
+
+        if coalIntra:
+            coalIntra.update(maximum=coalInterCalc[vote_id])
+        else:
+            IntraDisunion(organization=coalition,
+                          vote=vote,
+                          maximum=coalInterCalc[vote_id]
+                          ).save()
 
         vote.has_outlier_voters = has_outliers
         vote.intra_disunion = allInter[vote_id]
