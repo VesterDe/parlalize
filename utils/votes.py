@@ -190,12 +190,13 @@ class VotesAnalysis(object):
 
             # most equal
             most_data = []
-            data = mps_data[-6:-1]
-            for idx in range(5):
+            data = mps_data
+            for idx in range(len(data)-1):
                 member_id = int(data.iloc[idx]['voter'])
-                member = Person.objects.get(id_parladata=member_id)
-                most_data.append({'member': member,
-                                  'score': data.iloc[idx][mp]})
+                if member_id in self.members:
+                    member = Person.objects.get(id_parladata=member_id)
+                    most_data.append({'member': member,
+                                      'score': data.iloc[idx][mp]})
             most_data = list(reversed(most_data))
 
             result = saveOrAbortNew(model=EqualVoters,
@@ -214,12 +215,16 @@ class VotesAnalysis(object):
 
             # less equal
             less_data = []
-            data = mps_data[:5]
-            for idx in range(5):
+            data = mps_data
+            #for idx in range(5):
+            idx = 0
+            while len(less_data) < 5:
                 member_id = int(data.iloc[idx]['voter'])
-                member = Person.objects.get(id_parladata=member_id)
-                less_data.append({'member': member,
-                                  'score': data.iloc[idx][mp]})
+                if member_id in self.members:
+                    member = Person.objects.get(id_parladata=member_id)
+                    less_data.append({'member': member,
+                                      'score': data.iloc[idx][mp]})
+                idx += 1
 
             result = saveOrAbortNew(model=LessEqualVoters,
                                     created_for=self.date_of,
@@ -257,12 +262,14 @@ class VotesAnalysis(object):
 
             # most equal
             most_data = []
-            data = otherMems[-6:-1]
-            for idx in range(5):
+            data = otherMems
+            # for idx in range(5):
+            for idx in range(len(data)-1):
                 member_id = int(data.iloc[idx]['voter'])
-                member = Person.objects.get(id_parladata=member_id)
-                most_data.append({'member': member,
-                                  'score': data.iloc[idx][pg]})
+                if member_id in self.members:
+                    member = Person.objects.get(id_parladata=member_id)
+                    most_data.append({'member': member,
+                                      'score': data.iloc[idx][pg]})
             most_data = list(reversed(most_data))
 
             result = saveOrAbortNew(model=MostMatchingThem,
@@ -279,14 +286,17 @@ class VotesAnalysis(object):
                                     person5=most_data[4]['member'],
                                     votes5=most_data[4]['score'])
             # less equal
-            print otherMems[:5]
             less_data = []
-            data = otherMems[:5]
-            for idx in range(5):
+            data = otherMems
+            #for idx in range(5):
+            idx = 0
+            while len(less_data) < 5:
                 member_id = int(data.iloc[idx]['voter'])
-                member = Person.objects.get(id_parladata=member_id)
-                less_data.append({'member': member,
-                                  'score': data.iloc[idx][pg]})
+                if member_id in self.members:
+                    member = Person.objects.get(id_parladata=member_id)
+                    less_data.append({'member': member,
+                                      'score': data.iloc[idx][pg]})
+                idx += 1
 
             result = saveOrAbortNew(model=LessMatchingThem,
                                     created_for=self.date_of,
