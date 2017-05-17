@@ -1561,7 +1561,7 @@ def getPresenceThroughTime(request, party_id, date_=None):
 def getIntraDisunion(request):
     out = {}
     votesData = {}
-    votee = Vote.objects.all().order_by('start_time')
+    votee = Vote.objects.all().order_by('-start_time')
     paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
@@ -1589,11 +1589,12 @@ def getIntraDisunion(request):
                     ob['maximum'] = intra.maximum
                     ob['organization'] = intra.organization.getOrganizationData()
                     out[intra.organization.acronym] = ob
-            #out['dz']['vote'] = {"organization": 'dz',
-            #                     'text':vote.motion,
-            #                     'result':vote.result,
-            #                     'date':vote.start_time,
-            #                     'tag':vote.tags}
+            out['DZ'] = {"organization": 'dz',
+                         'text':vote.motion,
+                         'result':vote.result,
+                         'date':vote.start_time,
+                         'tag':vote.tags,
+                         'maximum':vote.intra_disunion}
     return JsonResponse({'contacts': out}, safe=False)
 
 
