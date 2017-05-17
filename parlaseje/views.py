@@ -521,13 +521,6 @@ def setMotionOfSessionGraph(request, session_id):
                 tabnp.append(vote['mp_id'])
 
         result = mot['result']
-        # if not str(result).strip().isdigit():
-        #     result = resultOfMotion(yes,
-        #                             no,
-        #                             kvorum,
-        #                             not_present,
-        #                             mot['id'],
-        #                             session.start_time)
         vote = Vote.objects.get(id_parladata=mot['vote_id'])
         if VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id']):
             voteDetailed = VoteDetailed.objects.filter(vote__id_parladata=mot['vote_id'])
@@ -701,7 +694,7 @@ def getMotionOfSession(request, session_id, date=False):
         if Vote.objects.filter(session__id_parladata=session_id):
             model = Vote.objects.filter(session__id_parladata=session_id)
             dates = []
-            for card in votes:
+            for card in model:
                 print card
                 out.append({'session': sesData,
                             'results': {'motion_id': card.id_parladata,
@@ -1189,12 +1182,15 @@ def getPresenceOfPG(request, session_id, date=False):
 def setSpeechesOnSession(request, date=False):
     """ Stores all speeches of all MPs.
     """
+    
     if date:
-        numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.strptime(date, '%d.%m.%Y')))
+        print datetime
+        print date
+        numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.datetime.strptime(date, API_DATE_FORMAT)))
         mps = tryHard(API_URL + '/getMPs/' + date).json()
     else:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.now().date()).json())
-        mps = tryHard(API_URL + '/getMPs/' + str(datetime.now().date().strftime(API_DATE_FORMAT))).json()
+        mps = tryHard(API_URL + '/getMPs/' + str(datetime.now().strftime(API_DATE_FORMAT))).json()
         date = datetime.now().date()
 
     mpsID = {}

@@ -429,14 +429,3 @@ class Tfidf(Timestampable, models.Model):
 
     def __str__(self):
         return unicode(self.session.name) + " --> " + unicode(self.session.organization.name)
-
-
-class Tag(models.Model):
-    """Model for tag votes."""
-
-    id_parladata = models.IntegerField(_('parladata id'),
-                                       blank=True, null=True,
-                                       help_text=_('id parladata'))
-
-    name = models.TextField(blank=True, null=True,
-                            help_text=_('tag name'))
