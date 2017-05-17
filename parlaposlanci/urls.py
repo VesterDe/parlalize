@@ -129,6 +129,7 @@ urlpatterns = patterns(
     ###########################################################################
     # POST setters
     url(r'^setAllMPsTFIDFsFromSearch/', setAllMPsTFIDFsFromSearch),
+    url(r'^setAllMPsStyleScoresFromSearch/', setAllMPsStyleScoresFromSearch),
 
     ###########################################################################
 

@@ -2494,87 +2494,6 @@ def getCutVotes(request, person_id, date=None):
     return JsonResponse(out)
 
 
-def setStyleScoresALL(request, date_=None):
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-    else:
-        date_of = datetime.now().date()
-        date_=date_of.strftime(API_DATE_FORMAT)
-
-    mps = tryHard(API_URL+'/getMPs/'+date_).json()
-    print 'Starting average scores'
-    #average_scores = makeAverageStyleScores(date_)
-
-    print 'Ending average scores'
-
-    print 'Starting MPs'
-    scores = {}
-    for mp in mps:
-
-        person_id = mp['id']
-
-        print 'MP id: ' + str(person_id)
-
-        # get word counts with solr
-        counter = Counter(getCountList(int(person_id), date_))
-        total = sum(counter.values())
-
-        scores_local = getScores([problematicno, privzdignjeno, preprosto], counter, total)
-
-        #average = average_scores
-
-        print scores_local, #average
-        scores[person_id] = scores_local
-
-
-    print scores
-    average = {"problematicno": sum([score['problematicno'] for score in scores.values()])/len(scores), "privzdignjeno": sum([score['privzdignjeno'] for score in scores.values()])/len(scores), "preprosto": sum([score['preprosto'] for score in scores.values()])/len(scores)}
-    for person, score in scores.items():
-        saveOrAbortNew(
-            model=StyleScores,
-            created_for=date_of,
-            person=Person.objects.get(id_parladata=int(person)),
-            problematicno=score['problematicno'],
-            privzdignjeno=score['privzdignjeno'],
-            preprosto=score['preprosto'],
-            problematicno_average=average['problematicno'],
-            privzdignjeno_average=average['privzdignjeno'],
-            preprosto_average=average['preprosto']
-        )
-
-    return HttpResponse('All MPs updated');
-
-
-def setStyleScores(request, person_id):
-    speeches = tryHard(API_URL+'/getSpeeches/' + person_id).json()
-    speeches_content = [speech['content'] for speech in speeches]
-    speeches_megastring = string.join(speeches_content)
-
-    average_scores = makeAverageStyleScores()
-
-    counter = Counter()
-    counter = countWords(speeches_megastring, counter)
-    total = sum(counter.values())
-
-    problematicno_local = getScore(problematicno, counter, total),
-    privzdignjeno_local = getScore(privzdignjeno, counter, total),
-    preprosto_local = getScore(preprosto, counter, total),
-    average = average_scores
-
-    print problematicno_local[0], privzdignjeno_local[0], preprosto_local[0], average
-
-    result = saveOrAbort(model=StyleScores, person=Person.objects.get(id_parladata=int(person_id)), problematicno=problematicno_local[0], privzdignjeno=privzdignjeno_local[0], preprosto=preprosto_local[0], problematicno_average=average['problematicno'], privzdignjeno_average=average['privzdignjeno'], preprosto_average=average['preprosto'])
-
-    if result:
-        return HttpResponse('All iz well')
-
-    else:
-        return HttpResponse('All was well');
-
-
-
-    return JsonResponse(output, safe=False)
-
 def getStyleScores(request, person_id, date_=None):
     """
     * @api {get} /p/getStyleScores/{id}/{?date} MP's style scores
@@ -4992,6 +4911,38 @@ def setAllMPsTFIDFsFromSearch(request):
             return JsonResponse({'status': 'There is not data'})
     else:
         return JsonResponse({'status': 'It wasnt POST'})
+
+
+@csrf_exempt
+def setAllMPsStyleScoresFromSearch(request):
+    """
+    API endpoint for saveing StyleScores. StyleScores is generated in parlasearch and sent
+    with a POST request.
+    """
+    if request.method == 'POST':
+        post_data = json.loads(request.body)
+        date_of = datetime.today()
+        print post_data
+        if post_data:
+            save_statuses = []
+            for score in post_data:
+                print score
+                status = saveOrAbortNew(StyleScores,
+                                        person=Person.objects.get(id_parladata=int(score["member"])),
+                                        created_for=date_of,
+                                        problematicno=float(score['problematicno']),
+                                        privzdignjeno=float(score['privzdignjeno']),
+                                        preprosto=float(score['preprosto']),
+                                        problematicno_average=float(score['problematicno_average']),
+                                        privzdignjeno_average=float(score['privzdignjeno_average']),
+                                        preprosto_average=float(score['preprosto_average'])
+                                        )
+                save_statuses.append(status)
+            return JsonResponse({"status": "alliswell", "saved": save_statuses})
+        else:
+            return JsonResponse({"status": "There's not data"})
+    else:
+        return JsonResponse({"status": "It wasnt POST"})
 
 
 def setPresenceThroughTime(request, person_id, date_=None):
