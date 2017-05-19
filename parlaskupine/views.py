@@ -1616,7 +1616,7 @@ def getIntraDisunionOrg(request, org_id):
                                         'date':vote.start_time,
                                         'tag':vote.tags}
     for vote in votespag:
-        intraD = IntraDisunion.objects.filter(vote=vote)
+        intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
         for intra in intraD:
                 ob = votesData[vote.id_parladata].copy()
                 ob['maximum'] = intraD.maximum
