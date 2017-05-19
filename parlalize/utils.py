@@ -5,7 +5,7 @@ from django.http import Http404, JsonResponse, HttpResponse
 import requests
 from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity, MinisterStatic
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
-from parlaseje.models import VoteDetailed, Session, Vote, Ballot, Speech, PresenceOfPG, AbsentMPs, AverageSpeeches, VoteDetailed
+from parlaseje.models import VoteDetailed, Session, Vote, Ballot, Speech, PresenceOfPG, AbsentMPs, VoteDetailed
 from parlalize.settings import VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT, DEBUG
 from django.contrib.contenttypes.models import ContentType
 import requests

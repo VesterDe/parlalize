@@ -20,8 +20,6 @@ urlpatterns = patterns(
 
     url(r'^setQuote/(?P<speech_id>\d+)/(?P<start_pos>\d+)/(?P<end_pos>\d+)', setQuote),
 
-    url(r'^setSpeechesOnSession/(?P<date>[\w].+)', setSpeechesOnSession),
-
     #All getters 
     url(r'^getSpeech/(?P<speech_id>\d+)', getSpeech),
     url(r'^getSpeechesOfSession/(?P<session_id>\d+)', getSpeechesOfSession),
@@ -31,9 +29,6 @@ urlpatterns = patterns(
 
     url(r'^getPresenceOfPG/(?P<session_id>\d+)', getPresenceOfPG),
     url(r'^getPresenceOfPG/(?P<session_id>\d+)/(?P<date>[\w].+)', getPresenceOfPG),
-
-    url(r'^getMaxSpeechesOnSession/(?P<date>[\w].+)', getMaxSpeechesOnSession),
-    url(r'^getMinSpeechesOnSession/(?P<date>[\w].+)', getMinSpeechesOnSession),
 
     url(r'^getMinSpeechesOnSession/', getMinSpeechesOnSession),
     url(r'^getMaxSpeechesOnSession/', getMaxSpeechesOnSession),

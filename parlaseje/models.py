@@ -399,16 +399,6 @@ class PresenceOfPG(Timestampable, models.Model):
                                    help_text=_('date of analize'))
 
 
-class AverageSpeeches(Timestampable, models.Model):
-    """Model for analysis average speeches on session."""
-
-    speechesOnSession = JSONField(blank=True, null=True)
-
-    created_for = models.DateField(_('date of activity'),
-                                   blank=True, null=True,
-                                   help_text=_('date of analize'))
-
-
 class Tfidf(Timestampable, models.Model):
     """Model for analysis TFIDF."""
 
