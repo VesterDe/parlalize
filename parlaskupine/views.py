@@ -5,7 +5,7 @@ import requests
 import json
 from django.http import JsonResponse
 from parlaskupine.models import *
-from parlaseje.models import Activity, Session, Vote, Speech
+from parlaseje.models import Activity, Session, Vote, Speech, Question
 from collections import Counter
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, API_OUT_DATE_FORMAT
 import numpy as np

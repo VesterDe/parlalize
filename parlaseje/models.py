@@ -264,6 +264,12 @@ class Vote(Timestampable, models.Model):
     is_outlier = models.NullBooleanField(default=False,
                                          help_text='is outlier')
 
+    has_outlier_voters = models.NullBooleanField(default=False,
+                                                 help_text='has outlier voters')
+
+    intra_disunion = models.FloatField(default=0.0,
+                                       help_text='intra disunion for all members')
+
 
 class Vote_graph(Timestampable, models.Model):
 
