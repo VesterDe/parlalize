@@ -8,8 +8,10 @@ from parlaposlanci.views import getSlugs, getListOfMembers
 from parlaskupine.views import getListOfPGs
 from parlaseje.views import getSessionsList
 from parlaseje.models import Session
-from parlalize.settings import API_DATE_FORMAT, BASE_URL, API_URL
+from parlalize.settings import API_DATE_FORMAT, BASE_URL, API_URL, slack_token
 from parlalize.utils import getAllStaticData, tryHard, printProgressBar
+
+from slackclient import SlackClient
 
 FR = '?forceRender=true'
 
