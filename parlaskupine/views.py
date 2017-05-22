@@ -1560,10 +1560,9 @@ def getPresenceThroughTime(request, party_id, date_=None):
 
 def getIntraDisunion(request):
     out = {}
-
-    votes = Vote.objects.all().order_by('start_time')
-    paginator = Paginator(votes, 50)
-
+    votesData = {}
+    votee = Vote.objects.all().order_by('-start_time')
+    paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1573,31 +1572,36 @@ def getIntraDisunion(request):
         votespag = paginator.page(paginator.num_pages)
 
     for vote in votespag:
-        intraD = vote.VoteintraDisunion.all()
+        votesData[vote.id_parladata] = {'text':vote.motion,
+                                        'result':vote.result,
+                                        'date':vote.start_time,
+                                        'tag':vote.tags}
+    for vote in votespag:
+        intraD = vote.vote_intradisunion.all()
         for intra in intraD:
-            if intra.organization.acronym in out.keys:
-                obs = {"text": intra.text,
-                       "maximum": intra.maximum,
-                       "result": intra.result,
-                       "date": intra.start_time}
+            if intra.organization.acronym in out.keys():
+                obs = votesData[vote.id_parladata].copy()
+                obs['maximum'] = intra.maximum
                 out[intra.organization.acronym]['vote'].append(obs)
             else:
-                ob = {"organization": intra.organization.getOrganizationData(),
-                        "vote": [{"text": intra.text,
-                                  "maximum": intra.maximum,
-                                  "result": intra.result,
-                                  "date": intra.start_time}]}
+                ob = votesData[vote.id_parladata].copy()
+                ob['maximum'] = intra.maximum
+                ob['organization'] = intra.organization.getOrganizationData()
                 out[intra.organization.acronym] = ob
-
-    return JsonResponse({'contacts': contacts}, safe=False)
+        out['DZ'] = {"organization": 'dz',
+                     'text':vote.motion,
+                     'result':vote.result,
+                     'date':vote.start_time,
+                     'tag':vote.tags,
+                     'maximum':vote.intra_disunion}
+    return JsonResponse({'contacts': out}, safe=False)
 
 
 def getIntraDisunionOrg(request, org_id):
     out = {}
-
-    votes = Vote.objects.all().order_by('start_time')
-    paginator = Paginator(votes, 50)
-
+    votesData = {}
+    votee = Vote.objects.all().order_by('start_time')
+    paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1605,22 +1609,17 @@ def getIntraDisunionOrg(request, org_id):
         votespag = paginator.page(1)
     except EmptyPage:
         votespag = paginator.page(paginator.num_pages)
-
     for vote in votespag:
-        intraD = vote.VoteintraDisunion.all()
+        votesData[vote.id_parladata] = {'text':vote.motion,
+                                        'result':vote.result,
+                                        'date':vote.start_time,
+                                        'tag':vote.tags}
+    for vote in votespag:
+        intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
         for intra in intraD:
-            if intra.organization.acronym in out.keys:
-                obs = {"text": intra.text,
-                       "maximum": intra.maximum,
-                       "result": intra.result,
-                       "date": intra.start_time}
-                out[intra.organization.acronym]['vote'].append(obs)
-            else:
-                ob = {"organization": intra.organization.getOrganizationData(),
-                        "vote": [{"text": intra.text,
-                                  "maximum": intra.maximum,
-                                  "result": intra.result,
-                                  "date": intra.start_time}]}
-                out[intra.organization.acronym] = ob
+                ob = votesData[vote.id_parladata].copy()
+                ob['maximum'] = intraD.maximum
+                ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
+                out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
-    return JsonResponse({'contacts': contacts}, safe=False)
+    return JsonResponse({'contacts': out}, safe=False)
