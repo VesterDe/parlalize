@@ -4,7 +4,7 @@ from parlalize.utils import *
 import json
 from django.http import JsonResponse
 from parlaseje.models import *
-from parlalize.settings import API_URL, API_DATE_FORMAT
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
 from parlaseje.utils import *
 from collections import defaultdict, Counter
 from django.core.exceptions import ObjectDoesNotExist
@@ -324,25 +324,33 @@ def getSpeechesOfSession(request, session_id):
     speeches = speeches_queryset.filter(session=session).order_by("start_time",
                                                                   "order")
 
+    sessionData = session.getSessionData()
+    session_time = session.start_time.strftime(API_DATE_FORMAT)
+
+    personsStatic = tryHard(BASE_URL + "/utils/getAllStaticData/").json()
+
     data = []
     for speech in speeches:
         out = {"speech_id": speech.id_parladata,
                "content": speech.content,
-               "session": speech.session.getSessionData(),
+               "session": sessionData,
                "quoted_text": None,
                "end_idx": None,
                "start_idx": None,
                "quote_id": None}
-
+        try:
+            personData = personsStatic['persons'][str(speech.person.id_parladata)]
+        except:
+            personData = getPersonData(speech.person.id_parladata,
+                                       session_time)
         result = {
-            'person': getPersonData(speech.person.id_parladata,
-                                    speech.session.start_time.strftime(API_DATE_FORMAT)),
+            'person': personData,
             'results': out
         }
         data.append(result)
 
-    return JsonResponse({"session": session.getSessionData(),
-                         "created_for": session.start_time.strftime(API_DATE_FORMAT),
+    return JsonResponse({"session": sessionData,
+                         "created_for": session_time,
                          "created_at": datetime.today().strftime(API_DATE_FORMAT),
                          "results": data})
 
@@ -696,7 +704,7 @@ def getMotionOfSession(request, session_id, date=False):
             dates = []
             for card in model:
                 print card
-                out.append({'session': sesData,
+                out.append({'session': session.getSessionData(),
                             'results': {'motion_id': card.id_parladata,
                                         'text': card.motion,
                                         'votes_for': card.votes_for,
@@ -705,7 +713,8 @@ def getMotionOfSession(request, session_id, date=False):
                                         'not_present': card.not_present,
                                         'result': card.result,
                                         'is_outlier': card.is_outlier,
-                                        'tags': card.tags
+                                        'tags': card.tags,
+                                        'has_outliers': card.has_outlier_voters
                                         }
                             })
                 dates.append(card.created_at)
@@ -715,7 +724,7 @@ def getMotionOfSession(request, session_id, date=False):
         ses_date = session.start_time.strftime(API_DATE_FORMAT)
         tags = list(Tag.objects.all().values_list('name', flat=True))
         return JsonResponse({"results": out,
-                             "session": sesData,
+                             "session": session.getSessionData(),
                              "tags": tags,
                              "created_for": ses_date,
                              "created_at": created_at}, safe=False)
@@ -1005,25 +1014,35 @@ def getMotionAnalize(request, motion_id):
         max_vote_opt = '/'
     else:
         max_vote_percent_opt = float(stats[max_vote_opt])/(stats['abstain']+stats['against']+stats['for']+stats['not_present'])*100
-    members = []
-    for mp in json.loads(model.mp_yes):
-        members.append({'person': getPersonData(mp), 'option': 'for'})
-    for mp in json.loads(model.mp_no):
-        members.append({'person': getPersonData(mp), 'option': 'against'})
-    for mp in json.loads(model.mp_np):
-        members.append({'person': getPersonData(mp), 'option': 'not_present'})
-    for mp in json.loads(model.mp_kvor):
-        members.append({'person': getPersonData(mp), 'option': 'abstain'})
 
     tmp_data = model.pgs_data
     orgs_data = {}
+    pg_outliers = {}
     for org in tmp_data:
         org_obj = Organization.objects.get(id_parladata=int(org))
         if org_obj.classification == 'poslanska skupina':
             orgs_data[org] = json.loads(tmp_data[org])
             orgs_data[org]['party'] = org_obj.getOrganizationData()
+            if orgs_data[org]['outliers']:
+                pg_outliers[int(org)] = orgs_data[org]['outliers']
 
     orgs_data = sorted(orgs_data.values(), key=lambda party: sum(party['votes'].values()), reverse=True)
+
+    members = []
+    for option, members_ids in [('for', json.loads(model.mp_yes)),
+                            ('against', json.loads(model.mp_no)),
+                            ('not_present', json.loads(model.mp_np)),
+                            ('abstain', json.loads(model.mp_kvor))]:
+        for mp in members_ids:
+            personData = getPersonData(mp)
+            # set if person is outlier
+            outlier = False
+            if personData['party']['id'] in pg_outliers.keys():
+                if option in pg_outliers[personData['party']['id']]:
+                    outlier = True
+            members.append({'person': personData,
+                            'option': option,
+                            'is_outlier': outlier})
 
     out = {'id': motion_id,
            'session': model.session.getSessionData(),
@@ -1487,9 +1506,9 @@ def getLastSessionLanding(request, date_=None):
     }
     """
     if date_:
-        fdate = datetime.strptime(date_, API_DATE_FORMAT).date()
+        fdate = datetime.datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
-        fdate = datetime.now().today()
+        fdate = datetime.datetime.now().today()
     ready = False
     presences = PresenceOfPG.objects.filter(created_for__lte=fdate).order_by("-created_for")
     if not presences:
@@ -1765,10 +1784,10 @@ def getSessionsList(request, date_=None, force_render=False):
     DZ = 95
     working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
     if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
+        date_of = datetime.datetime.strptime(date_, API_DATE_FORMAT).date()
         key = date_
     else:
-        date_of = datetime.now().date()
+        date_of = datetime.datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
         key = date_
 
@@ -1822,7 +1841,7 @@ def getSessionsList(request, date_=None, force_render=False):
 def setTFIDF(request, session_id):
     """Stores TFIDF analysis.
     """
-    date_of = datetime.now().date()
+    date_of = datetime.datetime.now().date()
     url = "https://isci.parlameter.si/tfidf/s/" + str(session_id)
     data = tryHard(url).json()
     session = Session.objects.get(id_parladata=session_id)
@@ -1920,7 +1939,7 @@ def getTFIDF(request, session_id):
             "created_at": card.created_at.strftime(API_DATE_FORMAT)
         }
     else:
-        date_of = datetime.now().date()
+        date_of = datetime.datetime.now().date()
         if Session.objects.filter(id_parladata=session_id):
             out = {
                 'session': Session.objects.get(id_parladata=session_id).getSessionData(),

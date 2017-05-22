@@ -475,7 +475,7 @@ class IntraDisunion(Timestampable, models.Model):
 
     vote = models.ForeignKey('parlaseje.Vote',
                              blank=True, null=True,
-                             related_name='VoteintraDisunion',
+                             related_name='vote_intradisunion',
                              help_text=_('Vote'))
 
     maximum = models.CharField(_('Maximum'),

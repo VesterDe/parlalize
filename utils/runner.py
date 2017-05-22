@@ -18,7 +18,7 @@ from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, Prese
 from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 from utils.recache import updatePagesS
-from utils.imports import update, updateDistricts
+from utils.imports import update, updateDistricts, updateTags
 from utils.votes_outliers import setMotionAnalize, setOutliers
 
 from .votes import VotesAnalysis

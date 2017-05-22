@@ -90,18 +90,34 @@ def setMotionAnalize(session_id):
     all_votes['coal'] = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'coal'), axis=1)
     all_votes['oppo'] = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getOptions(row, 'oppo'), axis=1)
 
-    parties = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getOptions(row, 'ps'), axis=1)
+    parties = data.groupby(['vote_id',
+                            'voterparty']).sum().apply(lambda row: getOptions(row,
+                                                                              'ps'), axis=1)
+
+    partyBallots = data.groupby(['vote_id',
+                                 'voterparty']).sum().apply(lambda row: getPartyBallot(row), axis=1)
 
     partyIntryDisunion = data.groupby(['vote_id', 'voterparty']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    # TODO: create save-ing for coalInter, oppoInter
+    coalInterCalc = data[data.is_coalition == 1].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    oppoInterCalc = data[data.is_coalition == 0].groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+    allInter = data.groupby(['vote_id']).sum().apply(lambda row: getIntraDisunion(row), axis=1)
+
+    opozition = Organization.objects.get(name="Opozicija")
+    coalition = Organization.objects.get(name="Koalicija")
 
     for vote_id in all_votes.index.values:
         vote = Vote.objects.get(id_parladata=vote_id)
         vote_a = Vote_analysis.objects.filter(vote__id_parladata=vote_id)
+
         party_data = {}
+        has_outliers = False
         for party in parties[vote_id].keys():
             # save just parlimetary groups
             if party in paries_ids:
                 party_data[party] = parties[vote_id][party]
+                if json.loads(party_data[party])['outliers']:
+                    has_outliers = True
                 # update/add IntraDisunion
                 intra = IntraDisunion.objects.filter(organization__id_parladata=party,
                                                      vote=vote)
@@ -113,6 +129,44 @@ def setMotionAnalize(session_id):
                                   vote=vote,
                                   maximum=partyIntryDisunion[vote_id][party]
                                   ).save()
+                # save org Ballot
+                options = json.loads(partyBallots[vote_id][party])
+                for option in options:
+                    # if ballot doesn't exist then create it
+                    if not Ballot.objects.filter(org_voter__id_parladata=party,
+                                                 vote__id_parladata=vote_id,
+                                                 option=option):
+                        org = Organization.objects.get(id_parladata=party)
+                        Ballot(vote=vote,
+                               org_voter=org,
+                               option=option,
+                               start_time=vote.start_time,
+                               session=vote.session).save()
+
+        opoIntra = IntraDisunion.objects.filter(organization=opozition,
+                                                vote=vote)
+        coalIntra = IntraDisunion.objects.filter(organization=coalition,
+                                                 vote=vote)
+
+        if opoIntra:
+            opoIntra.update(maximum=oppoInterCalc[vote_id])
+        else:
+            IntraDisunion(organization=opozition,
+                          vote=vote,
+                          maximum=oppoInterCalc[vote_id]
+                          ).save()
+
+        if coalIntra:
+            coalIntra.update(maximum=coalInterCalc[vote_id])
+        else:
+            IntraDisunion(organization=coalition,
+                          vote=vote,
+                          maximum=coalInterCalc[vote_id]
+                          ).save()
+
+        vote.has_outlier_voters = has_outliers
+        vote.intra_disunion = allInter[vote_id]
+        vote.save()
         print all_votes.loc[vote_id, 'pg_za']
         if vote_a:
             vote_a.update(votes_for=all_votes.loc[vote_id, 'option_za'],
@@ -177,6 +231,21 @@ def getPGsList(row, proti):
         return json.dumps({})
 
 
+def getPartyBallot(row):
+    """
+    using for set ballot of party:
+
+    methodology: ignore not_present
+    """
+    stats = {'za': row['option_za'],
+             'proti': row['option_proti'],
+             'kvorum': row['option_kvorum']}
+    if max(stats.values()) == 0:
+        return '[]'
+    max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
+    return json.dumps(max_ids)
+
+
 def getIntraDisunion(row):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
@@ -210,8 +279,10 @@ def getOptions(row, side):
 
     outliers = []
     if side == 'oppo':
-        if max_vote != 'not_present':
-            outliers = [opt for opt in ['for', 'against'] if stats[opt]]
+        # if side is oppozition don't show outliers
+        pass
+        #if max_vote != 'not_present':
+        #    outliers = [opt for opt in ['for', 'against'] if stats[opt]]
     else:
         if max_vote != 'not_present':
             outliers = [opt for opt in ['abstain', 'for', 'against'] if stats[opt]]

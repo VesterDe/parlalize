@@ -264,6 +264,12 @@ class Vote(Timestampable, models.Model):
     is_outlier = models.NullBooleanField(default=False,
                                          help_text='is outlier')
 
+    has_outlier_voters = models.NullBooleanField(default=False,
+                                                 help_text='has outlier voters')
+
+    intra_disunion = models.FloatField(default=0.0,
+                                       help_text='intra disunion for all members')
+
 
 class VoteDetailed(Timestampable, models.Model):
     """Model of votes with data, how each MP and PG voted."""
@@ -419,3 +425,16 @@ class Tfidf(Timestampable, models.Model):
 
     def __str__(self):
         return unicode(self.session.name) + " --> " + unicode(self.session.organization.name)
+
+
+class Tag(models.Model):
+    """All tags of votes."""
+
+    id_parladata = models.IntegerField(_('parladata id'),
+                                       blank=True,
+                                       null=True,
+                                       help_text=_('id parladata'))
+
+    name = models.TextField(blank=True,
+                            null=True,
+                            help_text=_('tag name'))
