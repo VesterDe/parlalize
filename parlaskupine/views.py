@@ -1587,8 +1587,8 @@ def getIntraDisunion(request):
                 ob = votesData[vote.id_parladata].copy()
                 ob['maximum'] = intra.maximum
                 ob['organization'] = intra.organization.getOrganizationData()
+                ob['organization']['vote'] = []             
                 out[intra.organization.acronym] = ob
-                ob['organization']['vote'] = []
         out['DZ'] = {"organization": 'dz',
                      'text':vote.motion,
                      'result':vote.result,
