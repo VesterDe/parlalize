@@ -1588,13 +1588,14 @@ def getIntraDisunion(request):
                 ob['maximum'] = intra.maximum
                 ob['organization'] = intra.organization.getOrganizationData()
                 out[intra.organization.acronym] = ob
+                ob['organization']['vote'] = []
         out['DZ'] = {"organization": 'dz',
                      'text':vote.motion,
                      'result':vote.result,
                      'date':vote.start_time,
                      'tag':vote.tags,
                      'maximum':vote.intra_disunion}
-    return JsonResponse({'contacts': out}, safe=False)
+    return JsonResponse(out, safe=False)
 
 
 def getIntraDisunionOrg(request, org_id):
@@ -1622,4 +1623,4 @@ def getIntraDisunionOrg(request, org_id):
                 ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
                 out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
-    return JsonResponse({'contacts': out}, safe=False)
+    return JsonResponse(out, safe=False)
