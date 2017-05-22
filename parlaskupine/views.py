@@ -1564,7 +1564,7 @@ def getIntraDisunion(request):
     tab = []
     ob =  {}
     obs =  {}
-    votee = Vote.objects.all().order_by('-start_time')
+    votee = Vote.objects.all().order_by('start_time')
     paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
     try:
@@ -1611,6 +1611,7 @@ def getIntraDisunionOrg(request, org_id):
     out = {}
     votesData = {}
     ob = {}
+    obj = {}
     votee = Vote.objects.all().order_by('start_time')
     paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
@@ -1629,8 +1630,10 @@ def getIntraDisunionOrg(request, org_id):
     for vote in votespag:
         intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
         for intra in intraD:
-                ob['votes'] = votesData[vote.id_parladata].copy()
-                ob['votes']['maximum'] = intraD.maximum
+                obj = votesData[vote.id_parladata].copy()
+                obj['maximum'] = intra.maximum
+                ob['votes'] = []
+                ob['votes'].append(obj)
                 ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
                 out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
