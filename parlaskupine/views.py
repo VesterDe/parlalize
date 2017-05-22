@@ -1577,24 +1577,23 @@ def getIntraDisunion(request):
                                         'date':vote.start_time,
                                         'tag':vote.tags}
     for vote in votespag:
-        intraD = vote.VoteintraDisunion.all()
-        if len(intraD) != 0:
-            for intra in intraD:
-                if intra.organization.acronym in out.keys():
-                    obs = votesData[vote.id_parladata].copy()
-                    obs['maximum'] = intra.maximum
-                    out[intra.organization.acronym]['vote'].append(obs)
-                else:
-                    ob = votesData[vote.id_parladata].copy()
-                    ob['maximum'] = intra.maximum
-                    ob['organization'] = intra.organization.getOrganizationData()
-                    out[intra.organization.acronym] = ob
-            out['DZ'] = {"organization": 'dz',
-                         'text':vote.motion,
-                         'result':vote.result,
-                         'date':vote.start_time,
-                         'tag':vote.tags,
-                         'maximum':vote.intra_disunion}
+        intraD = vote.vote_intradisunion.all()
+        for intra in intraD:
+            if intra.organization.acronym in out.keys():
+                obs = votesData[vote.id_parladata].copy()
+                obs['maximum'] = intra.maximum
+                out[intra.organization.acronym]['vote'].append(obs)
+            else:
+                ob = votesData[vote.id_parladata].copy()
+                ob['maximum'] = intra.maximum
+                ob['organization'] = intra.organization.getOrganizationData()
+                out[intra.organization.acronym] = ob
+        out['DZ'] = {"organization": 'dz',
+                     'text':vote.motion,
+                     'result':vote.result,
+                     'date':vote.start_time,
+                     'tag':vote.tags,
+                     'maximum':vote.intra_disunion}
     return JsonResponse({'contacts': out}, safe=False)
 
 
