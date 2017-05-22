@@ -1595,7 +1595,7 @@ def getIntraDisunion(request):
                      'date':vote.start_time,
                      'tag':vote.tags,
                      'maximum':vote.intra_disunion}
-    return JsonResponse(organizationut, safe=False)
+    return JsonResponse(out, safe=False)
 
 
 def getIntraDisunionOrg(request, org_id):
