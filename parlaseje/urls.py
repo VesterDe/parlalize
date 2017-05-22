@@ -30,9 +30,6 @@ urlpatterns = patterns(
     url(r'^getPresenceOfPG/(?P<session_id>\d+)', getPresenceOfPG),
     url(r'^getPresenceOfPG/(?P<session_id>\d+)/(?P<date>[\w].+)', getPresenceOfPG),
 
-    url(r'^getMinSpeechesOnSession/', getMinSpeechesOnSession),
-    url(r'^getMaxSpeechesOnSession/', getMaxSpeechesOnSession),
-
     url(r'^getQuote/(?P<quote_id>\d+)', getQuote),
 
     url(r'^getTFIDF/(?P<session_id>\d+)', getTFIDF),
