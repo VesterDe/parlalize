@@ -1564,6 +1564,7 @@ def getIntraDisunion(request):
     tab = []
     ob =  {}
     obs =  {}
+    dataOut =  {}
     paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
     page = request.GET.get('page', 1)
     try:
@@ -1604,9 +1605,9 @@ def getIntraDisunion(request):
 
     out['DZ'] = {'organization': 'dz',
                  'votes': tab}
-
-    out['tags'] = list(Tag.objects.all().values_list('name', flat=True))
-    return JsonResponse(out, safe=False)
+    dataOut['results'] = out
+    dataOut['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
+    return JsonResponse(dataOut, safe=False)
 
 
 def getIntraDisunionOrg(request, org_id):
@@ -1614,8 +1615,8 @@ def getIntraDisunionOrg(request, org_id):
     votesData = {}
     ob = {}
     obj = {}
-    votee = Vote.objects.all().order_by('start_time')
-    paginator = Paginator(votee, 50)                                    
+    ob['votes'] = []
+    paginator = Paginator(Vote.objects.all().order_by('-start_time'), 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1632,11 +1633,10 @@ def getIntraDisunionOrg(request, org_id):
     for vote in votespag:
         intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
         for intra in intraD:
-                obj = votesData[vote.id_parladata].copy()
-                obj['maximum'] = intra.maximum
-                ob['votes'] = []
-                ob['votes'].append(obj)
-                ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
-                out[Organization.objects.get(id_parladata=org_id).acronym] = ob
+            obj = votesData[vote.id_parladata].copy()
+            obj['maximum'] = intra.maximum
+            ob['votes'].append(obj)
+            ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
+        out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
     return JsonResponse(out, safe=False)
