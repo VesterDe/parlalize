@@ -221,7 +221,11 @@ def getMPsList(row, proti):
     try:
         return json.dumps(list(proti[row.name].reset_index()['voter']))
     except:
-        return json.dumps([])
+        try:
+            # fix if session has one vote
+            return json.dumps(list(proti.values[0]))
+        except:
+            json.dumps([])
 
 
 def getPGsList(row, proti):
