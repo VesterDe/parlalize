@@ -1565,22 +1565,23 @@ def getIntraDisunion(request):
     ob =  {}
     obs =  {}
     dataOut =  {}
-    paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
-    page = request.GET.get('page', 1)
+    #paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
+    votespag = Vote.objects.all().order_by('start_time')                                 
+    '''page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
     except PageNotAnInteger:
         votespag = paginator.page(1)
     except EmptyPage:
         votespag = paginator.page(paginator.num_pages)
-
+    '''
     for vote in votespag:
         votesData[vote.id_parladata] = {'text':vote.motion,
                                         'result':vote.result,
                                         'date':vote.start_time,
                                         'tag':vote.tags,
                                         'id_parladata':vote.id_parladata}
-
+    
     for vote in votespag:
         intraD = vote.vote_intradisunion.all()
         for intra in intraD:
@@ -1616,7 +1617,9 @@ def getIntraDisunionOrg(request, org_id):
     ob = {}
     obj = {}
     ob['votes'] = []
-    paginator = Paginator(Vote.objects.all().order_by('-start_time'), 50)                                    
+    #paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
+    votespag = Vote.objects.all().order_by('start_time')                                
+    '''
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1624,6 +1627,7 @@ def getIntraDisunionOrg(request, org_id):
         votespag = paginator.page(1)
     except EmptyPage:
         votespag = paginator.page(paginator.num_pages)
+    '''
     for vote in votespag:
         votesData[vote.id_parladata] = {'text':vote.motion,
                                         'result':vote.result,
