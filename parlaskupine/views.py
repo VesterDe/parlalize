@@ -1564,8 +1564,7 @@ def getIntraDisunion(request):
     tab = []
     ob =  {}
     obs =  {}
-    votee = Vote.objects.all().order_by('-start_time')
-    paginator = Paginator(votee, 50)                                    
+    paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
     page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
@@ -1580,6 +1579,7 @@ def getIntraDisunion(request):
                                         'date':vote.start_time,
                                         'tag':vote.tags,
                                         'id_parladata':vote.id_parladata}
+
     for vote in votespag:
         intraD = vote.vote_intradisunion.all()
         for intra in intraD:
@@ -1594,7 +1594,7 @@ def getIntraDisunion(request):
                 ob['votes'] = []
                 ob['votes'].append(obj)
                 out[intra.organization.acronym] = ob
-                
+                ob = {}
         tab.append({'text':vote.motion,
                     'result':vote.result,
                     'date':vote.start_time,
@@ -1604,6 +1604,8 @@ def getIntraDisunion(request):
 
     out['DZ'] = {'organization': 'dz',
                  'votes': tab}
+
+    out['tags'] = list(Tag.objects.all().values_list('name', flat=True))
     return JsonResponse(out, safe=False)
 
 
@@ -1611,6 +1613,7 @@ def getIntraDisunionOrg(request, org_id):
     out = {}
     votesData = {}
     ob = {}
+    obj = {}
     votee = Vote.objects.all().order_by('start_time')
     paginator = Paginator(votee, 50)                                    
     page = request.GET.get('page', 1)
@@ -1629,8 +1632,10 @@ def getIntraDisunionOrg(request, org_id):
     for vote in votespag:
         intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
         for intra in intraD:
-                ob['votes'] = votesData[vote.id_parladata].copy()
-                ob['votes']['maximum'] = intraD.maximum
+                obj = votesData[vote.id_parladata].copy()
+                obj['maximum'] = intra.maximum
+                ob['votes'] = []
+                ob['votes'].append(obj)
                 ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
                 out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
