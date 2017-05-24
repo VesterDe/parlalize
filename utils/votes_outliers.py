@@ -38,8 +38,9 @@ def setOutliers():
     return 'finished'
 
 
-def setMotionAnalize(session_id):
+def setMotionAnalize(request, session_id):
     """
+    request argument is here just because runner put 2 arguments in setter
     setMotionAnalyze
     setIntraDisunion
     """
