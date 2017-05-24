@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
-#from parlaposlanci.models import *
 from jsonfield import JSONField
 from behaviors.models import Timestampable, Versionable
-from parlalize.settings import API_URL, API_DATE_FORMAT, API_OUT_DATE_FORMAT
-from parlaskupine.models import Organization
+from parlalize.settings import API_OUT_DATE_FORMAT
+import datetime
 
-# converting datetime to popolo
+
 class PopoloDateTimeField(models.DateTimeField):
+    """Converting datetime to popolo."""
 
     def get_popolo_value(self, value):
         return str(datetime.strftime(value, '%Y-%m-%d'))
 
-# Create your models here.
 
-# @python_2_unicode_compatible
-class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz etc.
+class Session(Timestampable, models.Model):
+    """Model of all sessions that happened in parliament, copied from parladata."""
 
     name = models.CharField(_('name'),
                             blank=True, null=True,
@@ -26,13 +24,11 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                             help_text=_('Session name'))
 
     date = PopoloDateTimeField(_('date of session'),
-                               blank=True,
-                               null=True,
+                               blank=True, null=True,
                                help_text=_('date of session'))
 
     id_parladata = models.IntegerField(_('parladata id'),
-                                       blank=True,
-                                       null=True,
+                                       blank=True, null=True,
                                        help_text=_('id parladata'))
 
     mandate = models.CharField(_('mandate name'),
@@ -63,8 +59,7 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                                       help_text='Session classification')
 
     actived = models.CharField(_('actived'),
-                               null=True,
-                               blank=True,
+                               null=True, blank=True,
                                max_length=128,
                                help_text=_('Yes if PG is actived or no if it is not'))
 
@@ -73,8 +68,7 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
                                       blank=True, null=True,
                                       help_text=_('An organization category, e.g. committee'))
 
-    gov_id = models.TextField(blank=True,
-                              null=True,
+    gov_id = models.TextField(blank=True, null=True,
                               help_text='Gov website ID.')
 
     in_review = models.BooleanField(default=False,
@@ -108,9 +102,10 @@ class Session(Timestampable, models.Model): # poslanec, minister, predsednik dz 
 
 
 class Activity(Timestampable, models.Model):
+    """All activities of MP."""
+
     id_parladata = models.IntegerField(_('parladata id'),
-                                       blank=True,
-                                       null=True,
+                                       blank=True, null=True,
                                        help_text=_('id parladata'))
 
     session = models.ForeignKey('Session',
@@ -138,13 +133,17 @@ class Activity(Timestampable, models.Model):
 
 
 class Speech(Versionable, Activity):
-    content = models.TextField(help_text='Words spoken')
+    """Model of all speeches in parlament."""
+
+    content = models.TextField(blank=True, null=True,
+                               help_text='Words spoken')
+
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of speech')
+
     organization = models.ForeignKey('parlaskupine.Organization',
-                                     blank=True,
-                                     null=True,
-                                     help_text=_('Organization'))
+                                     blank=True, null=True,
+                                     help_text='Organization')
 
     def __init__(self, *args, **kwargs):
         super(Activity, self).__init__(*args, **kwargs)
@@ -155,23 +154,26 @@ class Speech(Versionable, Activity):
 
 
 class Question(Activity):
+    """Model of MP questions to the government."""
+
     content_link = models.URLField(help_text='Words spoken',
                                    max_length=350,
-                                   blank=True,
-                                   null=True,)
-    title = models.TextField(help_text='Words spoken')
-    recipient_persons = models.ManyToManyField('parlaposlanci.Person',
-                                              blank=True,
-                                              null=True,
-                                              help_text='Recipient persons (if it\'s a person).',
-                                              related_name='questions')
-    recipient_organizations = models.ManyToManyField('parlaskupine.Organization',
-                                                    blank=True,
-                                                    null=True,
-                                                    help_text='Recipient organizations (if it\'s an organization).',
-                                                    related_name='questions_org')
-    recipient_text = models.TextField(blank=True,
-                                      null=True,
+                                   blank=True, null=True)
+
+    title = models.TextField(blank=True, null=True,
+                             help_text='Words spoken')
+
+    recipient_person = models.ForeignKey('parlaposlanci.Person',
+                                         blank=True, null=True,
+                                         help_text='Recipient person (if it\'s a person).',
+                                         related_name='questions')
+
+    recipient_organization = models.ForeignKey('parlaskupine.Organization',
+                                               blank=True, null=True,
+                                               help_text='Recipient organization (if it\'s an organization).',
+                                               related_name='questions_org')
+
+    recipient_text = models.TextField(blank=True, null=True,
                                       help_text='Recipient name as written on dz-rs.si')
 
     def getQuestionData(self):
@@ -192,6 +194,8 @@ class Question(Activity):
 
 
 class Ballot(Activity):
+    """Model of all ballots"""
+
     vote = models.ForeignKey('Vote',
                              blank=True, null=True,
                              related_name='vote',
@@ -211,9 +215,12 @@ class Ballot(Activity):
 
 
 class Vote(Timestampable, models.Model):
+    """Model of all votes that happend on specific sessions,
+       with number of votes for, against, abstain and not present.
+    """
+
     created_for = models.DateField(_('date of vote'),
-                                   blank=True,
-                                   null=True,
+                                   blank=True, null=True,
                                    help_text=_('date of vote'))
 
     session = models.ForeignKey('Session',
@@ -221,37 +228,30 @@ class Vote(Timestampable, models.Model):
                                 related_name='in_session',
                                 help_text=_('Session '))
 
-    motion = models.TextField(blank=True,
-                              null=True,
+    motion = models.TextField(blank=True, null=True,
                               help_text='The motion for which the vote took place')
 
-    tags = JSONField(blank=True,
-                     null=True)
 
-    votes_for = models.IntegerField(blank=True,
-                                    null=True,
+    tags = JSONField(blank=True, null=True)
+
+    votes_for = models.IntegerField(blank=True, null=True,
                                     help_text='Number of votes for')
 
-    against = models.IntegerField(blank=True,
-                                  null=True,
+    against = models.IntegerField(blank=True, null=True,
                                   help_text='Number votes againt')
 
-    abstain = models.IntegerField(blank=True,
-                                  null=True,
+    abstain = models.IntegerField(blank=True, null=True,
                                   help_text='Number votes abstain')
 
-    not_present = models.IntegerField(blank=True,
-                                      null=True,
+    not_present = models.IntegerField(blank=True, null=True,
                                       help_text='Number of MPs that warent on the session')
 
-    result = models.NullBooleanField(blank=True,
-                                     null=True,
+    result = models.NullBooleanField(blank=True, null=True,
                                      default=False,
                                      help_text='The result of the vote')
 
     id_parladata = models.IntegerField(_('parladata id'),
-                                       blank=True,
-                                       null=True,
+                                       blank=True, null=True,
                                        help_text=_('id parladata'))
 
     document_url = JSONField(blank=True,
@@ -271,41 +271,41 @@ class Vote(Timestampable, models.Model):
                                        help_text='intra disunion for all members')
 
 
-class Vote_graph(Timestampable, models.Model):
+class VoteDetailed(Timestampable, models.Model):
+    """Model of votes with data, how each MP and PG voted."""
 
     motion = models.TextField(blank=True, null=True,
                               help_text='The motion for which the vote took place')
 
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name='in_session_for_VG',
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name='in_session_for_VG',
+                                help_text=_('Session '))
 
     vote = models.ForeignKey('Vote',
-                               blank=True, null=True,
-                               related_name='vote_of_graph',
-                               help_text=_('Vote'))
+                             blank=True, null=True,
+                             related_name='vote_of_graph',
+                             help_text=_('Vote'))
 
     created_for = models.DateField(_('date of vote'),
-                                    blank=True,
-                                    null=True,
-                                    help_text=_('date of vote'))
+                                   blank=True, null=True,
+                                   help_text=_('date of vote'))
 
     votes_for = models.IntegerField(blank=True, null=True,
-                                   help_text='Number of votes for')
+                                    help_text='Number of votes for')
 
     against = models.IntegerField(blank=True, null=True,
-                                   help_text='Number votes againt')
+                                  help_text='Number votes againt')
 
     abstain = models.IntegerField(blank=True, null=True,
-                                   help_text='Number votes abstain')
+                                  help_text='Number votes abstain')
 
     not_present = models.IntegerField(blank=True, null=True,
-                                   help_text='Number of MPs that warent on the session')
+                                      help_text='Number of MPs that warent on the session')
 
     result = models.NullBooleanField(blank=True, null=True,
-                              default=False,
-                              help_text='The result of the vote')
+                                     default=False,
+                                     help_text='The result of the vote')
 
     pgs_yes = JSONField(blank=True, null=True)
     pgs_no = JSONField(blank=True, null=True)
@@ -359,62 +359,59 @@ class Vote_analysis(Timestampable, models.Model):
 
 
 class AbsentMPs(Timestampable, models.Model):
+    """Model for analysis absent MPs on session."""
 
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name='session_absent',
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name='session_absent',
+                                help_text=_('Session '))
 
     absentMPs = JSONField(blank=True, null=True)
 
     created_for = models.DateField(_('date of vote'),
-                                    blank=True,
-                                    null=True,
-                                    help_text=_('date of vote'))
+                                   blank=True, null=True,
+                                   help_text=_('date of vote'))
 
 
 class Quote(Timestampable, models.Model):
+    """Model for quoted text from speeches."""
+
     quoted_text = models.TextField(_('quoted text'),
-                                    blank=True,
-                                    null=True,
-                                    help_text=_('text quoted in a speech'))
+                                   blank=True, null=True,
+                                   help_text=_('text quoted in a speech'))
 
-    speech = models.ForeignKey('Speech', help_text=_('the speech that is being quoted'))
+    speech = models.ForeignKey('Speech',
+                               help_text=_('the speech that is being quoted'))
 
-    first_char = models.IntegerField(blank=True, null=True, help_text=_('index of first character of quote string'))
+    first_char = models.IntegerField(blank=True, null=True,
+                                     help_text=_('index of first character of quote string'))
 
-    last_char = models.IntegerField(blank=True, null=True, help_text=_('index of last character of quote string'))
+    last_char = models.IntegerField(blank=True, null=True,
+                                    help_text=_('index of last character of quote string'))
 
 
 class PresenceOfPG(Timestampable, models.Model):
+    """Model for analysis presence of PG on session."""
+
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name='session_presence',
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name='session_presence',
+                                help_text=_('Session '))
 
     presence = JSONField(blank=True, null=True)
 
     created_for = models.DateField(_('date of activity'),
-                                   blank=True,
-                                   null=True,
-                                   help_text=_('date of analize'))
-
-
-class AverageSpeeches(Timestampable, models.Model):
-
-    speechesOnSession = JSONField(blank=True, null=True)
-
-    created_for = models.DateField(_('date of activity'),
-                                   blank=True,
-                                   null=True,
+                                   blank=True, null=True,
                                    help_text=_('date of analize'))
 
 
 class Tfidf(Timestampable, models.Model):
+    """Model for analysis TFIDF."""
+
     session = models.ForeignKey('Session',
-                               blank=True, null=True,
-                               related_name='tfidf',
-                               help_text=_('Session '))
+                                blank=True, null=True,
+                                related_name='tfidf',
+                                help_text=_('Session '))
 
     created_for = models.DateField(_('date of activity'),
                                    blank=True,
@@ -431,6 +428,8 @@ class Tfidf(Timestampable, models.Model):
 
 
 class Tag(models.Model):
+    """All tags of votes."""
+
     id_parladata = models.IntegerField(_('parladata id'),
                                        blank=True,
                                        null=True,
