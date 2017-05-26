@@ -57,4 +57,6 @@ urlpatterns = patterns(
     url(r'^getSessionsList/', getSessionsList),
 
     url(r'^getWorkingBodies/', getWorkingBodies),
+
+    url(r'^getComparedVotes/', getComparedVotes),
 )
