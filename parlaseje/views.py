@@ -4,7 +4,7 @@ from datetime import datetime
 from parlalize.utils import *
 import requests
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from parlaseje.models import *
 from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
 from parlaseje.utils import *
@@ -13,7 +13,7 @@ from math import fabs
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 import re
-from django.db.models import Q
+from django.db.models import Q, F
 from django.core.cache import cache
 
 from parlalize.utils import tryHard
@@ -913,3 +913,340 @@ def getWorkingBodies(request):
     for org in orgs:
         data.append({'id': org.id_parladata, 'name': org.name})
     return JsonResponse(data, safe=False)
+
+def getComparedVotes(request):
+    people_same = request.GET.get('people_same')
+    parties_same = request.GET.get('parties_same')
+    people_different = request.GET.get('people_different')
+    parties_different = request.GET.get('parties_different')
+
+    if people_same != '':
+        people_same_list = people_same.split(',')
+    else:
+        people_same_list = []
+    if parties_same != '':
+        parties_same_list = parties_same.split(',')
+    else:
+        parties_same_list = []
+    
+    if people_different != '':
+        people_different_list = people_different.split(',')
+    else:
+        people_different_list = []
+    if parties_different != '':
+        parties_different_list = parties_different.split(',')
+    else:
+        parties_different_list = []
+    
+    if len(people_same_list) + len(parties_same_list) == 0:
+        return HttpResponse('Need at least one same to compare.')
+    if len(people_same_list) + len(parties_same_list) < 2 and len(people_different_list) + len(parties_different_list) < 1:
+        return HttpResponse('Not enough to compare.')
+
+    beginning = 'SELECT * FROM '
+    select_same_people = ''
+    select_same_parties = ''
+    
+    match_same_people_ballots = ''
+    match_same_people_persons = ''
+    match_same_people_options = ''
+
+    match_same_parties_ballots = ''
+    match_same_parties_organizations = ''
+    match_same_parties_options = ''
+
+    select_different_people = ''
+    select_different_parties = ''
+    
+    match_different_people_ballots = ''
+    match_different_people_persons = ''
+    match_different_people_options = ''
+
+    match_different_parties_ballots = ''
+    match_different_parties_organizations = ''
+    match_different_parties_options = ''
+
+    # select for same people DONE
+    for i, e in enumerate(people_same_list):
+        if i < len(people_same_list) - 1:
+            select_same_people = '%s parlaseje_ballot b%s, parlaseje_activity a%s, parlaposlanci_person p%s, ' % (select_same_people, str(i), str(i), str(i))
+        else:
+            select_same_people = '%s parlaseje_ballot b%s, parlaseje_activity a%s, parlaposlanci_person p%s' % (select_same_people, str(i), str(i), str(i))
+    
+    # select for same parties DONE
+    for i, e in enumerate(parties_same_list):
+        if i < len(parties_same_list) - 1:
+            select_same_parties = '%s parlaseje_ballot pb%s, parlaskupine_organization o%s, ' % (select_same_parties, str(i), str(i))
+        else:
+            select_same_parties = '%s parlaseje_ballot pb%s, parlaskupine_organization o%s' % (select_same_parties, str(i), str(i))
+
+    # select for different people DONE
+    for i, e in enumerate(people_different_list):
+        if i < len(people_different_list) - 1:
+            select_different_people = '%s parlaseje_ballot db%s, parlaseje_activity da%s, parlaposlanci_person dp%s, ' % (select_different_people, str(i), str(i), str(i))
+        else:
+            select_different_people = '%s parlaseje_ballot db%s, parlaseje_activity da%s, parlaposlanci_person dp%s' % (select_different_people, str(i), str(i), str(i))
+    
+    # select for different parties DONE
+    for i, e in enumerate(parties_different_list):
+        if i < len(parties_different_list) - 1:
+            select_different_parties = '%s parlaseje_ballot dpb%s, parlaskupine_organization do%s, ' % (select_different_parties, str(i), str(i))
+        else:
+            select_different_parties = '%s parlaseje_ballot dpb%s, parlaskupine_organization do%s' % (select_different_parties, str(i), str(i))
+
+    # match same people ballots by vote id DONE?
+    # if only one person was passed, match_same_people_ballots will remain an empty string
+    for i, e in enumerate(people_same_list):
+        if i != 0:
+            if i < len(people_same_list) - 1:
+                match_same_people_ballots = '%s b0.vote_id = b%s.vote_id AND ' % (match_same_people_ballots, str(i))
+            else:
+                match_same_people_ballots = '%s b0.vote_id = b%s.vote_id' % (match_same_people_ballots, str(i))
+    
+    # match same parties ballots by vote id DONE?
+    # if only one same party was passed match_same_parties_ballots will remain an empty string
+    if len(people_same_list) == 0:
+        # no same people were passed to the API
+        pass
+        if len(parties_same_list) == 0:
+            # no same parties were passed
+            return HttpResponse('You need to pass at least one "same" person or party.')
+        elif len(parties_same_list) == 1:
+            # only one same party was passed, there is nothing to match yet
+            match_same_parties_ballots = ''
+        else:
+            # more than one same party was passed
+            for i, e in enumerate(parties_same_list):
+                if i != 0:
+                    # ignore the first one, because all others will be compared with it
+                    if i < len(parties_same_list) - 1:
+                        # not last
+                        match_same_parties_ballots = '%s pb0.vote_id = pb%s.vote_id AND ' % (match_same_parties_ballots, str(i))
+                    else:
+                        # last
+                        match_same_parties_ballots = '%s pb0.vote_id = pb%s.vote_id' % (match_same_parties_ballots, str(i))
+    elif len(people_same_list) > 0:
+        # one or more same people were passed
+        for i, e in enumerate(parties_same_list):
+            # do not ignore the first one, because all will be compared to the first person ballot
+            if i < len(parties_same_list) - 1:
+                # not last
+                match_same_parties_ballots = '%s b0.vote_id = pb%s.vote_id AND ' % (match_same_parties_ballots, str(i))
+            else:
+                # last
+                match_same_parties_ballots = '%s b0.vote_id = pb%s.vote_id' % (match_same_parties_ballots, str(i))
+    
+    
+
+    # match same people with persons DONE
+    for i, e in enumerate(people_same_list):
+        if i < len(people_same_list) - 1:
+            match_same_people_persons = '%s b%s.activity_ptr_id = a%s.id AND a%s.person_id = p%s.id AND p%s.id_parladata = %s AND ' % (match_same_people_persons, str(i), str(i), str(i), str(i), str(i), e)
+        else:
+            match_same_people_persons = '%s b%s.activity_ptr_id = a%s.id AND a%s.person_id = p%s.id AND p%s.id_parladata = %s' % (match_same_people_persons, str(i), str(i), str(i), str(i), str(i), e)
+    
+    # match same parties with organizations DONE?
+    for i, e in enumerate(parties_same_list):
+        if i < len(parties_same_list) -1:
+            match_same_parties_organizations = '%s pb%s.org_voter_id = o%s.id AND o%s.id_parladata = %s AND ' % (match_same_parties_organizations, str(i), str(i), str(i), e)
+        else:
+            match_same_parties_organizations = '%s pb%s.org_voter_id = o%s.id AND o%s.id_parladata = %s' % (match_same_parties_organizations, str(i), str(i), str(i), e)
+
+    # match same people based on options DONE?
+    for i, e in enumerate(people_same_list):
+        if i != 0:
+            if i != len(people_same_list) - 1:
+                match_same_people_options = '%s b0.option = b%s.option AND ' % (match_same_people_options, str(i))
+            else:
+                match_same_people_options = '%s b0.option = b%s.option' % (match_same_people_options, str(i))
+    
+    # match same parties based on options
+    for i, e in enumerate(parties_same_list):
+        if i == 0:
+            if select_same_people != '':
+                if len(parties_same_list) > 1:
+                    match_same_parties_options = '%s b0.option = pb0.option AND ' % (match_same_parties_options)
+                else: 
+                    match_same_parties_options = '%s b0.option = pb0.option ' % (match_same_parties_options)
+        else:
+            if i != len(parties_same_list) - 1:
+                match_same_parties_options = '%s pb0.option = pb%s.option AND ' % (match_same_parties_options, str(i))
+            else:
+                match_same_parties_options = '%s pb0.option = pb%s.option' % (match_same_parties_options, str(i))
+    
+    # compare different people and parties
+    if len(people_same_list) > 0:
+        # we compare with same people
+
+        # match different people ballots by vote id
+        for i, e in enumerate(people_different_list):
+            if i < len(people_different_list) - 1:
+                match_different_people_ballots = '%s b0.vote_id = db%s.vote_id AND ' % (match_different_people_ballots, str(i))
+            else:
+                match_different_people_ballots = '%s b0.vote_id = db%s.vote_id' % (match_different_people_ballots, str(i))
+        
+        # match different parties ballots by vote id
+        for i, e in enumerate(parties_different_list):
+            if i < len(parties_different_list) - 1:
+                match_different_parties_ballots = '%s b0.vote_id = dpb%s.vote_id AND ' % (match_different_parties_ballots, str(i))
+            else:
+                match_different_parties_ballots = '%s b0.vote_id = dpb%s.vote_id' % (match_different_parties_ballots, str(i))
+
+        # match different people based on options
+        for i, e in enumerate(people_different_list):
+            if i != len(people_different_list) - 1:
+                match_different_people_options = '%s b0.option != db%s.option AND ' % (match_different_people_options, str(i))
+            else:
+                match_different_people_options = '%s b0.option != db%s.option' % (match_different_people_options, str(i))
+        
+        # match different parties based on options
+        for i, e in enumerate(parties_different_list):
+                if i < len(parties_different_list) - 1:
+                    match_different_parties_options = '%s b0.option != dpb%s.option AND ' % (match_different_parties_options, str(i))
+                else: 
+                    match_different_parties_options = '%s b0.option != dpb%s.option ' % (match_different_parties_options, str(i))
+    
+    else:
+        # we compare with same parties
+
+        # match different people ballots by vote id
+        for i, e in enumerate(people_different_list):
+            if i < len(people_different_list) - 1:
+                match_different_people_ballots = '%s pb0.vote_id = db%s.vote_id AND ' % (match_different_people_ballots, str(i))
+            else:
+                match_different_people_ballots = '%s pb0.vote_id = db%s.vote_id' % (match_different_people_ballots, str(i))
+        
+        # match different parties ballots by vote id
+        for i, e in enumerate(parties_different_list):
+            if i < len(parties_different_list) - 1:
+                match_different_parties_ballots = '%s pb0.vote_id = dpb%s.vote_id AND ' % (match_different_parties_ballots, str(i))
+            else:
+                match_different_parties_ballots = '%s pb0.vote_id = dpb%s.vote_id' % (match_different_parties_ballots, str(i))
+
+        # match different people based on options
+        for i, e in enumerate(people_different_list):
+            if i != len(people_different_list) - 1:
+                match_different_people_options = '%s pb0.option != db%s.option AND ' % (match_different_people_options, str(i))
+            else:
+                match_different_people_options = '%s pb0.option != db%s.option' % (match_different_people_options, str(i))
+        
+        # match different parties based on options
+        for i, e in enumerate(parties_different_list):
+                if i < len(parties_different_list) - 1:
+                    match_different_parties_options = '%s pb0.option != dpb%s.option AND ' % (match_different_parties_options, str(i))
+                else: 
+                    match_different_parties_options = '%s pb0.option != dpb%s.option ' % (match_different_parties_options, str(i))
+    
+    # match different people with person
+    for i, e in enumerate(people_different_list):
+        if i < len(people_different_list) - 1:
+            match_different_people_persons = '%s db%s.activity_ptr_id = da%s.id AND da%s.person_id = dp%s.id AND dp%s.id_parladata = %s AND ' % (match_different_people_persons, str(i), str(i), str(i), str(i), str(i), e)
+        else:
+            match_different_people_persons = '%s db%s.activity_ptr_id = da%s.id AND da%s.person_id = dp%s.id AND dp%s.id_parladata = %s' % (match_different_people_persons, str(i), str(i), str(i), str(i), str(i), e)
+
+    # match different parties with organizations
+    for i, e in enumerate(parties_different_list):
+        if i < len(parties_different_list) -1:
+            match_different_parties_organizations = '%s dpb%s.org_voter_id = do%s.id AND do%s.id_parladata = %s AND ' % (match_different_parties_organizations, str(i), str(i), str(i), e)
+        else:
+            match_different_parties_organizations = '%s dpb%s.org_voter_id = do%s.id AND do%s.id_parladata = %s' % (match_different_parties_organizations, str(i), str(i), str(i), e)
+    
+    
+    
+    query = beginning
+    
+    q_selectors_list = [select_same_people, select_same_parties, select_different_people, select_different_parties]
+    q_selectors_list_clean = [s for s in q_selectors_list if s != '']
+    q_selectors = ', '.join(q_selectors_list_clean)
+    print 'q_selectors ' + q_selectors
+    
+    query = query + ' ' + q_selectors + ' WHERE'
+
+    q_match_ballots_list = [match_same_people_ballots, match_same_parties_ballots, match_different_people_ballots, match_different_parties_ballots]
+    q_match_ballots_list_clean = [s for s in q_match_ballots_list if s != '']
+    q_match_ballots = ' AND '.join(q_match_ballots_list_clean)
+    print 'q_match_ballots ' + q_match_ballots
+
+    # query = query + ' ' + q_match_ballots + ' AND'
+
+    q_match_options_list = [match_same_people_options, match_same_parties_options, match_different_people_options, match_different_parties_options]
+    q_match_options_list_clean = [s for s in q_match_options_list if s != '']
+    q_match_options = ' AND '.join(q_match_options_list_clean)
+
+    print 'q_match_options ' + q_match_options
+
+    # query = query + ' ' + q_match_options + ' AND'
+
+    q_match_persons_list = [match_same_people_persons, match_different_people_persons]
+    q_match_persons_list_clean = [s for s in q_match_persons_list if s != '']
+    q_match_persons = ' AND '.join(q_match_persons_list_clean)
+
+    print 'q_match_persons ' + q_match_persons
+
+    # query = query + ' ' + q_match_persons + ' AND'
+
+    q_match_organizations_list = [match_same_parties_organizations, match_different_parties_organizations]
+    q_match_organizations_list_clean = [s for s in q_match_organizations_list if s != '']
+    q_match_organizations = ' AND '.join(q_match_organizations_list_clean)
+
+    print 'q_match_organizations ' + q_match_organizations
+
+    # query = query + ' ' + q_match_organizations
+
+    after_where_list = [q_match_ballots, q_match_options, q_match_persons, q_match_organizations]
+    after_where_list_clean = [s for s in after_where_list if s != '']
+    after_where = ' AND '.join(after_where_list_clean)
+
+    query = query + after_where
+    
+    # return HttpResponse(query)
+    print query
+
+    print 'STATEMENT PARTS:'
+    print 'select_same_people ' + select_same_people
+    print 'select_same_parties ' + select_same_parties
+    print 'match_same_people_ballots ' + match_same_people_ballots
+    print 'match_same_people_persons ' + match_same_people_persons
+    print 'match_same_people_options ' + match_same_people_options
+    print 'match_same_parties_ballots ' + match_same_parties_ballots
+    print 'match_same_parties_organizations ' + match_same_parties_organizations
+    print 'match_same_parties_options ' + match_same_parties_options
+    print 'select_different_people ' + select_different_people
+    print 'select_different_parties ' + select_different_parties
+    print 'match_different_people_ballots ' + match_different_people_ballots
+    print 'match_different_people_persons ' + match_different_people_persons
+    print 'match_different_people_options ' + match_different_people_options
+    print 'match_different_parties_ballots ' + match_different_parties_ballots
+    print 'match_different_parties_organizations ' + match_different_parties_organizations
+    print 'match_different_parties_options ' + match_different_parties_options
+
+    ballots = Ballot.objects.raw(query)
+    session_ids = set([b.vote.session.id for b in ballots])
+    sessions = {}
+    for s in session_ids:
+        sessions[s] = Session.objects.get(id=s).getSessionData()
+
+    print '[SESSION IDS:]'
+    print set(session_ids)
+    out = {
+        'total': Vote.objects.all().count(),
+        'results': []
+    }
+
+    for ballot in ballots:
+        out['results'].append({
+            'session': sessions[ballot.vote.session.id], #Session.objects.get(id_parladata=int(ballot.vote.session.id_parladata)).getSessionData(),
+            'results': {
+                'motion_id': ballot.vote.session.id_parladata,
+                'text': ballot.vote.motion,
+                'votes_for': ballot.vote.votes_for,
+                'against': ballot.vote.against,
+                'abstain': ballot.vote.abstain,
+                'not_present': ballot.vote.not_present,
+                'result': ballot.vote.result,
+                'is_outlier': ballot.vote.is_outlier
+            }
+        })
+
+
+    return JsonResponse(out, safe=False)
