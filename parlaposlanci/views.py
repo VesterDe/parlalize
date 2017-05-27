@@ -10,7 +10,6 @@ import numpy
 from parlalize.utils import *
 import requests
 import json
-from datetime import datetime
 from django.http import HttpResponse
 import string
 from kvalifikatorji.scripts import numberOfWords, countWords, getScore, getScores, problematicno, privzdignjeno, preprosto, TFIDF, getCountList

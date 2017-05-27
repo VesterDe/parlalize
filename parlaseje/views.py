@@ -1506,9 +1506,9 @@ def getLastSessionLanding(request, date_=None):
     }
     """
     if date_:
-        fdate = datetime.datetime.strptime(date_, API_DATE_FORMAT).date()
+        fdate = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
-        fdate = datetime.datetime.now().today()
+        fdate = datetime.now().today()
     ready = False
     presences = PresenceOfPG.objects.filter(created_for__lte=fdate).order_by("-created_for")
     if not presences:
@@ -1784,10 +1784,10 @@ def getSessionsList(request, date_=None, force_render=False):
     DZ = 95
     working_bodies = ['odbor', 'komisija', 'preiskovalna komisija']
     if date_:
-        date_of = datetime.datetime.strptime(date_, API_DATE_FORMAT).date()
+        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
         key = date_
     else:
-        date_of = datetime.datetime.now().date()
+        date_of = datetime.now().date()
         date_ = date_of.strftime(API_DATE_FORMAT)
         key = date_
 
@@ -1841,7 +1841,7 @@ def getSessionsList(request, date_=None, force_render=False):
 def setTFIDF(request, session_id):
     """Stores TFIDF analysis.
     """
-    date_of = datetime.datetime.now().date()
+    date_of = datetime.now().date()
     url = "https://isci.parlameter.si/tfidf/s/" + str(session_id)
     data = tryHard(url).json()
     session = Session.objects.get(id_parladata=session_id)
@@ -1939,7 +1939,7 @@ def getTFIDF(request, session_id):
             "created_at": card.created_at.strftime(API_DATE_FORMAT)
         }
     else:
-        date_of = datetime.datetime.now().date()
+        date_of = datetime.now().date()
         if Session.objects.filter(id_parladata=session_id):
             out = {
                 'session': Session.objects.get(id_parladata=session_id).getSessionData(),

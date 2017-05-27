@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 from behaviors.models import Timestampable, Versionable
 from parlalize.settings import API_OUT_DATE_FORMAT
-import datetime
+from datetime import datetime
 
 
 class PopoloDateTimeField(models.DateTimeField):

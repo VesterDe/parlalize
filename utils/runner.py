@@ -399,6 +399,9 @@ def fastUpdate(fast=True, date_=None):
     # update speeches
     existingIDs = list(Speech.objects.all().values_list('id_parladata',
                                                         flat=True))
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update speeches at: ' + str(datetime.now()))
     for dic in data['speeches']:
         if int(dic['id']) not in existingIDs:
             print 'adding speech'
@@ -425,10 +428,16 @@ def fastUpdate(fast=True, date_=None):
                           valid_to=dic['valid_to'])
 
     # update Votes
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update votes at: ' + str(datetime.now()))
     for session_id in data['sessions_of_updated_votes']:
         setMotionOfSession(None, str(session_id))
 
     # update ballots
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update ballots at: ' + str(datetime.now()))
     existingISs = Ballot.objects.all().values_list('id_parladata', flat=True)
     for dic in data['ballots']:
         if int(dic['id']) not in existingISs:
