@@ -3,10 +3,10 @@ from parlaseje.views import *
 
 
 urlpatterns = patterns(
-    #fix (first url was ignored)
+    # fix (first url was ignored)
     (),
 
-    #All setters
+    # All setters
     url(r'^setMotionOfSession/(?P<session_id>\d+)', setMotionOfSession),
     url(r'^setMotionOfSession/(?P<session_id>\d+)/(?P<date_>[\w].+)', setMotionOfSession),
 
@@ -20,7 +20,7 @@ urlpatterns = patterns(
 
     url(r'^setQuote/(?P<speech_id>\d+)/(?P<start_pos>\d+)/(?P<end_pos>\d+)', setQuote),
 
-    #All getters 
+    # All getters
     url(r'^getSpeech/(?P<speech_id>\d+)', getSpeech),
     url(r'^getSpeechesOfSession/(?P<session_id>\d+)', getSpeechesOfSession),
     url(r'^getSpeechesIDsOfSession/(?P<session_id>\d+)', getSpeechesIDsOfSession),
@@ -47,4 +47,6 @@ urlpatterns = patterns(
 
     url(r'^getMotionGraph/(?P<id_mo>\d+)', getMotionGraph),
     url(r'^getMotionGraph/(?P<id_mo>\d+)/(?P<date>[\w].+)', getMotionGraph),
+
+    url(r'^getComparedVotes/', getComparedVotes),
 )
