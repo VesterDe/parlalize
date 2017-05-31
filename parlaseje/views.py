@@ -1237,7 +1237,7 @@ def getComparedVotes(request):
         out['results'].append({
             'session': sessions[ballot.vote.session.id], #Session.objects.get(id_parladata=int(ballot.vote.session.id_parladata)).getSessionData(),
             'results': {
-                'motion_id': ballot.vote.session.id_parladata,
+                'motion_id': ballot.vote.id_parladata,
                 'text': ballot.vote.motion,
                 'votes_for': ballot.vote.votes_for,
                 'against': ballot.vote.against,
