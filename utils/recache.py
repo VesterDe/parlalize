@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import requests
 
@@ -118,7 +119,7 @@ def updateCacheIntraDisunion():
                                                Q(classification='stran_vlade') |
                                                Q(name='Državni zbor')).values_list('id_parladata', flat=True)
     for org in organizatons:
-        getIntraDisunionOrg(None, org, force_render=True)
+        getIntraDisunionOrg(None, str(org), force_render=True)
 
     return 1
 
