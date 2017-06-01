@@ -1616,6 +1616,7 @@ def getIntraDisunionOrg(request, org_id):
     ob = {}
     obj = {}
     ob['votes'] = []
+    tab = []
     paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
     page = request.GET.get('page', 1)
     try:
@@ -1630,13 +1631,24 @@ def getIntraDisunionOrg(request, org_id):
                                         'date':vote.start_time,
                                         'tag':vote.tags,
                                         'id_parladata':vote.id_parladata}
-    for vote in votespag:
-        intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
-        for intra in intraD:
-            obj = votesData[vote.id_parladata].copy()
-            obj['maximum'] = intra.maximum
-            ob['votes'].append(obj)
-            ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
-        out[Organization.objects.get(id_parladata=org_id).acronym] = ob
+    if int(org_id) == 95:
+        print org_id
+        for vote in votespag:
+            tab.append({'text':vote.motion,
+                         'result':vote.result,
+                         'date':vote.start_time,
+                         'tag':vote.tags,
+                         'maximum':vote.intra_disunion})
+            out['DZ'] = {'organization': 'dz',
+                         'votes': tab}
+    else:
+        for vote in votespag:
+            intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
+            for intra in intraD:
+                obj = votesData[vote.id_parladata].copy()
+                obj['maximum'] = intra.maximum
+                ob['votes'].append(obj)
+                ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
+            out[Organization.objects.get(id_parladata=org_id).acronym] = ob
 
     return JsonResponse(out, safe=False)
