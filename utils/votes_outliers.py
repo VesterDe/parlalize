@@ -38,8 +38,9 @@ def setOutliers():
     return 'finished'
 
 
-def setMotionAnalize(session_id):
+def setMotionAnalize(request, session_id):
     """
+    request argument is here just because runner put 2 arguments in setter
     setMotionAnalyze
     setIntraDisunion
     """
@@ -220,7 +221,11 @@ def getMPsList(row, proti):
     try:
         return json.dumps(list(proti[row.name].reset_index()['voter']))
     except:
-        return json.dumps([])
+        try:
+            # fix if session has one vote
+            return json.dumps(list(proti.values[0]))
+        except:
+            return json.dumps([])
 
 
 def getPGsList(row, proti):
