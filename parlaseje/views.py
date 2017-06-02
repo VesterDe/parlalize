@@ -1244,7 +1244,8 @@ def getComparedVotes(request):
                 'abstain': ballot.vote.abstain,
                 'not_present': ballot.vote.not_present,
                 'result': ballot.vote.result,
-                'is_outlier': ballot.vote.is_outlier
+                'is_outlier': ballot.vote.is_outlier,
+                'tags': ballot.vote.tags
             }
         })
 

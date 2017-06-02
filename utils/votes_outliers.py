@@ -244,7 +244,8 @@ def getPartyBallot(row):
     """
     stats = {'za': row['option_za'],
              'proti': row['option_proti'],
-             'kvorum': row['option_kvorum']}
+             'kvorum': row['option_kvorum'],
+             'ni': row['option_ni']}
     if max(stats.values()) == 0:
         return '[]'
     max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]
@@ -254,7 +255,8 @@ def getPartyBallot(row):
 def getIntraDisunion(row):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
-                                  row['option_kvorum'])
+                                  row['option_kvorum'],
+                                  row['option_ni'])
     return 100 - maxOptionPercent
 
 
