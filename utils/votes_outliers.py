@@ -255,8 +255,7 @@ def getPartyBallot(row):
 def getIntraDisunion(row):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
-                                  row['option_kvorum'],
-                                  row['option_ni'])
+                                  row['option_kvorum'])
     return 100 - maxOptionPercent
 
 
