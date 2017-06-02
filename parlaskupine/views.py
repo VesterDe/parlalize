@@ -1640,7 +1640,7 @@ def getIntraDisunionOrg(request, org_id, force_render=False):
                 out['DZ'] = {'organization': 'dz',
                              'votes': tab}
             out['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
-            out = sorted(out[str(acr)]['votes'] ,key=lambda k:-k['maximum'])
+            out = sorted(out[str(acr)]['votes'] ,key=lambda k:k['maximum'])
             cache.set("pg_disunion" + org_id, out, 60 * 60 * 48) 
         else:
             for vote in votes:
@@ -1653,8 +1653,7 @@ def getIntraDisunionOrg(request, org_id, force_render=False):
                     ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
                 out[Organization.objects.get(id_parladata=org_id).acronym] = ob
             out['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
-            print out[str(acr)]
-            out = sorted(out[str(acr)]['votes'] ,key=lambda k:-k['maximum'])
+            out = sorted(out[str(acr)]['votes'] ,key=lambda k:k['maximum'])
             cache.set("pg_disunion" + org_id, out, 60 * 60 * 48) 
     
     return JsonResponse(out, safe=False)
