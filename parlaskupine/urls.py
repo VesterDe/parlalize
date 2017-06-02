@@ -102,7 +102,6 @@ urlpatterns = patterns('',
 
     url(r'^getIntraDisunionOrg/(?P<org_id>\d+)', getIntraDisunionOrg),
     url(r'^getIntraDisunion/', getIntraDisunion),
-    url(r'^getIntraDisunionDZ/', getIntraDisunionDZ),
 
     url(r'^getPGsIDs', getPGsIDs),
 

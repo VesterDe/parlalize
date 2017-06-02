@@ -1565,16 +1565,15 @@ def getIntraDisunion(request):
     ob =  {}
     obs =  {}
     dataOut =  {}
-    #paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
-    votespag = Vote.objects.all().order_by('start_time')                                 
-    '''page = request.GET.get('page', 1)
+    paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                                          
+    page = request.GET.get('page', 1)
     try:
         votespag = paginator.page(page)
     except PageNotAnInteger:
         votespag = paginator.page(1)
     except EmptyPage:
         votespag = paginator.page(paginator.num_pages)
-    '''
+    
     for vote in votespag:
         votesData[vote.id_parladata] = {'text':vote.motion,
                                         'result':vote.result,
@@ -1611,88 +1610,47 @@ def getIntraDisunion(request):
     return JsonResponse(dataOut, safe=False)
 
 
-def getIntraDisunionOrg(request, org_id):
+def getIntraDisunionOrg(request, org_id, force_render=False):
     out = {}
     votesData = {}
     ob = {}
     obj = {}
     ob['votes'] = []
-    #paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
-    votespag = Vote.objects.all().order_by('start_time')                                
-    '''
-    page = request.GET.get('page', 1)
-    try:
-        votespag = paginator.page(page)
-    except PageNotAnInteger:
-        votespag = paginator.page(1)
-    except EmptyPage:
-        votespag = paginator.page(paginator.num_pages)
-    '''
-    for vote in votespag:
-        votesData[vote.id_parladata] = {'text':vote.motion,
-                                        'result':vote.result,
-                                        'date':vote.start_time,
-                                        'tag':vote.tags,
-                                        'id_parladata':vote.id_parladata}
-    for vote in votespag:
-        intraD = IntraDisunion.objects.filter(vote=vote, organization__id_parladata=org_id)
-        for intra in intraD:
-            obj = votesData[vote.id_parladata].copy()
-            obj['maximum'] = intra.maximum
-            ob['votes'].append(obj)
-            ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
-        out[Organization.objects.get(id_parladata=org_id).acronym] = ob
-
-    return JsonResponse(out, safe=False)
-
-def getIntraDisunionDZ(request):
-    out = {}
-    votesData = {}
     tab = []
-    ob =  {}
-    obs =  {}
-    dataOut =  {}
-    #paginator = Paginator(Vote.objects.all().order_by('start_time'), 50)                                    
-    votespag = Vote.objects.all().order_by('start_time')                                 
-    '''page = request.GET.get('page', 1)
-    try:
-        votespag = paginator.page(page)
-    except PageNotAnInteger:
-        votespag = paginator.page(1)
-    except EmptyPage:
-        votespag = paginator.page(paginator.num_pages)
-    '''
-    for vote in votespag:
+    votes = Vote.objects.all().order_by('start_time')                               
+    for vote in votes:
         votesData[vote.id_parladata] = {'text':vote.motion,
                                         'result':vote.result,
                                         'date':vote.start_time,
                                         'tag':vote.tags,
                                         'id_parladata':vote.id_parladata}
-    
-    for vote in votespag:
-        # intraD = vote.vote_intradisunion.all()
-        # for intra in intraD:
-        #     if intra.organization.acronym in out.keys():
-        #         obs = votesData[vote.id_parladata].copy()
-        #         obs['maximum'] = intra.maximum
-        #         out[intra.organization.acronym]['votes'].append(obs)
-        #     else:
-        #         obj = votesData[vote.id_parladata].copy()
-        #         obj['maximum'] = intra.maximum
-        #         ob['organization'] = intra.organization.getOrganizationData()
-        #         ob['votes'] = []
-        #         ob['votes'].append(obj)
-        #         out[intra.organization.acronym] = ob
-        #         ob = {}
-        tab.append({'text':vote.motion,
-                    'result':vote.result,
-                    'date':vote.start_time,
-                    'tag':vote.tags,
-                    'maximum':vote.intra_disunion,
-                    'id_parladata':vote.id_parladata})
 
-    out['DZ'] = {'organization': 'dz',
-                 'votes': tab}
-    dataOut['results'] = out
-    dataOut['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
-    return JsonResponse(dataOut, safe=False)
+    c_data = cache.get("pg_disunion" + org_id)
+    if c_data and not force_render:
+        out = c_data
+    else:
+        if int(org_id) == 95:
+            for vote in votes:
+                tab.append({'text':vote.motion,
+                             'result':vote.result,
+                             'date':vote.start_time,
+                             'tag':vote.tags,
+                             'maximum':vote.intra_disunion})
+                out['DZ'] = {'organization': 'dz',
+                             'votes': tab}
+            out['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
+            cache.set("pg_disunion" + org_id, out, 60 * 60 * 48) 
+        else:
+            for vote in votes:
+                intraD = IntraDisunion.objects.filter(vote=vote,
+                                                      organization__id_parladata=org_id)
+                for intra in intraD:
+                    obj = votesData[vote.id_parladata].copy()
+                    obj['maximum'] = intra.maximum
+                    ob['votes'].append(obj)
+                    ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
+                out[Organization.objects.get(id_parladata=org_id).acronym] = ob
+            out['all_tags'] = list(Tag.objects.all().values_list('name', flat=True))
+            cache.set("pg_disunion" + org_id, out, 60 * 60 * 48) 
+    
+    return JsonResponse(out, safe=False)
