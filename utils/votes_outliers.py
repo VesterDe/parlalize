@@ -244,7 +244,8 @@ def getPartyBallot(row):
     """
     stats = {'za': row['option_za'],
              'proti': row['option_proti'],
-             'kvorum': row['option_kvorum']}
+             'kvorum': row['option_kvorum'],
+             'ni': row['option_ni']}
     if max(stats.values()) == 0:
         return '[]'
     max_ids = [key for key, val in stats.iteritems() if val == max(stats.values())]

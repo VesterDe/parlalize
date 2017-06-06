@@ -994,7 +994,7 @@ def getComparedVotes(request):
         else:
             select_different_parties = '%s parlaseje_ballot dpb%s, parlaskupine_organization do%s' % (select_different_parties, str(i), str(i))
 
-    # match same people ballots by vote id DONE?
+    # match same people ballots by vote id DONE
     # if only one person was passed, match_same_people_ballots will remain an empty string
     for i, e in enumerate(people_same_list):
         if i != 0:
@@ -1003,7 +1003,7 @@ def getComparedVotes(request):
             else:
                 match_same_people_ballots = '%s b0.vote_id = b%s.vote_id' % (match_same_people_ballots, str(i))
     
-    # match same parties ballots by vote id DONE?
+    # match same parties ballots by vote id DONE
     # if only one same party was passed match_same_parties_ballots will remain an empty string
     if len(people_same_list) == 0:
         # no same people were passed to the API
@@ -1045,14 +1045,14 @@ def getComparedVotes(request):
         else:
             match_same_people_persons = '%s b%s.activity_ptr_id = a%s.id AND a%s.person_id = p%s.id AND p%s.id_parladata = %s' % (match_same_people_persons, str(i), str(i), str(i), str(i), str(i), e)
     
-    # match same parties with organizations DONE?
+    # match same parties with organizations DONE
     for i, e in enumerate(parties_same_list):
         if i < len(parties_same_list) -1:
             match_same_parties_organizations = '%s pb%s.org_voter_id = o%s.id AND o%s.id_parladata = %s AND ' % (match_same_parties_organizations, str(i), str(i), str(i), e)
         else:
             match_same_parties_organizations = '%s pb%s.org_voter_id = o%s.id AND o%s.id_parladata = %s' % (match_same_parties_organizations, str(i), str(i), str(i), e)
 
-    # match same people based on options DONE?
+    # match same people based on options DONE
     for i, e in enumerate(people_same_list):
         if i != 0:
             if i != len(people_same_list) - 1:
@@ -1146,11 +1146,10 @@ def getComparedVotes(request):
 
     # match different parties with organizations
     for i, e in enumerate(parties_different_list):
-        if i < len(parties_different_list) -1:
+        if i < len(parties_different_list) - 1:
             match_different_parties_organizations = '%s dpb%s.org_voter_id = do%s.id AND do%s.id_parladata = %s AND ' % (match_different_parties_organizations, str(i), str(i), str(i), e)
         else:
             match_different_parties_organizations = '%s dpb%s.org_voter_id = do%s.id AND do%s.id_parladata = %s' % (match_different_parties_organizations, str(i), str(i), str(i), e)
-    
     
     
     query = beginning
@@ -1199,6 +1198,43 @@ def getComparedVotes(request):
 
     query = query + after_where
     
+    if request.GET.get('special'):
+        # exclude 'ni'
+        exclude_ni_people_same = ''
+        exclude_ni_parties_same = ''
+        exclude_ni_people_different = ''
+        exclude_ni_parties_different = ''
+
+        for i, e in enumerate(people_same_list):
+            if i < len(people_same_list) - 1:
+                exclude_ni_people_same = '%s b%s.option != \'ni\' AND ' % (exclude_ni_people_same, i)
+            else:
+                exclude_ni_people_same = '%s b%s.option != \'ni\'' % (exclude_ni_people_same, i)
+        
+        for i, e in enumerate(parties_same_list):
+            if i < len(parties_same_list) - 1:
+                exclude_ni_parties_same = '%s pb%s.option != \'ni\' AND ' % (exclude_ni_parties_same, i)
+            else:
+                exclude_ni_parties_same = '%s pb%s.option != \'ni\'' % (exclude_ni_parties_same, i)
+        
+        for i, e in enumerate(people_different_list):
+            if i < len(people_different_list) - 1:
+                exclude_ni_people_different = '%s db%s.option != \'ni\' AND ' % (exclude_ni_people_different, i)
+            else:
+                exclude_ni_people_different = '%s db%s.option != \'ni\'' % (exclude_ni_people_different, i)
+        
+        for i, e in enumerate(parties_different_list):
+            if i < len(parties_different_list) - 1:
+                exclude_ni_parties_different = '%s dpb%s.option != \'ni\' AND ' % (exclude_ni_parties_different, i)
+            else:
+                exclude_ni_parties_different = '%s dpb%s.option != \'ni\'' % (exclude_ni_parties_different, i)
+
+
+        exclude_ni_list = [exclude_ni_people_same, exclude_ni_parties_same, exclude_ni_people_different, exclude_ni_parties_different]
+        exclude_ni_list_clean = [s for s in exclude_ni_list if s != '']
+        exclude_ni = ' AND '.join(exclude_ni_list_clean)
+
+        query = query + ' AND ' + exclude_ni
     # return HttpResponse(query)
     print query
 
@@ -1244,7 +1280,8 @@ def getComparedVotes(request):
                 'abstain': ballot.vote.abstain,
                 'not_present': ballot.vote.not_present,
                 'result': ballot.vote.result,
-                'is_outlier': ballot.vote.is_outlier
+                'is_outlier': ballot.vote.is_outlier,
+                'tags': ballot.vote.tags
             }
         })
 

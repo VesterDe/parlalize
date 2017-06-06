@@ -1649,7 +1649,7 @@ def getIntraDisunionOrg(request, org_id, force_render=False):
                                                       organization__id_parladata=org_id)
                 for intra in intraD:
                     obj = votesData[vote.id_parladata].copy()
-                    obj['maximum'] = intra.maximum
+                    obj['maximum'] = float(intra.maximum)
                     ob['votes'].append(obj)
                     ob['organization'] = Organization.objects.get(id_parladata=org_id).getOrganizationData()
                 out[Organization.objects.get(id_parladata=org_id).acronym] = ob
