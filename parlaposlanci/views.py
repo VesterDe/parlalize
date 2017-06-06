@@ -17,7 +17,7 @@ from kvalifikatorji.scripts import numberOfWords, countWords, getScore, getScore
 from collections import Counter
 from parlalize.settings import LAST_ACTIVITY_COUNT
 from .models import *
-from parlalize.settings import API_URL, API_DATE_FORMAT, API_OUT_DATE_FORMAT
+from parlalize.settings import API_URL, API_DATE_FORMAT, API_OUT_DATE_FORMAT, SETTER_KEY
 from parlaseje.models import Session, Tag, Question
 from utils.speech import WordAnalysis
 from raven.contrib.django.raven_compat.models import client
@@ -26,7 +26,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from utils.compass import getData as getCompassData
 
-from parlalize.utils import tryHard
+from parlalize.utils import tryHard, lockSetter
 
 
 # get List of MPs
@@ -59,13 +59,14 @@ def getMPsList(request, date_=None):
 
 
 # returns MP static data like PoliticalParty, age, ....
+@lockSetter(SETTER_KEY)
 def setMPStaticPL(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-        data = tryHard(API_URL+'/getMPStatic/' + person_id + "/" + date_).json()
+        data = tryHard('https://data.parlameter.si/v1/getMPStatic/' + person_id + "/" + date_).json()
     else:
         date_of = datetime.now().date()
-        data = tryHard(API_URL+'/getMPStatic/' + person_id).json()
+        data = tryHard('https://data.parlameter.si/v1/getMPStatic/' + person_id).json()
 
     person = Person.objects.get(id_parladata=int(person_id))
     if not data:
@@ -253,6 +254,7 @@ def getMPStaticPL(request, person_id, date_=None):
 
 
 # returns MP static data like PoliticalParty, age, ....
+@lockSetter(SETTER_KEY)
 def setMinsterStatic(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -297,6 +299,7 @@ def setMinsterStatic(request, person_id, date_=None):
 
 # Saves to DB percent of attended sessions of MP and
 # maximum and average of attended sessions
+@lockSetter(SETTER_KEY)
 def setPercentOFAttendedSession(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -583,6 +586,7 @@ def getPercentOFAttendedSession(request, person_id, date=None):
 
 #Deprecated
 #Saves to DB number of spoken word of MP and maximum and average of spoken words
+@lockSetter(SETTER_KEY)
 def setNumberOfSpokenWordsALL(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -747,6 +751,8 @@ def getNumberOfSpokenWords(request, person_id, date=None):
     }
     return JsonResponse(results)
 
+
+@lockSetter(SETTER_KEY)
 def setLastActivity(request, person_id):
     out = []
     activites = {date: [activity.get_child()
@@ -1191,6 +1197,7 @@ def getEqualVoters(request, id, date_=None):
 
 
 # Method return json with most similar voters to this voter
+@lockSetter(SETTER_KEY)
 def setMostEqualVoters(request, person_id, date_=None):
     if date_:
         #if run setter for date check if exist vote on this day
@@ -1422,6 +1429,7 @@ def getMostEqualVoters(request, person_id, date_=None):
 
 
 # Method return json with less similar voters to this voter
+@lockSetter(SETTER_KEY)
 def setLessEqualVoters(request, person_id, date_=None):
     if date_:
         #if run setter for date check if exist vote on this day
@@ -1698,6 +1706,7 @@ def getMPsWhichFitsToPG(request, id): # TODO refactor remove?
     return JsonResponse(outs[-5:], safe=False)
 
 
+@lockSetter(SETTER_KEY)
 def setCutVotes(request, person_id, date_=None):
     print "cut"
     if date_:
@@ -2659,6 +2668,8 @@ def makeAverageStyleScores(date_): # TODO refactor cleanup
 
     return output
 
+
+@lockSetter(SETTER_KEY)
 def setTFIDFold(request, person_id): # TODO refactor remove?
 
     mps = tryHard(API_URL+'/getMPs/').json()
@@ -2685,6 +2696,8 @@ def setTFIDFold(request, person_id): # TODO refactor remove?
     else:
         return HttpResponse('All waz well');
 
+
+@lockSetter(SETTER_KEY)
 def setTFIDF(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
@@ -2949,6 +2962,8 @@ def getTFIDF(request, person_id, date_=None):
 
     return JsonResponse(out)
 
+
+@lockSetter(SETTER_KEY)
 def setVocabularySizeAndSpokenWords(request, date_=None):
     sw = WordAnalysis(count_of="members", date_=date_)
 
@@ -3009,6 +3024,8 @@ def setVocabularySizeAndSpokenWords(request, date_=None):
     return HttpResponse('All MPs updated.')
 
 #Depricated
+
+@lockSetter(SETTER_KEY)
 def setVocabularySizeALL(request, date_): # TODO refactor remove? 
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -3066,6 +3083,8 @@ def setVocabularySizeALL(request, date_): # TODO refactor remove?
 #
 #    return JsonResponse(result, safe=False)
 
+
+@lockSetter(SETTER_KEY)
 def setVocabularySize(request, person_id, date_=None): # TODO refactor cleanup
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -3475,6 +3494,7 @@ def getVocabolarySizeUniqueWordsLanding(request, date_=None): # TODO refactor ty
 
 
 #just method ALL is edited for date
+@lockSetter(SETTER_KEY)
 def setAverageNumberOfSpeechesPerSession(request, person_id): # TODO refactor remove?
 
     person = Person.objects.get(id_parladata=int(person_id))
@@ -3507,6 +3527,8 @@ def setAverageNumberOfSpeechesPerSession(request, person_id): # TODO refactor re
 
     return HttpResponse('All iz well')
 
+
+@lockSetter(SETTER_KEY)
 def setAverageNumberOfSpeechesPerSessionAll(request, date_=None): # TODO refactor check if float
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -3683,6 +3705,7 @@ def getMPsIDs(request): # TODO document understand?
     return JsonResponse(output, safe=False)
 
 
+@lockSetter(SETTER_KEY)
 def setCompass(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -3819,6 +3842,7 @@ def getCompass(request, date_=None): # TODO make proper setters and getters
                         safe=False)
 
 
+@lockSetter(SETTER_KEY)
 def setMembershipsOfMember(request, person_id, date=None):
     if date:
         #call parladata api with date, maybe you will need to fix parladata api call
@@ -4140,6 +4164,7 @@ def getTaggedBallots(request, person_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
+@lockSetter(SETTER_KEY)
 def setNumberOfQuestionsAll(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
@@ -4883,6 +4908,7 @@ def getSlugs(request):
 
 
 @csrf_exempt
+@lockSetter(SETTER_KEY)
 def setAllMPsTFIDFsFromSearch(request):
     """
     API endpoint for saveing TFIDF. TFIDF is generated in parlasearch and sent
@@ -4914,6 +4940,7 @@ def setAllMPsTFIDFsFromSearch(request):
 
 
 @csrf_exempt
+@lockSetter(SETTER_KEY)
 def setAllMPsStyleScoresFromSearch(request):
     """
     API endpoint for saveing StyleScores. StyleScores is generated in parlasearch and sent
@@ -4945,6 +4972,7 @@ def setAllMPsStyleScoresFromSearch(request):
         return JsonResponse({"status": "It wasnt POST"})
 
 
+@lockSetter(SETTER_KEY)
 def setPresenceThroughTime(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y').date()
@@ -5078,6 +5106,7 @@ def getPresenceThroughTime(request, person_id, date_=None):
     return JsonResponse(out, safe=False)
 
 
+@lockSetter(SETTER_KEY)
 def setListOfMembersTickers(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
