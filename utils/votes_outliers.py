@@ -47,6 +47,8 @@ def setMotionAnalize(request, session_id):
     session = get_object_or_404(Session, id_parladata=session_id)
     url = API_URL + '/getVotesOfSessionTable/' + str(session_id) + '/'
     data = pd.read_json(url)
+    if data.empty:
+        return
     coalition = requests.get(API_URL + '/getCoalitionPGs').json()['coalition']
     partys = Organization.objects.filter(classification='poslanska skupina')
     paries_ids = partys.values_list('id_parladata', flat=True)
@@ -256,6 +258,8 @@ def getIntraDisunion(row):
     maxOptionPercent = getPercent(row['option_za'],
                                   row['option_proti'],
                                   row['option_kvorum'])
+    if maxOptionPercent == 0:
+        return 0
     return 100 - maxOptionPercent
 
 
