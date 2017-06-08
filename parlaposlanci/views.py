@@ -3506,12 +3506,13 @@ def setAverageNumberOfSpeechesPerSession(request, person_id): # TODO refactor re
 
     return HttpResponse('All iz well')
 
+
 def setAverageNumberOfSpeechesPerSessionAll(request, date_=None): # TODO refactor check if float
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
-        date_of = findDatesFromLastCard(Presence, person_id, datetime.now().date())[0]
-        date_=""
+        date_of = findDatesFromLastCard(Presence, person_id, datetime.now().strftime(API_DATE_FORMAT))[0]
+        date_ = ""
 
     mps = tryHard(API_URL+'/getMPs/'+date_).json()
     mp_scores = []
