@@ -18,15 +18,18 @@ from django.core.exceptions import PermissionDenied
 from parlalize.settings import SETTER_KEY
 
 
-def lockSetter(setterKey):
-    def rLockSetter(function):
+def lockSetter(function):
         def wrap(request, *args, **kwargs):
-            if str(setterKey) == str(SETTER_KEY):
-                return function(request, *args, **kwargs)
+            if request:
+                setterKey = request.GET.get('key')
+                if str(setterKey) == str(SETTER_KEY):
+                    return function(request, *args, **kwargs)
+                else:
+                    raise PermissionDenied
             else:
-                raise PermissionDenied
+                return function(*args, **kwargs)
         return wrap
-    return rLockSetter
+
 
 
 def tryHard(url):

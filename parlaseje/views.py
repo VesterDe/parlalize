@@ -112,7 +112,7 @@ def getSessionSpeeches(request, session_id):
     return JsonResponse(result, safe=False)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setMotionOfSession(request, id_se):
     motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
@@ -175,7 +175,7 @@ def setMotionOfSession(request, id_se):
     return JsonResponse({'alliswell': True})
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setMotionOfSessionGraph(request, id_se):
     motion = tryHard(API_URL + '/motionOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
@@ -508,7 +508,7 @@ def getMotionAnalize(request, motion_id):
     return JsonResponse(out, safe=False)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setAbsentMPs(request, id_se):
     votes = tryHard(API_URL + '/getVotesOfSession/'+str(id_se)+'/').json()
     session = Session.objects.get(id_parladata=id_se)
@@ -558,7 +558,7 @@ def getAbsentMPs(request, id_se, date=False):
                          "created_for": absentMembers.created_for.strftime(API_DATE_FORMAT)}, safe=False)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setPresenceOfPG(request, id_se):
     votes = tryHard(API_URL+'/getVotesOfSession/'+str(id_se)+'/').json()
     motions = tryHard(API_URL+'/motionOfSession/'+str(id_se)+'/').json()
@@ -646,7 +646,7 @@ def getPresenceOfPG(request, id_se, date=False):
                         safe=False)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setSpeechesOnSession(request, date=False):
     if date:
         numberOfSessions = len(Session.objects.filter(start_time__lte=datetime.strptime(date, '%d.%m.%Y')))
@@ -717,7 +717,7 @@ def getMaxSpeechesOnSession(request, date=False):
     return JsonResponse(results[:5], safe=False)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setQuote(request, speech_id, start_pos, end_pos):
     speech = get_object_or_404(Speech, id_parladata=speech_id)
     quote = Quote(speech=speech, first_char=start_pos, last_char=end_pos, quoted_text=re.sub(r"\n+", " ", speech.content.strip())[int(start_pos):int(end_pos)].strip())
@@ -865,7 +865,7 @@ def getSessionsList(request, date_=None, force_render=False):
     return JsonResponse(out)
 
 
-@lockSetter(SETTER_KEY)
+@lockSetter
 def setTFIDF(request, session_id):
     date_of = datetime.now().date()
     url = "https://isci.parlameter.si/tfidf/s/"+str(session_id)
