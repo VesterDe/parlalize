@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import requests
 
@@ -5,12 +6,13 @@ from datetime import datetime, timedelta
 from raven.contrib.django.raven_compat.models import client
 
 from parlaposlanci.views import getSlugs, getListOfMembers
-from parlaskupine.views import getListOfPGs
+from parlaskupine.views import getListOfPGs, getIntraDisunionOrg
 from parlaseje.views import getSessionsList
 from parlaseje.models import Session
+from parlaskupine.models import Organization
 from parlalize.settings import API_DATE_FORMAT, BASE_URL, API_URL, slack_token
 from parlalize.utils import getAllStaticData, tryHard, printProgressBar
-
+from django.db.models import Q
 from slackclient import SlackClient
 
 FR = '?forceRender=true'
@@ -99,7 +101,7 @@ def updateCacheforList(date_=None):
         getListOfMembers(None, date_, force_render=True)
         getListOfPGs(None, date_, force_render=True)
         getSessionsList(None, date_, force_render=True)
-
+        updateCacheIntraDisunion()
         # store static data for search
         getAllStaticData(None, force_render=True)
     except:
@@ -111,6 +113,15 @@ def updateCacheforList(date_=None):
 
     return 1
 
+
+def updateCacheIntraDisunion():
+    organizatons = Organization.objects.filter(Q(classification='poslanska skupina') |
+                                               Q(classification='stran_vlade') |
+                                               Q(name='Državni zbor')).values_list('id_parladata', flat=True)
+    for org in organizatons:
+        getIntraDisunionOrg(None, str(org), force_render=True)
+
+    return 1
 
 def recacheCards(pgCards=[], mpCards=[], sessions={}, votes_of_s=[]):
     def cardRecache(card_url):
