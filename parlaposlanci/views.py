@@ -63,10 +63,10 @@ def getMPsList(request, date_=None):
 def setMPStaticPL(request, person_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-        data = tryHard('https://data.parlameter.si/v1/getMPStatic/' + person_id + "/" + date_).json()
+        data = tryHard(API_URL + '/getMPStatic/' + person_id + "/" + date_).json()
     else:
         date_of = datetime.now().date()
-        data = tryHard('https://data.parlameter.si/v1/getMPStatic/' + person_id).json()
+        data = tryHard(API_URL + '/getMPStatic/' + person_id).json()
 
     person = Person.objects.get(id_parladata=int(person_id))
     if not data:
