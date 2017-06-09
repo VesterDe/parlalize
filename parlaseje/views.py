@@ -4,7 +4,7 @@ from parlalize.utils import *
 import json
 from django.http import JsonResponse, HttpResponse
 from parlaseje.models import *
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, SETTER_KEY
 from parlaseje.utils import *
 from collections import defaultdict, Counter
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 import re
 from django.db.models import Q, F
 from django.core.cache import cache
-from parlalize.utils import tryHard
+from parlalize.utils import tryHard, lockSetter
 
 
 def getSpeech(request, speech_id):
@@ -428,6 +428,7 @@ def getSpeechesIDsOfSession(request, session_id):
                          "results": speeches_ids})
 
 
+@lockSetter
 def setMotionOfSession(request, session_id):
     """Stores all motions with detiled data of specific sesison.
     """
@@ -489,6 +490,7 @@ def setMotionOfSession(request, session_id):
     return JsonResponse({'alliswell': True})
 
 
+@lockSetter
 def setMotionOfSessionGraph(request, session_id):
     """Stores all motions with detiled data of specific sesison.
     """
@@ -1062,6 +1064,7 @@ def getMotionAnalize(request, motion_id):
     return JsonResponse(out, safe=False)
 
 
+@lockSetter
 def setPresenceOfPG(request, session_id):
     """ Stores presence of PGs on specific session
     """
@@ -1198,6 +1201,7 @@ def getPresenceOfPG(request, session_id, date=False):
                         safe=False)
 
 
+@lockSetter
 def setQuote(request, speech_id, start_pos, end_pos):
     """Stores quotes of specific speech.
     """
@@ -1838,6 +1842,7 @@ def getSessionsList(request, date_=None, force_render=False):
     return JsonResponse(out)
 
 
+@lockSetter
 def setTFIDF(request, session_id):
     """Stores TFIDF analysis.
     """
@@ -1990,6 +1995,7 @@ def getWorkingBodies(request):
     for org in orgs:
         data.append({'id': org.id_parladata, 'name': org.name})
     return JsonResponse(data, safe=False)
+
 
 def getComparedVotes(request):
     people_same = request.GET.get('people_same')

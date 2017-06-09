@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from parlaskupine.models import *
 from parlaseje.models import Activity, Session, Vote, Speech, Question
 from collections import Counter
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, API_OUT_DATE_FORMAT
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, API_OUT_DATE_FORMAT, SETTER_KEY
 import numpy as np
 from scipy.stats.stats import pearsonr
 from scipy.spatial.distance import euclidean
@@ -18,10 +18,10 @@ from kvalifikatorji.scripts import countWords, getCountListPG, getScores, proble
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
-from parlalize.utils import tryHard
+from parlalize.utils import tryHard, lockSetter
 
 # Create your views here.
-
+@lockSetter
 def setBasicInfOfPG(request, pg_id, date_):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -93,6 +93,7 @@ def getBasicInfOfPG(request, pg_id, date=None):
     return JsonResponse(data)
 
 
+@lockSetter
 def setPercentOFAttendedSessionPG(request, pg_id, date_=None):
     if date_:
         isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()["isVote"]
@@ -172,6 +173,7 @@ def getPercentOFAttendedSessionPG(request, pg_id, date_=None):
     return JsonResponse(data)
 
 
+@lockSetter
 def setMPsOfPG(request, pg_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -579,6 +581,7 @@ def getTaggedBallots(request, pg_id, date_=None):
 
 
 #Depricated
+@lockSetter
 def setVocabularySizeALL_(request, date_):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -634,6 +637,7 @@ def setVocabularySizeALL_(request, date_):
     return JsonResponse({'alliswell': True})
 
 
+@lockSetter
 def setVocabularySizeALL(request, date_=None):
     sw = WordAnalysis(count_of="groups", date_=date_)
 
@@ -692,6 +696,7 @@ def getPGsIDs(request):
     return JsonResponse(output, safe=False)
 
 
+@lockSetter
 def setStyleScoresPGsALL(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -738,6 +743,7 @@ def setStyleScoresPGsALL(request, date_=None):
 
 
 @csrf_exempt
+@lockSetter
 def setAllPGsStyleScoresFromSearch(request):
     if request.method == 'POST':
         post_data = json.loads(request.body)
@@ -815,6 +821,7 @@ def getStyleScoresPG(request, pg_id, date_=None):
 
 
 @csrf_exempt
+@lockSetter
 def setAllPGsTFIDFsFromSearch(request):
     if request.method == 'POST':
         post_data = json.loads(request.body)
@@ -834,6 +841,8 @@ def setAllPGsTFIDFsFromSearch(request):
     else:
         return JsonResponse({"status": "It wasnt POST"})
 
+
+@lockSetter
 def setTFIDF(request, party_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
@@ -865,6 +874,7 @@ def getTFIDF(request, party_id, date_=None):
     return JsonResponse(out)
 
 
+@lockSetter
 def setNumberOfQuestionsAll(request, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT)
@@ -1166,6 +1176,7 @@ def getListOfPGs(request, date_=None, force_render=False):
     return JsonResponse({"data": data})
 
 
+@lockSetter
 def setPresenceThroughTime(request, party_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, '%d.%m.%Y').date()

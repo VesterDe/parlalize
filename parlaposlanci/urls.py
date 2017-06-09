@@ -11,12 +11,6 @@ urlpatterns = patterns(
     url(r'^setMinsterStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMinsterStatic),
     url(r'^setMinsterStatic/(?P<person_id>\d+)/', setMinsterStatic),
 
-    url(r'^setMostEqualVoters/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMostEqualVoters),
-    url(r'^setMostEqualVoters/(?P<person_id>\d+)/', setMostEqualVoters),
-
-    url(r'^setLeastEqualVoters/(?P<person_id>\d+)/(?P<date_>[\w].+)', setLessEqualVoters),
-    url(r'^setLeastEqualVoters/(?P<person_id>\d+)/', setLessEqualVoters),
-
     url(r'^setTFIDF/(?P<person_id>\d+)/(?P<date_>[\w].+)', setTFIDF),
 
     url(r'^setPresence/(?P<person_id>\d+)/(?P<date_>[\w].+)', setPercentOFAttendedSession),
@@ -30,9 +24,6 @@ urlpatterns = patterns(
     url(r'^setVocabularySize/(?P<person_id>\d+)', setVocabularySize),
 
     url(r'^setLastActivity/(?P<person_id>\d+)', setLastActivity),
-
-    url(r'^setCutVotes/(?P<person_id>\d+)/(?P<date_>[\w].+)', setCutVotes),
-    url(r'^setCutVotes/(?P<person_id>\d+)', setCutVotes),
 
     url(r'^setCompass/(?P<date_>[\w].+)', setCompass),
     url(r'^setCompass', setCompass),
@@ -82,9 +73,6 @@ urlpatterns = patterns(
     url(r'^getVocabularySizeLanding', getVocabolarySizeLanding),
     url(r'^getUniqueWordsLanding/(?P<date_>[\w].+)', getVocabolarySizeUniqueWordsLanding),
     url(r'^getUniqueWordsLanding/', getVocabolarySizeUniqueWordsLanding),
-
-    url(r'^getCutVotes/(?P<person_id>\d+)/(?P<date>[\w].+)', getCutVotes),
-    url(r'^getCutVotes/(?P<person_id>\d+)', getCutVotes),
 
     url(r'^getAllSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getAllSpeeches),
     url(r'^getAllSpeeches/(?P<person_id>\d+)', getAllSpeeches),
