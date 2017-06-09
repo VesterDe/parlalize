@@ -32,7 +32,7 @@ def tryHard(url):
     return data
 
 
-def voteToLogical(vote):
+def voteToLogical(vote): # TODO remove
     if vote == 'za':
         return 1
     elif vote == 'proti':
@@ -41,49 +41,7 @@ def voteToLogical(vote):
         return -1
 
 
-# Return dictionary of votes results by user ids.
-def getLogicVotes(date_=None):
-    if date_:
-        r = tryHard(API_URL+'/getVotes/'+date_)
-        v = tryHard(API_URL+'/getAllVotes/'+date_)
-    else:
-        r = tryHard(API_URL+'/getVotes/')
-        v = tryHard(API_URL+'/getAllVotes/')
-    pl_votes = v.json()
-    votes = r.json()
-
-    niPoslanec = VOTE_MAP['ni_poslanec']
-
-    for person_id in votes.keys():
-        for vote in pl_votes:
-            try:
-                logic_vote = VOTE_MAP[str(votes[str(person_id)][str(vote['id'])])]
-                votes[str(person_id)][str(vote['id'])] = logic_vote
-            except:
-                if type(votes[str(person_id)]) == list:
-                    votes[str(person_id)] = {}
-                votes[str(person_id)][str(vote['id'])] = niPoslanec
-
-    return votes
-
-
-def getVotes():
-    r = tryHard(API_URL + '/getVotes/')
-    pl_votes = Vote.objects.all()
-    votes = r.json()
-    for person_id in votes.keys():
-        for vote in pl_votes:
-            try:
-                if not votes[str(person_id)][str(vote.id_parladata)]:
-                    print 'bu'
-            except:
-                if type(votes[str(person_id)]) == list:
-                    votes[str(person_id)] = {}
-                votes[str(person_id)][str(vote.id_parladata)] = 'ni_poslanec'
-    return votes
-
-
-def votesToLogical(votes, length):
+def votesToLogical(votes, length): # TODO remove
     maxVotes = length
     for key in votes.keys():
         votes[key] = map(voteToLogical, votes[key])
@@ -379,127 +337,6 @@ def getPGIDs():
     data = tryHard(API_URL+'/getAllPGsExt/').json()
 
     return [pg for pg in data]
-
-
-def getRangeVotes(pgs, date_, votes_type='logic'):
-    def getVotesOnDay(votesPerDay_, day):
-        # tempList = sorted(votesPerDay_, key=lambda k: k['time'])
-        if day in votesPerDay_.keys():
-            votesPerDay_[day].sort(key=lambda r: r['time'])
-        else:
-            return []
-        try:
-            out = [a['id'] for a in votesPerDay_[day]]
-            return out
-        except:
-            return []
-
-    # get data
-    r = tryHard(API_URL+'/getMembersOfPGsOnDate/'+date_)
-    membersInPGs = r.json()
-
-    r = tryHard(API_URL+'/getMembersOfPGsRanges/'+date_)
-    membersInPGsRanges = r.json()
-
-    # create dict votesPerDay
-    r = tryHard(API_URL+'/getAllVotes/'+date_)
-    allVotesData = r.json()
-
-    if date_:
-        if votes_type == 'logic':
-            votes = getLogicVotes(date_)
-        else:
-            r = tryHard(API_URL+'/getVotes/'+date_)
-            votes = r.json()
-
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-    else:
-        if votes_type == 'logic':
-            votes = getLogicVotes()
-        else:
-            r = tryHard(API_URL+'/getVotes/'+date_)
-            votes = r.json()
-        date_of = datetime.now().date()
-
-    # print votes
-    # prepare votes in 'windows'
-    votesPerDay = {}
-    for vote in allVotesData:
-        vote_date = vote['start_time'].split('T')[0]
-        if vote_date in votesPerDay.keys():
-            dateObj = datetime.strptime(vote['start_time'], '%Y-%m-%dT%X')
-            votesPerDay[vote_date].append({'id': vote['id'],
-                                           'time': dateObj})
-        else:
-            dateObj = datetime.strptime(vote['start_time'], '%Y-%m-%dT%X')
-            votesPerDay[vote_date] = [{'id': vote['id'],
-                                       'time': dateObj}]
-
-    # get average score of PG
-    if votes_type == 'logic':
-        pg_score = np.array([])
-    else:
-        pg_score = []
-    counter = 0
-    all_votes = []
-    for membersInRange in membersInPGsRanges:
-        if len(pgs) == 1 and not membersInRange['members'][str(pgs[0])]:
-            continue
-        start_date = datetime.strptime(membersInRange['start_date'],
-                                       API_DATE_FORMAT).date()
-        end_date = datetime.strptime(membersInRange['end_date'],
-                                     API_DATE_FORMAT).date()
-        days = (end_date - start_date).days
-        votes_ids = [vote_id
-                     for i
-                     in range(days+1)
-                     for vote_id
-                     in getVotesOnDay(votesPerDay,
-                                      (start_date+timedelta(days=i)).strftime('%Y-%m-%d'))]
-        if votes_ids == []:
-            continue
-        all_votes = all_votes + votes_ids
-        counter += len(votes_ids)
-        if votes_type == 'logic':
-            pg_score_temp = np.mean([[votes[str(member)][str(b)]
-                                      for b
-                                      in votes_ids
-                                      ]
-                                     for pg_id
-                                     in pgs
-                                     for member
-                                     in membersInRange['members'][pg_id]],
-                                    axis=0)
-        else:
-            members = [member
-                       for pg_id
-                       in pgs
-                       for member
-                       in membersInRange['members'][pg_id]]
-
-            # print member, votes[str(member)].keys()
-            # Print member and vote id where is fail in data for cutVotes
-            for member in members:
-                for b in votes_ids:
-                    if str(b) not in votes[str(member)].keys():
-                        print member, b, 'FAIL'
-                        # fix for cutVotes for members which isn't member for a half of day
-                        if votes_type == 'plain':
-                            votes[str(member)][str(b)] = 'X'
-            pg_score_temp = [votes[str(member)][str(b)]
-                             for member
-                             in members
-                             for b
-                             in votes_ids if votes[str(member)][str(b)] != 'X']
-
-        if votes_type == 'logic':
-            pg_score = np.concatenate((pg_score,
-                                       pg_score_temp),
-                                      axis=0)
-        else:
-            pg_score = pg_score+pg_score_temp
-
-    return pg_score, membersInPGs, votes, all_votes
 
 
 def getMPGovId(id_parladata):
