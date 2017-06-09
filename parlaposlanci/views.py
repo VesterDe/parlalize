@@ -1168,32 +1168,7 @@ def getAllSpeeches(request, person_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
-#method returns percent, how similar does the members vote
-def getEqualVoters(request, id, date_=None):
-    print id
-    if date_:
-        votes = getLogicVotes(date_)
-        date_of = datetime.strptime(date_, '%d.%m.%Y')
-    else:
-        votes = getLogicVotes()
-        date_of = datetime.now().date()
 
-    members = getMPsList(request, date_)
-    membersDict = {str(mp['id']):mp for mp in json.loads(members.content)}
-    tempVotes = {voter: votes_ for voter, votes_ in votes.items() if voter in membersDict.keys()}
-    votes = tempVotes
-    try:
-        out = {vote:euclidean(votes[str(id)].values(), votes[str(vote)].values()) for vote in sorted(votes.keys()) if str(vote) != str(id)}
-    except:
-        client.captureException()
-        return JsonResponse({'alliswell': False})
-
-    keys = sorted(out, key=out.get)
-
-    for key in keys:
-        membersDict[key].update({'ratio':out[str(key)]})
-        membersDict[key].update({'id':key})
-    return membersDict, keys, date_of
 
 
 # Method return json with most similar voters to this voter
