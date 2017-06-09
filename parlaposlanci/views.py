@@ -2605,32 +2605,7 @@ def getStyleScores(request, person_id, date_=None):
 
 
 
-def makeAverageStyleScores(date_): # TODO refactor cleanup
-#    speeches = tryHard(API_URL+'/getAllSpeeches/').json()
-#    speeches_content = [speech['content'] for speech in speeches]
-#    speeches_megastring = string.join(speeches_content)
 
-    #data = tryHard('http://parlameter.si:8983/solr/knedl/admin/luke?fl=content_t&numTerms=200000&wt=json').json()
-    data = tryHard('https://isci.parlameter.si/dfall/'+date_).json()
-
-    #wordlist = data['fields']['content_t']['topTerms']
-
-    wordlist_new = {word["term"]: word["df"] for word in data}
-
-
-    counter = Counter(wordlist_new)
-#    counter = countWords(speeches_megastring, counter)
-    total = sum(counter.values())
-    print total
-
-    output = getScores([problematicno, privzdignjeno, preprosto], counter, total)
-
-#    output = {'problematicno': getScore(problematicno, counter, total),
-#              'privzdignjeno': getScore(privzdignjeno, counter, total),
-#              'preprosto': getScore(preprosto, counter, total),
-#             }
-
-    return output
 
 
 @lockSetter
