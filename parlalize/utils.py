@@ -14,6 +14,22 @@ import numpy as np
 import time
 import csv
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
+from parlalize.settings import SETTER_KEY
+
+
+def lockSetter(function):
+        def wrap(request, *args, **kwargs):
+            if request:
+                setterKey = request.GET.get('key')
+                if str(setterKey) == str(SETTER_KEY):
+                    return function(request, *args, **kwargs)
+                else:
+                    raise PermissionDenied
+            else:
+                return function(*args, **kwargs)
+        return wrap
+
 
 
 def tryHard(url):
