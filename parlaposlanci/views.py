@@ -2962,7 +2962,7 @@ def setVocabularySizeAndSpokenWords(request, date_=None):
 
     return HttpResponse('All MPs updated.')
 
-#Depricated
+#Deprecated
 
 @lockSetter
 def setVocabularySizeALL(request, date_): # TODO refactor remove? 
