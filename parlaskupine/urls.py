@@ -5,9 +5,7 @@ from parlaskupine.views import *
 urlpatterns = patterns('',
 
 #	url(r'^getMPsList/', getMPsList),
-	
     # setters
-    # TJ
     url(r'^setBasicInfOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setBasicInfOfPG),
     url(r'^setBasicInfOfPG/(?P<pg_id>\d+)', setBasicInfOfPG),
 
@@ -18,19 +16,6 @@ urlpatterns = patterns('',
 
     url(r'^setMPsOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setMPsOfPG),
     url(r'^setMPsOfPG/(?P<pg_id>\d+)', setMPsOfPG),
-
-    # TK
-    url(r'^setMostMatchingThem/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setMostMatchingThem),
-    url(r'^setMostMatchingThem/(?P<pg_id>\d+)', setMostMatchingThem),
-
-    url(r'^setLessMatchingThem/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setLessMatchingThem),
-    url(r'^setLessMatchingThem/(?P<pg_id>\d+)', setLessMatchingThem),
-
-    url(r'^setDeviationInOrg/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setDeviationInOrg),
-    url(r'^setDeviationInOrg/(?P<pg_id>\d+)', setDeviationInOrg),
-
-    url(r'^setCutVotes/(?P<pg_id>\d+)/(?P<date_>[\w].+)', setCutVotes),
-    url(r'^setCutVotes/(?P<pg_id>\d+)', setCutVotes),
 
     url(r'^setWorkingBodies/(?P<org_id>\d+)/(?P<date_>[\w].+)', setWorkingBodies),
     url(r'^setWorkingBodies/(?P<org_id>\d+)', setWorkingBodies),
@@ -48,7 +33,6 @@ urlpatterns = patterns('',
     url(r'^setPresenceThroughTime/(?P<party_id>\d+)', setPresenceThroughTime),
 
     # getters
-    # TJ
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)', getBasicInfOfPG),
 
     url(r'^getPercentOFAttendedSessionPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getPercentOFAttendedSessionPG),
@@ -63,7 +47,6 @@ urlpatterns = patterns('',
     url(r'^getMPsOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getMPsOfPG),
     url(r'^getMPsOfPG/(?P<pg_id>\d+)', getMPsOfPG),
     
-    # TK
     url(r'^getMostMatchingThem/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getMostMatchingThem),
     url(r'^getMostMatchingThem/(?P<pg_id>\d+)/', getMostMatchingThem),
 
@@ -72,9 +55,6 @@ urlpatterns = patterns('',
 
     url(r'^getDeviationInOrg/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getDeviationInOrg),
     url(r'^getDeviationInOrg/(?P<pg_id>\d+)/', getDeviationInOrg),
-
-    url(r'^getCutVotes/(?P<pg_id>\d+)/(?P<date>[\w].+)', getCutVotes),
-    url(r'^getCutVotes/(?P<pg_id>\d+)', getCutVotes),
 
     url(r'^getTaggedBallots/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getTaggedBallots),
     url(r'^getTaggedBallots/(?P<pg_id>\d+)', getTaggedBallots),
