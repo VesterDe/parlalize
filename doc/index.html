@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link href="vendor/bootstrap.min.css" rel="stylesheet" media="screen">
-  <link href="vendor/prettify.css" rel="stylesheet" media="screen">
-  <link href="css/style.css" rel="stylesheet" media="screen, print">
+  <link href="vendor/prettify_djnd.css" rel="stylesheet" media="screen">
+  <link href="css/style_djnd.css" rel="stylesheet" media="screen, print">
   <link href="img/favicon.ico" rel="icon" type="image/x-icon">
   <script src="vendor/polyfill.js"></script>
 </head>
@@ -24,7 +24,7 @@
     {{#if title}}
       {{#if isHeader}}
         {{#if isFixed}}
-          <li class="nav-fixed nav-header navbar-btn nav-list-item" data-group="{{group}}"><a href="#api-{{group}}">{{underscoreToSpace title}}</a></li>
+          <li class="nav-fixed nav-header navbar-btn nav-list-item data-group="{{group}}"><a href="#api-{{group}}">{{underscoreToSpace title}}</a></li>
         {{else}}
           <li class="nav-header nav-list-item" data-group="{{group}}"><a href="#api-{{group}}">{{underscoreToSpace title}}</a></li>
         {{/if}}
