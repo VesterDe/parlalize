@@ -2364,7 +2364,8 @@ def getComparedVotes(request):
                 'not_present': ballot.vote.not_present,
                 'result': ballot.vote.result,
                 'is_outlier': ballot.vote.is_outlier,
-                'tags': ballot.vote.tags
+                'tags': ballot.vote.tags,
+                'date': ballot.start_time.strftime(API_DATE_FORMAT)
             }
         })
 
