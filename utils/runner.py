@@ -258,7 +258,7 @@ def deleteAppModels(appName):
 
 
 def updateWB():
-    organizations = tryHard(API_URL + '/getOrganizatonByClassification').json()
+    organizations = tryHard(API_URL + '/getOrganizatonsByClassification').json()
     for wb in organizations['working_bodies'] + organizations['council']:
         print 'setting working_bodie: ', wb['name']
         try:
@@ -632,7 +632,7 @@ def recacheActivities(activity, mps_ids):
 
 
 def recacheWBs():
-    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonsByClassification').json()['working_bodies']
     for wb in wbs:
         print wb
         print requests.get('https://glej.parlameter.si/wb/getWorkingBodies/'+str(wb['id'])+'?frame=true&altHeader=true&forceRender=true')

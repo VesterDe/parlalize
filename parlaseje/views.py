@@ -439,7 +439,7 @@ def setMotionOfSession(request, session_id):
     kvorum = 0
     not_present = 0
     for mot in motion:
-        url = API_URL + '/getVotesOfMotion/' + str(mot['vote_id']) + '/'
+        url = API_URL + '/getBallotsOfMotion/' + str(mot['vote_id']) + '/'
         votes = tryHard(url).json()
         for vote in votes:
             if vote['option'] == str('za'):
@@ -509,7 +509,7 @@ def setMotionOfSessionGraph(request, session_id):
     kvordic = defaultdict(int)
     npdic = defaultdict(int)
     for mot in motion:
-        url = API_URL + '/getVotesOfMotion/' + str(mot['vote_id']) + '/'
+        url = API_URL + '/getBallotsOfMotion/' + str(mot['vote_id']) + '/'
         votes = tryHard(url).json()
         for vote in votes:
             if vote['option'] == str('za'):
@@ -1068,7 +1068,7 @@ def getMotionAnalize(request, motion_id):
 def setPresenceOfPG(request, session_id):
     """ Stores presence of PGs on specific session
     """
-    votes = tryHard(API_URL + '/getVotesOfSession/' + str(session_id) + '/').json()
+    votes = tryHard(API_URL + '/getBallotsOfSession/' + str(session_id) + '/').json()
     motions = tryHard(API_URL + '/motionOfSession/' + str(session_id) + '/').json()
     session = Session.objects.get(id_parladata=session_id)
     membersOfPG = tryHard(API_URL + '/getMembersOfPGsOnDate/' + session.start_time.strftime(API_DATE_FORMAT)).json()
