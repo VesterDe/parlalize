@@ -5,7 +5,7 @@ from django.http import Http404, JsonResponse, HttpResponse
 import requests
 from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity, MinisterStatic
 from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
-from parlaseje.models import Session, Vote, Ballot, Speech, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph
+from parlaseje.models import VoteDetailed, Session, Vote, Ballot, Speech, PresenceOfPG, AbsentMPs, VoteDetailed
 from parlalize.settings import VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT, DEBUG
 from django.contrib.contenttypes.models import ContentType
 import requests
@@ -19,17 +19,16 @@ from parlalize.settings import SETTER_KEY
 
 
 def lockSetter(function):
-        def wrap(request, *args, **kwargs):
-            if request:
-                setterKey = request.GET.get('key')
-                if str(setterKey) == str(SETTER_KEY):
-                    return function(request, *args, **kwargs)
-                else:
-                    raise PermissionDenied
+    def wrap(request, *args, **kwargs):
+        if request:
+            setterKey = request.GET.get('key')
+            if str(setterKey) == str(SETTER_KEY):
+                return function(request, *args, **kwargs)
             else:
-                return function(*args, **kwargs)
-        return wrap
-
+                raise PermissionDenied
+        else:
+            return function(*args, **kwargs)
+    return wrap
 
 
 def tryHard(url):
@@ -48,7 +47,7 @@ def tryHard(url):
     return data
 
 
-def voteToLogical(vote):
+def voteToLogical(vote): # TODO remove
     if vote == 'za':
         return 1
     elif vote == 'proti':
@@ -57,49 +56,7 @@ def voteToLogical(vote):
         return -1
 
 
-# Return dictionary of votes results by user ids.
-def getLogicVotes(date_=None):
-    if date_:
-        r = tryHard(API_URL+'/getVotes/'+date_)
-        v = tryHard(API_URL+'/getAllVotes/'+date_)
-    else:
-        r = tryHard(API_URL+'/getVotes/')
-        v = tryHard(API_URL+'/getAllVotes/')
-    pl_votes = v.json()
-    votes = r.json()
-
-    niPoslanec = VOTE_MAP['ni_poslanec']
-
-    for person_id in votes.keys():
-        for vote in pl_votes:
-            try:
-                logic_vote = VOTE_MAP[str(votes[str(person_id)][str(vote['id'])])]
-                votes[str(person_id)][str(vote['id'])] = logic_vote
-            except:
-                if type(votes[str(person_id)]) == list:
-                    votes[str(person_id)] = {}
-                votes[str(person_id)][str(vote['id'])] = niPoslanec
-
-    return votes
-
-
-def getVotes():
-    r = tryHard(API_URL + '/getVotes/')
-    pl_votes = Vote.objects.all()
-    votes = r.json()
-    for person_id in votes.keys():
-        for vote in pl_votes:
-            try:
-                if not votes[str(person_id)][str(vote.id_parladata)]:
-                    print 'bu'
-            except:
-                if type(votes[str(person_id)]) == list:
-                    votes[str(person_id)] = {}
-                votes[str(person_id)][str(vote.id_parladata)] = 'ni_poslanec'
-    return votes
-
-
-def votesToLogical(votes, length):
+def votesToLogical(votes, length): # TODO remove
     maxVotes = length
     for key in votes.keys():
         votes[key] = map(voteToLogical, votes[key])
@@ -397,127 +354,6 @@ def getPGIDs():
     return [pg for pg in data]
 
 
-def getRangeVotes(pgs, date_, votes_type='logic'):
-    def getVotesOnDay(votesPerDay_, day):
-        # tempList = sorted(votesPerDay_, key=lambda k: k['time'])
-        if day in votesPerDay_.keys():
-            votesPerDay_[day].sort(key=lambda r: r['time'])
-        else:
-            return []
-        try:
-            out = [a['id'] for a in votesPerDay_[day]]
-            return out
-        except:
-            return []
-
-    # get data
-    r = tryHard(API_URL+'/getMembersOfPGsOnDate/'+date_)
-    membersInPGs = r.json()
-
-    r = tryHard(API_URL+'/getMembersOfPGsRanges/'+date_)
-    membersInPGsRanges = r.json()
-
-    # create dict votesPerDay
-    r = tryHard(API_URL+'/getAllVotes/'+date_)
-    allVotesData = r.json()
-
-    if date_:
-        if votes_type == 'logic':
-            votes = getLogicVotes(date_)
-        else:
-            r = tryHard(API_URL+'/getVotes/'+date_)
-            votes = r.json()
-
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-    else:
-        if votes_type == 'logic':
-            votes = getLogicVotes()
-        else:
-            r = tryHard(API_URL+'/getVotes/'+date_)
-            votes = r.json()
-        date_of = datetime.now().date()
-
-    # print votes
-    # prepare votes in 'windows'
-    votesPerDay = {}
-    for vote in allVotesData:
-        vote_date = vote['start_time'].split('T')[0]
-        if vote_date in votesPerDay.keys():
-            dateObj = datetime.strptime(vote['start_time'], '%Y-%m-%dT%X')
-            votesPerDay[vote_date].append({'id': vote['id'],
-                                           'time': dateObj})
-        else:
-            dateObj = datetime.strptime(vote['start_time'], '%Y-%m-%dT%X')
-            votesPerDay[vote_date] = [{'id': vote['id'],
-                                       'time': dateObj}]
-
-    # get average score of PG
-    if votes_type == 'logic':
-        pg_score = np.array([])
-    else:
-        pg_score = []
-    counter = 0
-    all_votes = []
-    for membersInRange in membersInPGsRanges:
-        if len(pgs) == 1 and not membersInRange['members'][str(pgs[0])]:
-            continue
-        start_date = datetime.strptime(membersInRange['start_date'],
-                                       API_DATE_FORMAT).date()
-        end_date = datetime.strptime(membersInRange['end_date'],
-                                     API_DATE_FORMAT).date()
-        days = (end_date - start_date).days
-        votes_ids = [vote_id
-                     for i
-                     in range(days+1)
-                     for vote_id
-                     in getVotesOnDay(votesPerDay,
-                                      (start_date+timedelta(days=i)).strftime('%Y-%m-%d'))]
-        if votes_ids == []:
-            continue
-        all_votes = all_votes + votes_ids
-        counter += len(votes_ids)
-        if votes_type == 'logic':
-            pg_score_temp = np.mean([[votes[str(member)][str(b)]
-                                      for b
-                                      in votes_ids
-                                      ]
-                                     for pg_id
-                                     in pgs
-                                     for member
-                                     in membersInRange['members'][pg_id]],
-                                    axis=0)
-        else:
-            members = [member
-                       for pg_id
-                       in pgs
-                       for member
-                       in membersInRange['members'][pg_id]]
-
-            # print member, votes[str(member)].keys()
-            # Print member and vote id where is fail in data for cutVotes
-            for member in members:
-                for b in votes_ids:
-                    if str(b) not in votes[str(member)].keys():
-                        print member, b, 'FAIL'
-                        # fix for cutVotes for members which isn't member for a half of day
-                        if votes_type == 'plain':
-                            votes[str(member)][str(b)] = 'X'
-            pg_score_temp = [votes[str(member)][str(b)]
-                             for member
-                             in members
-                             for b
-                             in votes_ids if votes[str(member)][str(b)] != 'X']
-
-        if votes_type == 'logic':
-            pg_score = np.concatenate((pg_score,
-                                       pg_score_temp),
-                                      axis=0)
-        else:
-            pg_score = pg_score+pg_score_temp
-
-    return pg_score, membersInPGs, votes, all_votes
-
-
 def getMPGovId(id_parladata):
     person = Person.objects.filter(id_parladata=id_parladata)[0]
     out = {'id': person.id_parladata,
@@ -646,187 +482,6 @@ def getAllStaticData(request, force_render=False):
         cache.set('all_statics', out, 60 * 60 * 48)
 
     return JsonResponse(out)
-
-
-def checkSessions():
-    ses = tryHard(API_URL + '/getSessions/').json()
-    sessions = [s['id'] for s in ses]
-    ballots = [s.vote.id_parladata for s in Ballot.objects.all()]
-    motionIDs = []
-    for id_se in sessions:
-        url = API_URL + '/motionOfSession/' + str(id_se) + '/'
-        if len(tryHard(url).json()) > 0:
-            motionIDs.append(id_se)
-    print 'Vsa glasovanja: ', len(motionIDs)
-
-    if len(Session.objects.all()) > 0:
-        print 'Seje katerih ni v parlalizah: ', list(set(sessions) - set(Session.objects.values_list('id_parladata', flat=True)))
-    else:
-        print 'ni sej sploh'
-
-    if len(Vote.objects.all()) > 0:
-        print 'Vote katerih ni v parlalizah: ', list(set(motionIDs) - set(Vote.objects.values_list('id_parladata', flat=True)))
-    else:
-        print 'ni votov sploh'
-
-    if len(Vote_graph.objects.all()) > 0:
-        print 'Vote graph katerih ni v parlalizah: ', list(set(motionIDs) - set(Vote_graph.objects.all().values_list('vote__id_parladata', flat=True)))
-    else:
-        print 'ni votov grafov sploh'
-
-    if len(PresenceOfPG.objects.all()) > 0:
-        print 'stevilo PresenceOfPG: ', len(PresenceOfPG.objects.all())
-    else:
-        print 'ni PresenceOfPG sploh'
-
-    if len(AverageSpeeches.objects.all()) > 0:
-        print 'stevilo AverageSpeeches: ', len(AverageSpeeches.objects.all())
-    else:
-        print 'ni AverageSpeeches sploh'
-
-    if len(AbsentMPs.objects.all()) > 0:
-        print 'stevilo AbsentMPs: ', len(AbsentMPs.objects.all())
-    else:
-        print 'ni AbsentMPs sploh'
-
-
-def checkPG():
-    org = [int(i) for i in (tryHard(API_URL+'/getAllOrganizations').json()).keys()]
-    pg = [int(i) for i in (tryHard(API_URL+'/getAllPGs').json()).keys()]
-
-    if len(Organization.objects.all()) > 0:
-        print 'Organizacij katerih ni v parlalizah: ', list(set(org) - set(Organization.objects.values_list('id_parladata', flat=True)))
-    else:
-        print 'ni sej sploh'
-
-    if len(PGStatic.objects.all()) > 0:
-        print 'PGStatic: za te PG ni kartice: ', list(set(pg) - set(PGStatic.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni PGStatic sploh'
-
-    if len(PercentOFAttendedSession.objects.all()) > 0:
-        print 'PercentOFAttendedSession: za te PG ni kartice: ', list(set(pg) - set(PercentOFAttendedSession.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni PercentOFAttendedSession sploh'
-
-    if len(MPOfPg.objects.all()) > 0:
-        print 'MPOfPg: za te PG ni kartice: ', list(set(pg) - set(MPOfPg.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni MPOfPg sploh'
-
-    if len(MostMatchingThem.objects.all()) > 0:
-        print 'MostMatchingThem: za te PG ni kartice: ', list(set(pg) - set(MostMatchingThem.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni MostMatchingThem sploh'
-
-    if len(LessMatchingThem.objects.all()) > 0:
-        print 'LessMatchingThem: za te PG ni kartice: ', list(set(pg) - set(LessMatchingThem.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni LessMatchingThem sploh'
-
-    if len(DeviationInOrganization.objects.all()) > 0:
-        print 'DeviationInOrganization: za te PG ni kartice: ', list(set(pg) - set(DeviationInOrganization.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni DeviationInOrganization sploh'
-
-    if len(CutVotes.objects.all()) > 0:
-        print 'CutVotes: za te PG ni kartice: ', list(set(pg) - set(CutVotes.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni CutVotes sploh'
-
-    if len(VocabularySize.objects.all()) > 0:
-        print 'VocabularySize: za te PG ni kartice: ', list(set(pg) - set(VocabularySize.objects.values_list('organization__id_parladata', flat=True)))
-    else:
-        print 'ni VocabularySize sploh'
-
-def checkMP():
-    mps = [i['id'] for i in tryHard(API_URL+'/getMPs').json()]
-
-    print mps
-
-    if len(Person.objects.all()) > 0:
-        print 'Poslancev katerih ni v parlalizah: ', list(set(mps) - set(Person.objects.values_list('id_parladata', flat=True)))
-    else:
-        print 'ni sej sploh'
-    
-    if len(Presence.objects.all()) > 0:
-        print 'Presence: za te MP ni kartice: ', list(set(mps) - set(Presence.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni Presence sploh'
-
-    if len(SpokenWords.objects.all()) > 0:
-        print 'SpokenWords: za te MP ni kartice: ', list(set(mps) - set(SpokenWords.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni SpokenWords sploh'
-
-    if len(SpeakingStyle.objects.all()) > 0:
-        print 'SpeakingStyle: za te MP ni kartice: ', list(set(mps) - set(SpeakingStyle.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni SpeakingStyle sploh'
-
-    #if len(CutVotes.objects.all()) > 0:
-    #    print 'CutVotes: za te MP ni kartice: ', list(set(mps) - set(CutVotes.objects.values_list('person__id_parladata', flat=True)))
-    #else:
-    #    print 'ni CutVotes sploh'
-
-    if len(LastActivity.objects.all()) > 0:
-        print 'LastActivity: za te MP ni kartice: ', list(set(mps) - set(LastActivity.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni LastActivity sploh'
-
-    if len(EqualVoters.objects.all()) > 0:
-        print 'EqualVoters: za te MP ni kartice: ', list(set(mps) - set(EqualVoters.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni EqualVoters sploh'
-
-    if len(LessEqualVoters.objects.all()) > 0:
-        print 'LessEqualVoters: za te MP ni kartice: ', list(set(mps) - set(LessEqualVoters.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni LessEqualVoters sploh'
-
-    if len(MPsWhichFitsToPG.objects.all()) > 0:
-        print 'MPsWhichFitsToPG: za te MP ni kartice: ', list(set(mps) - set(MPsWhichFitsToPG.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni MPsWhichFitsToPG sploh'
-
-    if len(MPStaticPL.objects.all()) > 0:
-        print 'MPStaticPL: za te MP ni kartice: ', list(set(mps) - set(MPStaticPL.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni MPStaticPL sploh'
-    #if len(MPStaticGroup.objects.all()) > 0:
-    #    print 'MPStaticGroup: za te MP ni kartice: ', list(set(mps) - set(MPStaticGroup.objects.values_list('person__id_parladata', flat=True)))
-    #else:
-    #    print 'ni MPStaticGroup sploh'
-
-    if len(NumberOfSpeechesPerSession.objects.all()) > 0:
-        print 'NumberOfSpeechesPerSession: za te MP ni kartice: ', list(set(mps) - set(NumberOfSpeechesPerSession.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni NumberOfSpeechesPerSession sploh'
-
-    #if len(VocabularySize.objects.all()) > 0:
-    #    print 'VocabularySize: za te MP ni kartice: ', list(set(mps) - set(VocabularySize.objects.values_list('person__id_parladata', flat=True)))
-    #else:
-    #    print 'ni VocabularySize sploh'
-
-    if len(AverageNumberOfSpeechesPerSession.objects.all()) > 0:
-        print 'AverageNumberOfSpeechesPerSession: za te MP ni kartice: ', list(set(mps) - set(AverageNumberOfSpeechesPerSession.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni AverageNumberOfSpeechesPerSession sploh'
-
-    #if len(Compass.objects.all()) > 0:
-    #    print 'Compass: za te MP ni kartice: ', list(set(mps) - set(Compass.objects.values_list('person__id_parladata', flat=True)))
-    #else:
-    #    print 'ni Compass sploh'
-
-    if len(TaggedBallots.objects.all()) > 0:
-        print 'TaggedBallots: za te MP ni kartice: ', list(set(mps) - set(TaggedBallots.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni TaggedBallots sploh'
-
-    if len(MembershipsOfMember.objects.all()) > 0:
-        print 'MembershipsOfMember: za te MP ni kartice: ', list(set(mps) - set(MembershipsOfMember.objects.values_list('person__id_parladata', flat=True)))
-    else:
-        print 'ni MembershipsOfMember sploh'
 
 
 def getPersonsCardDates(request, person_id):

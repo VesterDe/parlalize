@@ -13,7 +13,8 @@ from parlaposlanci.models import Person, MPStaticPL, MembershipsOfMember, Averag
 from parlaskupine.views import setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, getListOfPGs, setPresenceThroughTime as setPresenceThroughTimePG
 from parlaskupine.models import Organization, WorkingBodies, MPOfPg, PGStatic
 
-from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph, Vote_analysis
+from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, Vote_graph, Vote_analysis
+
 from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 from utils.recache import updatePagesS
@@ -159,7 +160,6 @@ def runSettersSessions(date_to=None, sessions_ids=None):
 
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
-        # AverageSpeeches: setSpeechesOnSession,
         Vote_graph: setMotionOfSessionGraph,
         Vote_analysis: setMotionAnalize,
     }
@@ -258,7 +258,7 @@ def deleteAppModels(appName):
 
 
 def updateWB():
-    organizations = tryHard(API_URL + '/getOrganizatonByClassification').json()
+    organizations = tryHard(API_URL + '/getOrganizatonsByClassification').json()
     for wb in organizations['working_bodies'] + organizations['council']:
         print 'setting working_bodie: ', wb['name']
         try:
@@ -399,6 +399,9 @@ def fastUpdate(fast=True, date_=None):
     # update speeches
     existingIDs = list(Speech.objects.all().values_list('id_parladata',
                                                         flat=True))
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update speeches at: ' + str(datetime.now()))
     for dic in data['speeches']:
         if int(dic['id']) not in existingIDs:
             print 'adding speech'
@@ -425,10 +428,16 @@ def fastUpdate(fast=True, date_=None):
                           valid_to=dic['valid_to'])
 
     # update Votes
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update votes at: ' + str(datetime.now()))
     for session_id in data['sessions_of_updated_votes']:
         setMotionOfSession(None, str(session_id))
 
     # update ballots
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update ballots at: ' + str(datetime.now()))
     existingISs = Ballot.objects.all().values_list('id_parladata', flat=True)
     for dic in data['ballots']:
         if int(dic['id']) not in existingISs:
@@ -623,7 +632,7 @@ def recacheActivities(activity, mps_ids):
 
 
 def recacheWBs():
-    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonsByClassification').json()['working_bodies']
     for wb in wbs:
         print wb
         print requests.get('https://glej.parlameter.si/wb/getWorkingBodies/'+str(wb['id'])+'?frame=true&altHeader=true&forceRender=true')

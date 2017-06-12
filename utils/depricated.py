@@ -298,7 +298,7 @@ def morningCash():
     theUrl = 'https://glej.parlameter.si/'
     mps = tryHard('https://data.parlameter.si/v1/getMPs').json()
     session = tryHard('https://data.parlameter.si/v1/getSessions/').json()
-    wb = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification')
+    wb = tryHard('https://data.parlameter.si/v1/getOrganizatonsByClassification')
     wb = wb.json()['working_bodies']
     vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []
@@ -600,7 +600,7 @@ def runSettersPG(date_to=None):
             except:
                 client.captureException()
 
-    organizations = tryHard(API_URL + '/getOrganizatonByClassification').json()
+    organizations = tryHard(API_URL + '/getOrganizatonsByClassification').json()
     print organizations
     for org in organizations['working_bodies'] + organizations['council']:
         print org
