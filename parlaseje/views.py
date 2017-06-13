@@ -2371,7 +2371,105 @@ def getComparedVotes(request):
     return JsonResponse(out, safe=False)
 
 
-def getMotionOfSessionVotes(request, votes):
+def getVotesData(request, votes):
+    """
+    * @api {get} /getVotesData/{votes} Requests detailed data of votes.
+    * @apiName getVotesData
+    * @apiGroup Session
+    * @apiParam {votes} votes is parameter which returns detailed data of all votes ids given as a parameter
+    * @apiSuccess {Json} returns detiled data of all motions on specific session
+    * @apiSuccess {date} created_for For when was this data created?
+    * @apiSuccess {Object} session object
+    * @apiSuccess {String} session.name Name of session.
+    * @apiSuccess {Date} session.date_ts Date and time of session.
+    * @apiSuccess {Date} session.date Date of session.
+    * @apiSuccess {Integer} session.id Id of session.
+    * @apiSuccess {Boolean} session.in_review Return true or false if session is in review.
+    * @apiSuccess {Object[]} session.orgs Organization object
+    * @apiSuccess {String} session.orgs.acronym Organization acronym
+    * @apiSuccess {Boolean} session.orgs.is_coalition True of False if organization is in coalition
+    * @apiSuccess {Integer} session.orgs.id Id of organization
+    * @apiSuccess {Integer} session.orgs.name Name of organization
+    * @apiSuccess {Object} results object
+    * @apiSuccess {Integer} results.motion_id ID of motion.
+    * @apiSuccess {String} results.text Text of motion
+    * @apiSuccess {Boolean} results.is_outlier Analaysis if person is outlier.
+    * @apiSuccess {Integer} results.not_present Number of MPs that were not present.
+    * @apiSuccess {Integer} results.votes_for Number of MPs that voted with yes.
+    * @apiSuccess {Boolean} results.result True or False if the motion was successful.
+    * @apiSuccess {Boolean} results.result Vote result.
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/s/getVotesData/6512,6513
+    * @apiSuccessExample {json} Example response:
+    [
+    {
+    "session": {
+    "name": "1. redna seja",
+    "date_ts": "2014-08-01T02:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "1. 8. 2014",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 6684,
+    "in_review": false
+    },
+    "created_for": "2014-08-01",
+    "results": {
+    "abstain": 0,
+    "text": "Proceduralni predlog za prekinitev 1. točke dnevnega reda",
+    "against": 59,
+    "votes_for": 26,
+    "motion_id": 6512,
+    "not_present": 5,
+    "result": false
+    }
+    },
+    {
+    "session": {
+    "name": "1. redna seja",
+    "date_ts": "2014-08-01T02:00:00",
+    "orgs": [
+    {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    }
+    ],
+    "date": "1. 8. 2014",
+    "org": {
+    "acronym": "DZ",
+    "is_coalition": false,
+    "id": 95,
+    "name": "Državni zbor"
+    },
+    "id": 6684,
+    "in_review": false
+    },
+    "created_for": "2014-08-01",
+    "results": {
+    "abstain": 0,
+    "text": "Dnevni red v celoti",
+    "against": 0,
+    "votes_for": 84,
+    "motion_id": 6513,
+    "not_present": 6,
+    "result": true
+    }
+    }
+    ]
+    """
     out = []
     votes = votes.split(',')
     for vote in votes:

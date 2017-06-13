@@ -50,5 +50,5 @@ urlpatterns = patterns(
 
     url(r'^getComparedVotes/', getComparedVotes),
 
-    url(r'^getMotionOfSessionVotes/(?P<votes>[\w,]+)$', getMotionOfSessionVotes),
+    url(r'^getVotesData/(?P<votes>[\w,]+)$', getVotesData),
 )
