@@ -2393,11 +2393,11 @@ def getVotesData(request, votes):
     * @apiSuccess {Object} results object
     * @apiSuccess {Integer} results.motion_id ID of motion.
     * @apiSuccess {String} results.text Text of motion
-    * @apiSuccess {Boolean} results.is_outlier Analaysis if person is outlier.
     * @apiSuccess {Integer} results.not_present Number of MPs that were not present.
     * @apiSuccess {Integer} results.votes_for Number of MPs that voted with yes.
+    * @apiSuccess {Integer} results.abstain Number of MPs that abstain on voting.
+    * @apiSuccess {Integer} results.against Number of MPs that are against on voting.
     * @apiSuccess {Boolean} results.result True or False if the motion was successful.
-    * @apiSuccess {Boolean} results.result Vote result.
     * @apiExample {curl} Example:
         curl -i https://analize.parlameter.si/v1/s/getVotesData/6512,6513
     * @apiSuccessExample {json} Example response:
