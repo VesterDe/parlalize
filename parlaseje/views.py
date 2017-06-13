@@ -4,7 +4,7 @@ from parlalize.utils import *
 import json
 from django.http import JsonResponse, HttpResponse
 from parlaseje.models import *
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, SETTER_KEY
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, SETTER_KEY, ISCI_URL
 from parlaseje.utils import *
 from collections import defaultdict, Counter
 from django.core.exceptions import ObjectDoesNotExist
@@ -1847,7 +1847,7 @@ def setTFIDF(request, session_id):
     """Stores TFIDF analysis.
     """
     date_of = datetime.now().date()
-    url = "https://isci.parlameter.si/tfidf/s/" + str(session_id)
+    url = ISCI_URL + "/tfidf/s/" + str(session_id)
     data = tryHard(url).json()
     session = Session.objects.get(id_parladata=session_id)
     is_saved = saveOrAbortNew(Tfidf,

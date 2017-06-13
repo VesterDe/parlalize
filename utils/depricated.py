@@ -296,9 +296,9 @@ def morningCash():
 
     # allUrls = tryHard("https://glej.parlameter.si/api/cards/getUrls").json()
     theUrl = 'https://glej.parlameter.si/'
-    mps = tryHard('https://data.parlameter.si/v1/getMPs').json()
-    session = tryHard('https://data.parlameter.si/v1/getSessions/').json()
-    wb = tryHard('https://data.parlameter.si/v1/getOrganizatonsByClassification')
+    mps = tryHard(API_URL + '/getMPs').json()
+    session = tryHard(API_URL + '/getSessions/').json()
+    wb = tryHard(API_URL + '/getOrganizatonsByClassification')
     wb = wb.json()['working_bodies']
     vote_ids = Vote.objects.all().values_list("id_parladata", flat=True)
     sessionDZ = []

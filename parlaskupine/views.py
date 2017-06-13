@@ -770,6 +770,7 @@ def setAllPGsStyleScoresFromSearch(request):
     else:
         return JsonResponse({"status": "It wasnt POST"})
 
+
 def getStyleScoresPG(request, pg_id, date_=None):
     card = getPGCardModelNew(StyleScores, int(pg_id), date_)
 
@@ -779,10 +780,10 @@ def getStyleScoresPG(request, pg_id, date_=None):
 
     if card.privzdignjeno != 0 and card.privzdignjeno_average != 0:
         privzdignjeno = card.privzdignjeno/card.privzdignjeno_average
-    
+
     if card.problematicno != 0 and card.problematicno_average != 0:
         problematicno = card.problematicno/card.problematicno_average
-    
+
     if card.preprosto != 0 and card.preprosto_average != 0:
         preprosto = card.preprosto/card.preprosto_average
 
@@ -840,24 +841,6 @@ def setAllPGsTFIDFsFromSearch(request):
             return JsonResponse({"status": "There's not data"})
     else:
         return JsonResponse({"status": "It wasnt POST"})
-
-
-@lockSetter
-def setTFIDF(request, party_id, date_=None):
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT)
-    else:
-        date_of = datetime.now().date()
-        date_ = date_of.strftime(API_DATE_FORMAT)
-    print "TFIDF", party_id
-    data = tryHard("https://isci.parlameter.si/tfidf/ps/"+party_id).json()
-    is_saved = saveOrAbortNew(Tfidf,
-                              organization=Organization.objects.get(id_parladata=party_id),
-                              created_for=date_of,
-                              data=data["results"])
-
-    return JsonResponse({"alliswell": True,
-                         "saved": is_saved})
 
 
 def getTFIDF(request, party_id, date_=None):
