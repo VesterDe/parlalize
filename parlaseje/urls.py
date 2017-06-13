@@ -49,4 +49,6 @@ urlpatterns = patterns(
     url(r'^getMotionGraph/(?P<id_mo>\d+)/(?P<date>[\w].+)', getMotionGraph),
 
     url(r'^getComparedVotes/', getComparedVotes),
+
+    url(r'^getMotionOfSessionVotes/(?P<votes>[\w,]+)$', getMotionOfSessionVotes),
 )
