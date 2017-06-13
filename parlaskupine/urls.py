@@ -23,9 +23,6 @@ urlpatterns = patterns('',
     url(r'^setVocabularySizeALL/(?P<date_>[\w].+)', setVocabularySizeALL),
     url(r'^setVocabularySizeALL', setVocabularySizeALL),
 
-    url(r'^setTFIDF/(?P<party_id>\d+)/(?P<date_>[\w].+)', setTFIDF),
-    url(r'^setTFIDF/(?P<party_id>\d+)', setTFIDF),
-
     url(r'^setNumberOfQuestionsAll/(?P<date_>[\w].+)', setNumberOfQuestionsAll),
     url(r'^setNumberOfQuestionsAll/', setNumberOfQuestionsAll),
 
