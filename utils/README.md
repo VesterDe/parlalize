@@ -1,7 +1,7 @@
-###comapss.py
+# comapss.py
 Methods for compass calculation.
 
-###imports
+# imports
 Imprort methods, which copys data from parladata to parlalize.
  * update people
  * update organizations
@@ -15,17 +15,17 @@ Imprort methods, which copys data from parladata to parlalize.
  * update persons status
  * update person functions
 
-###recache
+# recache
 Methods for cache update for cards on front
 
-###runner
+# runner
 Methods for update cards data.
 
-###speech
+# speech
 Word analysis.
 
-###votes
+# votes
 Analysis based on votes.
 
-###vote_outliers
+# vote_outliers
 Analysis of one vote.
