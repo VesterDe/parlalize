@@ -1570,56 +1570,6 @@ def getLessEqualVoters(request, person_id, date_=None): # TODO refactor rename
     #data = getPersonCardModel(EqualVoters, person_id)
     return JsonResponse(out, safe=False)
 
-#get speech and data of speaker
-def getSpeech(request, id): # TODO refactor remove?
-    speech=tryHard(API_URL+'/getSpeech/'+id+'/')
-    speech = speech.json()
-    memList = getMPsList(request)
-    members = json.loads(memList.content)
-    speech['name'] = members[str(speech['speeker'])]['Name']
-    speech['image'] = members[str(speech['speeker'])]['Image']
-    return JsonResponse(speech)
-
-#TODO
-#/id/percent/prisotniAliVsi
-#/34/66/1
-def getMPsWhichFitsToPG(request, id): # TODO refactor remove?
-    r=tryHard(API_URL+'/getVotes/')
-    votes = r.json()
-    r=tryHard(API_URL+'/getMembersOfPGs/')
-    membersInPGs = r.json()
-
-    votesToLogical(votes, len(Vote.objects.all()))
-    #calculate mean
-    votesLists = [votes[str(pgMember)] for pgMember in membersInPGs[id]]
-    votesArray = numpy.array(votesLists)
-    mean = numpy.mean(votesArray, axis=0)
-
-    #TODO discretization for
-    #mean = [for m in mean]
-
-    #delete members of PR from votes list
-    map(votes.__delitem__, [str(member) for member in membersInPGs[id]])
-
-    out = {vote:pearsonr(votes[vote], mean)[0] for vote in votes.keys()}
-    keys = sorted(out, key=out.get)
-    print out
-    members = getMPsList(request)
-    members= json.loads(members.content)
-    print members
-    for member in members:
-        #TODO: check members group
-        try:
-            member.update({'ratio': out[str(member["id"])]})
-        except:
-            member.update({'ratio': 0})
-    #for key in keys:
-    #   members[key].update({'ratio':out[key]})
-    outs = sorted(members, key=lambda k: k['ratio'])
-
-    #outs = {key:members[key] for key in keys[-5:]}
-    return JsonResponse(outs[-5:], safe=False)
-
 
 def getStyleScores(request, person_id, date_=None):
     """
@@ -1721,57 +1671,6 @@ def getStyleScores(request, person_id, date_=None):
 
     return JsonResponse(out, safe=False)
 
-
-
-
-
-
-@lockSetter
-def setTFIDFold(request, person_id): # TODO refactor remove?
-
-    mps = tryHard(API_URL+'/getMPs/').json()
-
-    person = Person.objects.get(id_parladata=int(person_id))
-
-    mp_ids = [mp['id'] for mp in mps]
-
-    speeches_grouped = [{'person_id': mp, 'speeches': tryHard(API_URL+'/getSpeeches/' + str(mp)).json()} for mp in mp_ids]
-
-    tfidf = TFIDF(speeches_grouped, person_id)
-
-    print tfidf[:10]
-
-    newtfidf = []
-    for i, term in enumerate(tfidf[:10]):
-        term['rank'] = i + 1
-        newtfidf.append(term)
-
-    if saveOrAbort(Tfidf, person=person, data=newtfidf):
-
-        return HttpResponse('All iz well')
-
-    else:
-        return HttpResponse('All waz well');
-
-
-@lockSetter
-def setTFIDF(request, person_id, date_=None):
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT)
-    else:
-        date_of = datetime.now().date()
-        date_ = date_of.strftime(API_DATE_FORMAT)
-
-    print "TFIDF", person_id
-    data = tryHard("https://isci.parlameter.si/tfidf/nodigrams/p/"+person_id).json()
-    is_saved = saveOrAbortNew(Tfidf,
-                              person=Person.objects.get(id_parladata=person_id),
-                              created_for=date_of,
-                              is_visible=False,
-                              data=data["results"])
-
-    return JsonResponse({"alliswell": True,
-                         "saved": is_saved})
 
 def getTFIDF(request, person_id, date_=None):
     """

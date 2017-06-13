@@ -11,8 +11,6 @@ urlpatterns = patterns(
     url(r'^setMinsterStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', setMinsterStatic),
     url(r'^setMinsterStatic/(?P<person_id>\d+)/', setMinsterStatic),
 
-    url(r'^setTFIDF/(?P<person_id>\d+)/(?P<date_>[\w].+)', setTFIDF),
-
     url(r'^setPresence/(?P<person_id>\d+)/(?P<date_>[\w].+)', setPercentOFAttendedSession),
     url(r'^setPresence/(?P<person_id>\d+)', setPercentOFAttendedSession),
 
