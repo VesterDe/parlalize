@@ -1989,8 +1989,6 @@ def setVocabularySizeALL(request, date_): # TODO refactor remove?
         date_of = datetime.now().date()
         date_=""
 
-#    thisperson = Person.objects.get(id_parladata=int(person_id))
-
     mps = tryHard(API_URL+'/getMPs/'+date_).json()
 
     vocabulary_sizes = []
@@ -2004,19 +2002,6 @@ def setVocabularySizeALL(request, date_): # TODO refactor remove?
 
         vocabulary_sizes.append({'person_id': mp['id'], 'vocabulary_size': len(countWords(text, Counter()))})
 
-#        if int(mp['id']) == int(person_id):
-#            result['person'] = len(countWords(text, Counter()))
-
-    vocabularies_sorted = sorted(vocabulary_sizes, key=lambda k: k['vocabulary_size'])
-
-    scores = [person['vocabulary_size'] for person in vocabulary_sizes]
-
-    result['average'] = float(sum(scores))/float(len(scores))
-
-    result['max'] = vocabularies_sorted[-1]['vocabulary_size']
-    maxMP = Person.objects.get(id_parladata=vocabularies_sorted[-1]['person_id'])
-
-#    result.append({'person_id': vocabularies_sorted[-1]['person_id'], 'vocabulary_size': vocabularies_sorted[-1]['vocabulary_size']})
 
     for p in vocabularies_sorted:
         saveOrAbortNew(
@@ -2029,15 +2014,6 @@ def setVocabularySizeALL(request, date_): # TODO refactor remove?
             maximum=result['max'])
 
     return HttpResponse('All MPs updated.')
-
-#    if saveOrAbort(VocabularySize, person=thisperson, score=result['person'], maxMP=maxMP, average=result['average'], maximum=result['max']):
-#        return HttpResponse('All iz well')
-#    else:
-#        return HttpResponse('All was well')
-#
-#    result_ = saveOrAbort(model=VocabularySize, person=Person.objects.get(id_parladata=int(person_id)), this_person=result[0]['vocabulary_size'], maxMP=Person.objects.get(id_parladata=int(vocabularies_sorted[-1]['person_id'])), average=float(sum(scores))/float(len(scores)), maximum=vocabularies_sorted[-1]['vocabulary_size'])
-#
-#    return JsonResponse(result, safe=False)
 
 
 @lockSetter
@@ -2074,19 +2050,6 @@ def setVocabularySize(request, person_id, date_=None): # TODO refactor cleanup
 
     result['max'] = vocabularies_sorted[-1]['vocabulary_size']
     maxMP = Person.objects.get(id_parladata=vocabularies_sorted[-1]['person_id'])
-
-#    result.append({'person_id': vocabularies_sorted[-1]['person_id'], 'vocabulary_size': vocabularies_sorted[-1]['vocabulary_size']})
-
-#    for p in vocabularies_sorted:
-#        saveOrAbort(
-#            VocabularySize,
-#            person=Person.objects.get(id_parladata=int(p['person_id'])),
-#            score=[v['vocabulary_size'] for v in vocabularies_sorted if v['person_id'] == p['person_id']][0],
-#            maxMP=maxMP,
-#            average=result['average'],
-#            maximum=result['max'])
-#
-#    return HttpResponse('All MPs updated.')
 
     if saveOrAbortNew(VocabularySize,
                       person=thisperson,
@@ -3869,7 +3832,6 @@ def setAllMPsTFIDFsFromSearch(request):
     """
     API endpoint for saveing TFIDF. TFIDF is generated in parlasearch and sent
     with a POST request.
-
     """
     if request.method == 'POST':
         print request.body
