@@ -2312,7 +2312,6 @@ def getComparedVotes(request):
             else:
                 exclude_ni_parties_different = '%s dpb%s.option != \'ni\'' % (exclude_ni_parties_different, i)
 
-
         exclude_ni_list = [exclude_ni_people_same, exclude_ni_parties_same, exclude_ni_people_different, exclude_ni_parties_different]
         exclude_ni_list_clean = [s for s in exclude_ni_list if s != '']
         exclude_ni = ' AND '.join(exclude_ni_list_clean)
@@ -2354,7 +2353,7 @@ def getComparedVotes(request):
 
     for ballot in ballots:
         out['results'].append({
-            'session': sessions[ballot.vote.session.id], #Session.objects.get(id_parladata=int(ballot.vote.session.id_parladata)).getSessionData(),
+            'session': sessions[ballot.vote.session.id],
             'results': {
                 'motion_id': ballot.vote.id_parladata,
                 'text': ballot.vote.motion,
@@ -2369,5 +2368,29 @@ def getComparedVotes(request):
             }
         })
 
+    return JsonResponse(out, safe=False)
 
+
+def getMotionOfSessionVotes(request, votes):
+    out = []
+    votes = votes.split(',')
+    for vote in votes:
+        if Vote.objects.filter(id_parladata=vote):
+            vot = Vote.objects.get(id_parladata=vote)
+            out.append({
+                'created_for': vot.created_for,
+                'session': vot.session.getSessionData(),
+                'results': {
+
+                        'motion_id': vot.id_parladata,
+                        'text': vot.motion,
+                        'votes_for': vot.votes_for,
+                        'against': vot.against,
+                        'abstain': vot.abstain,
+                        'not_present': vot.not_present,
+                        'result': vot.result}
+                })
+        else:
+            out.append({'Error': "No vote"})
+            return JsonResponse(out, safe=False)
     return JsonResponse(out, safe=False)
