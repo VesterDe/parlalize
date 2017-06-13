@@ -3,10 +3,23 @@ import numpy
 from datetime import datetime, timedelta
 from django.http import Http404, JsonResponse, HttpResponse
 import requests
-from parlaposlanci.models import Person, StyleScores, CutVotes, MPStaticPL, MembershipsOfMember, LessEqualVoters, EqualVoters, Presence, AverageNumberOfSpeechesPerSession, VocabularySize, Compass, SpokenWords, LastActivity, MinisterStatic
-from parlaskupine.models import Organization, WorkingBodies, CutVotes as CutVotesPG, DeviationInOrganization, LessMatchingThem, MostMatchingThem, PercentOFAttendedSession, MPOfPg, PGStatic, VocabularySize as VocabularySizePG, StyleScores as StyleScoresPG
-from parlaseje.models import VoteDetailed, Session, Vote, Ballot, Speech, PresenceOfPG, AbsentMPs, VoteDetailed
-from parlalize.settings import VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT, DEBUG
+from parlaposlanci.models import (Person, StyleScores, CutVotes, MPStaticPL,
+                                  MembershipsOfMember, LessEqualVoters,
+                                  EqualVoters, Presence,
+                                  AverageNumberOfSpeechesPerSession,
+                                  VocabularySize, Compass, SpokenWords,
+                                  LastActivity, MinisterStatic)
+from parlaskupine.models import (Organization, WorkingBodies,
+                                 CutVotes as CutVotesPG,
+                                 DeviationInOrganization, LessMatchingThem,
+                                 MostMatchingThem, PercentOFAttendedSession,
+                                 MPOfPg, PGStatic,
+                                 VocabularySize as VocabularySizePG,
+                                 StyleScores as StyleScoresPG)
+from parlaseje.models import (VoteDetailed, Session, Vote, Ballot, Speech,
+                              PresenceOfPG, AbsentMPs, VoteDetailed)
+from parlalize.settings import (VOTE_MAP, API_URL, BASE_URL, API_DATE_FORMAT,
+                                DEBUG)
 from django.contrib.contenttypes.models import ContentType
 import requests
 import json
@@ -47,54 +60,6 @@ def tryHard(url):
     return data
 
 
-def voteToLogical(vote): # TODO remove
-    if vote == 'za':
-        return 1
-    elif vote == 'proti':
-        return 0
-    else:
-        return -1
-
-
-def votesToLogical(votes, length): # TODO remove
-    maxVotes = length
-    for key in votes.keys():
-        votes[key] = map(voteToLogical, votes[key])
-        if (len(votes[key]) < length):
-            votes[key].extend(numpy.zeros(maxVotes-int(len(votes[key]))))
-        else:
-
-            votes[key] = [votes[key][i] for i in range(length)]
-
-
-def voteFor(vote):
-    if vote == 'za':
-        return 1
-    else:
-        return 0
-
-
-def voteAgainst(vote):
-    if vote == 'proti':
-        return 1
-    else:
-        return 0
-
-
-def voteAbstain(vote):
-    if vote == 'kvorum':
-        return 1
-    else:
-        return 0
-
-
-def voteAbsent(vote):
-    if vote == 'ni':
-        return 1
-    else:
-        return 0
-
-
 def normalize(val, max_):
     try:
         return round((float(val)*100)/float(max_))
@@ -103,6 +68,7 @@ def normalize(val, max_):
 
 
 # checks if cards with the data exists or not
+# DEPRICATED
 def saveOrAbort(model, **kwargs):
     savedModel = model.objects.filter(**kwargs)
     if savedModel:
@@ -252,6 +218,7 @@ def getPersonCardModelNew(model, id, date=None, is_visible=None):
     return modelObject
 
 
+# DEPRICATED
 def getPersonCardModel(model, id, date=None):
     if date:
         dateObj = datetime.strptime(date, '%d.%m.%Y')
@@ -584,7 +551,7 @@ def getOrgsCardDates(request, org_id):
 
 def monitorMe(request):
 
-    r = requests.get('https://analize.parlameter.si/v1/p/getMPStatic/2/')
+    r = requests.get(BASE_URL + '/p/getMPStatic/2/')
     if r.status_code == 200:
         return HttpResponse('All iz well.')
     else:

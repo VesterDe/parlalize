@@ -10,7 +10,7 @@ from parlaskupine.views import getListOfPGs, getIntraDisunionOrg
 from parlaseje.views import getSessionsList
 from parlaseje.models import Session
 from parlaskupine.models import Organization
-from parlalize.settings import API_DATE_FORMAT, BASE_URL, API_URL, slack_token
+from parlalize.settings import API_DATE_FORMAT, BASE_URL, API_URL, GLEJ_URL, PAGE_URL, slack_token
 from parlalize.utils import getAllStaticData, tryHard, printProgressBar
 from django.db.models import Q
 from slackclient import SlackClient
@@ -19,7 +19,7 @@ FR = '?forceRender=true'
 
 
 def updatePages():
-    base_url = 'https://parlameter.si/'
+    base_url = PAGE_URL + '/'
     slugs = json.loads(getSlugs(None).content)
     for person_id, person_slug_obj in slugs['person'].items():
         url = base_url + 'poslanec/' + person_slug_obj['slug']
@@ -123,6 +123,7 @@ def updateCacheIntraDisunion():
 
     return 1
 
+
 def recacheCards(pgCards=[], mpCards=[], sessions={}, votes_of_s=[]):
     def cardRecache(card_url):
         url = card_url + '?forceRender=true'
@@ -136,7 +137,7 @@ def recacheCards(pgCards=[], mpCards=[], sessions={}, votes_of_s=[]):
     mps_ids = [mp['id'] for mp in mps]
     pg_ids = tryHard(API_URL + '/getAllPGs/').json().keys()
 
-    base_url = 'https://glej.parlameter.si/'
+    base_url = GLEJ_URL + '/'
     if pgCards:
         for pg in pg_ids:
             for pgCard in pgCards:
