@@ -585,3 +585,40 @@ p.deprecated span{
   border-color: black;
 
 }
+
+.navbar, .navbar-inverse {
+  border-radius: 1;
+  border: none;
+  margin-bottom: 1;
+  min-height: 80px;
+  color: black;
+}
+
+.nav li {
+  display: inline;
+  color: white;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #000000;
+  font-family: Lato;
+  font-size: 1.7em;
+  font-weight: 300;
+  padding: 30px 25px 33px 25px;
+}
+
+.navbar-inverse .navbar-nav li a:hover {
+  background-color: #444444;
+  transition: 0.7s all linear;
+  height: 100%;
+}
+.navbar-toggle{
+
+  border:1px solid transparent;
+  float: left;
+}
+
+.icon-bar{
+  color: black;
+}
+

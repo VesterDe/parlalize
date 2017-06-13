@@ -3,6 +3,7 @@
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Loading...</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link href="vendor/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -14,7 +15,16 @@
 <body>
 
 <script id="template-sidenav" type="text/x-handlebars-template">
-<nav id="scrollingNav">
+
+<nav id="scrollingNav" role="navigation">
+<div class="container">
+         <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="glyphicon">&#xe236;</span>
+      </button>
+    </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"> 
   <div class="sidenav-search">
     <input class="form-control search" type="text" placeholder="{{__ "Filter..."}}">
     <span class="search-reset">x</span>
