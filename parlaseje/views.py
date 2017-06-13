@@ -538,7 +538,7 @@ def setMotionOfSessionGraph(request, session_id):
                                 vote=vote,
                                 created_for=session.start_time,
                                 motion=mot['text'],
-                                otes_for=yes,
+                                votes_for=yes,
                                 against=no,
                                 abstain=kvorum,
                                 not_present=not_present,
