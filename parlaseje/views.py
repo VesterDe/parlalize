@@ -1201,7 +1201,6 @@ def getPresenceOfPG(request, session_id, date=False):
                         safe=False)
 
 
-@lockSetter
 def setQuote(request, speech_id, start_pos, end_pos):
     """Stores quotes of specific speech.
     """
