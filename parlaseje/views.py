@@ -1309,7 +1309,7 @@ def getMotionAnalize(request, motion_id):
                             ('not_present', json.loads(model.mp_np)),
                             ('abstain', json.loads(model.mp_kvor))]:
         for mp in members_ids:
-            personData = getPersonData(mp)
+            personData = getPersonData(mp, vote.start_time.strftime(API_DATE_FORMAT))
             # set if person is outlier
             outlier = False
             if personData['party']['id'] in pg_outliers.keys():

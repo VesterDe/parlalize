@@ -14,6 +14,8 @@ from parlaseje.models import Vote_analysis
 from parlalize.settings import API_URL
 from parlaskupine.models import Organization, IntraDisunion
 
+from parlalize.utils import printProgressBar
+
 
 def setOutliers():
 
@@ -311,3 +313,13 @@ def getOptions(row, side):
                                'maxOptPerc': maxOptionPercent
                                },
                        'outliers': outliers})
+
+
+def updateMotionAnalizeOfAllSessions():
+    dz_sessions = Session.objects.filter(organization__id_parladata=95)
+    session_ids = list(dz_sessions.values_list("id_parladata", flat=True))
+
+    for session_id in session_ids:
+        printProgressBar(session_ids.index(session_id), len(session_ids), prefix='Sessions: ')
+        setMotionAnalize(None, str(session_id))
+
