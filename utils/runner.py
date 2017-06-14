@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from parlaposlanci.views import setMPStaticPL
-from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, slack_token
+from parlalize.settings import API_URL, API_DATE_FORMAT, BASE_URL, GLEJ_URL, slack_token
 from parlalize.utils import getPGIDs, findDatesFromLastCard
 from datetime import datetime, timedelta
 from django.apps import apps
@@ -13,8 +13,9 @@ from parlaposlanci.models import Person, MPStaticPL, MembershipsOfMember, Averag
 from parlaskupine.views import setMPsOfPG, setBasicInfOfPG, setWorkingBodies, setVocabularySizeALL, getListOfPGs, setPresenceThroughTime as setPresenceThroughTimePG
 from parlaskupine.models import Organization, WorkingBodies, MPOfPg, PGStatic
 
-from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, AverageSpeeches, Vote_graph, Vote_analysis
-from parlaseje.views import setPresenceOfPG, setAbsentMPs, setSpeechesOnSession, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
+from parlaseje.models import Session, Vote, Ballot, Speech, Question, Tag, PresenceOfPG, AbsentMPs, VoteDetailed, Vote_analysis
+
+from parlaseje.views import setPresenceOfPG, setMotionOfSessionGraph, getSessionsList, setMotionOfSession
 from parlaseje.utils import idsOfSession, getSesDates
 from utils.recache import updatePagesS
 from utils.imports import update, updateDistricts, updateTags
@@ -159,8 +160,7 @@ def runSettersSessions(date_to=None, sessions_ids=None):
 
     setters_models = {
         PresenceOfPG: setPresenceOfPG,
-        # AverageSpeeches: setSpeechesOnSession,
-        Vote_graph: setMotionOfSessionGraph,
+        VoteDetailed: setMotionOfSessionGraph,
         Vote_analysis: setMotionAnalize,
     }
     # set outliers for all votes
@@ -258,7 +258,7 @@ def deleteAppModels(appName):
 
 
 def updateWB():
-    organizations = tryHard(API_URL + '/getOrganizatonByClassification').json()
+    organizations = tryHard(API_URL + '/getOrganizatonsByClassification').json()
     for wb in organizations['working_bodies'] + organizations['council']:
         print 'setting working_bodie: ', wb['name']
         try:
@@ -399,6 +399,9 @@ def fastUpdate(fast=True, date_=None):
     # update speeches
     existingIDs = list(Speech.objects.all().values_list('id_parladata',
                                                         flat=True))
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update speeches at: ' + str(datetime.now()))
     for dic in data['speeches']:
         if int(dic['id']) not in existingIDs:
             print 'adding speech'
@@ -425,10 +428,16 @@ def fastUpdate(fast=True, date_=None):
                           valid_to=dic['valid_to'])
 
     # update Votes
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update votes at: ' + str(datetime.now()))
     for session_id in data['sessions_of_updated_votes']:
         setMotionOfSession(None, str(session_id))
 
     # update ballots
+    sc.api_call("chat.postMessage",
+                channel="#parlalize_notif",
+                text='Start update ballots at: ' + str(datetime.now()))
     existingISs = Ballot.objects.all().values_list('id_parladata', flat=True)
     for dic in data['ballots']:
         if int(dic['id']) not in existingISs:
@@ -596,15 +605,15 @@ def updateLastActivity(mps_ids):
     for mp in mps_ids:
         print mp
         print setLastActivity(None, str(mp))
-        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
-        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
-        print requests.get('https://glej.parlameter.si/p/zadnje-aktivnosti/' + str(mp) + '?forceRender=true')
+        print requests.get(GLEJ_URL + '/p/zadnje-aktivnosti/' + str(mp) + '/?frame=true&altHeader=true&forceRender=true')
+        print requests.get(GLEJ_URL + '/p/zadnje-aktivnosti/' + str(mp) + '/?embed=true&altHeader=true&forceRender=true')
+        print requests.get(GLEJ_URL + '/p/zadnje-aktivnosti/' + str(mp) + '?forceRender=true')
 
 
 def recacheActivities(activity, mps_ids):
     print 'recache ', activity[0], mps_ids
     orgs = list(set([getPersonData(mp)['party']['id'] for mp in mps_ids]))
-    base_url = 'https://glej.parlameter.si/p/' + activity[0] + '/'
+    base_url = GLEJ_URL + '/p/' + activity[0] + '/'
     for mp in mps_ids:
         print mp
         url = base_url + str(mp)
@@ -613,7 +622,7 @@ def recacheActivities(activity, mps_ids):
         print requests.get(url + '?forceRender=true')
 
     print 'recache orgs ', activity[1], orgs
-    base_url = 'https://glej.parlameter.si/ps/' + activity[1] + '/'
+    base_url = GLEJ_URL + '/ps/' + activity[1] + '/'
     for org in orgs:
         print org
         url = base_url + str(org)
@@ -623,7 +632,7 @@ def recacheActivities(activity, mps_ids):
 
 
 def recacheWBs():
-    wbs = tryHard('https://data.parlameter.si/v1/getOrganizatonByClassification').json()['working_bodies']
+    wbs = tryHard(API_URL + '/getOrganizatonsByClassification').json()['working_bodies']
     for wb in wbs:
         print wb
-        print requests.get('https://glej.parlameter.si/wb/getWorkingBodies/'+str(wb['id'])+'?frame=true&altHeader=true&forceRender=true')
+        print requests.get(GLEJ_URL + '/wb/getWorkingBodies/'+str(wb['id'])+'?frame=true&altHeader=true&forceRender=true')

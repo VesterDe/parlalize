@@ -62,6 +62,129 @@ def setBasicInfOfPG(request, pg_id, date_):
 
 
 def getBasicInfOfPG(request, pg_id, date=None):
+    """
+    * @api {get} getBasicInfOfPG/{pg_id} Get basic info of a PG
+    * @apiName getBasicInfOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns basic data of a selected PG
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+
+    * @apiSuccess {Integer} allVoters [WRONG] Calculated number of voters who voted for this PG. This number is not reliable, do not use it.
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+    
+    * @apiSuccess {Object} headOfPg The president of the PG
+    * @apiSuccess {Boolean} headOfPg.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} headOfPg.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} headOfPg.name MP's full name.
+    * @apiSuccess {String} headOfPg.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} headOfPg.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} headOfPg.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} headOfPg.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} headOfPg.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} headOfPg.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} headOfPg.party.name The party's name.
+    * @apiSuccess {String} headOfPg.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} headOfPg.id The person's Parladata id.
+    * @apiSuccess {Boolean} headOfPg.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Object} social Social media links for this PG
+    * @apiSuccess {String} social.twitter Url to PG's Twitter account (or null)
+    * @apiSuccess {String} social.facebook Url to PG's Facebook account (or null)
+    * @apiSuccess {String} social.email The email address of the primary contact for this PG
+
+    * @apiSuccess {Integer} numberOfSeats The number of seats this PG holds in the parliament.
+    
+    * @apiSuccess {Object} party The party object
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} viceOfPg List of objects representing PG's vice presidents.
+    * @apiSuccess {Boolean} viceOfPg.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} viceOfPg.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} viceOfPg.name MP's full name.
+    * @apiSuccess {String} viceOfPg.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} viceOfPg.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} viceOfPg.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} viceOfPg.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} viceOfPg.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} viceOfPg.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} viceOfPg.party.name The party's name.
+    * @apiSuccess {String} viceOfPg.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} viceOfPg.id The person's Parladata id.
+    * @apiSuccess {Boolean} viceOfPg.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getBasicInfOfPG/1
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "allVoters": 119061,
+        "created_for": "13.02.2017",
+        "headOfPG": {
+            "is_active": false,
+            "district": [102],
+            "name": "Simona Kustec Lipicer",
+            "gov_id": "P266",
+            "gender": "f",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 48,
+            "has_function": false
+        },
+        "social": {
+            "twitter": "https://twitter.com/strankasmc",
+            "facebook": "https://www.facebook.com/StrankaSMC/",
+            "email": "monika.mandic@dz-rs.si"
+        },
+        "numberOfSeats": 35,
+        "party": {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+        },
+        "created_at": "28.02.2017",
+        "viceOfPG": [{
+            "is_active": false,
+            "district": [30],
+            "name": "Anita Kole\u0161a",
+            "gov_id": "P260",
+            "gender": "f",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 40,
+            "has_function": false
+        }, {
+            "is_active": false,
+            "district": [99],
+            "name": "Du\u0161an Verbi\u010d",
+            "gov_id": "P296",
+            "gender": "m",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 92,
+            "has_function": false
+        }]
+    }
+    """
     card = getPGCardModel(PGStatic, pg_id, date)
     headOfPG = 0
     viceOfPG = []
@@ -148,7 +271,76 @@ def setPercentOFAttendedSessionPG(request, pg_id, date_=None):
     return JsonResponse({'alliswell': True})
 
 def getPercentOFAttendedSessionPG(request, pg_id, date_=None):
+    """
+    * @api {get} getPercentOFAttendedSessionPG/{pg_id}/{?date} Get percentage of attended sessions
+    * @apiName getPercentOFAttendedSessionPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the percentage of attended sessions and voting events for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
 
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} votes Presence at voting events
+    * @apiSuccess {Object[]} votes.maxPG The PG with the most attended voting events.
+    * @apiSuccess {String} votes.maxPG.acronym PG's acronym
+    * @apiSuccess {Boolean} votes.maxPG.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} votes.maxPG.id PG's Parladata id.
+    * @apiSuccess {String} votes.maxPG.name PG's name.
+    * @apiSuccess {Float} votes.organization_value The percentage of attended voting events for the organization in question.
+    * @apiSuccess {Float} votes.average The average percentage of attended voting events.
+    * @apiSuccess {Float} votes.maximum The maximum percentage of attended voting events.
+
+    * @apiSuccess {Object} sessions Presence at sessions
+    * @apiSuccess {Object[]} sessions.maxPG The PG with the most attended sessions.
+    * @apiSuccess {String} sessions.maxPG.acronym PG's acronym
+    * @apiSuccess {Boolean} sessions.maxPG.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} sessions.maxPG.id PG's Parladata id.
+    * @apiSuccess {String} sessions.maxPG.name PG's name.
+    * @apiSuccess {Float} sessions.organization_value The percentage of attended sessions for the organization in question.
+    * @apiSuccess {Float} sessions.average The average percentage of attended sessions.
+    * @apiSuccess {Float} sessions.maximum The maximum percentage of attended sessions.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getPercentOFAttendedSessionPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getPercentOFAttendedSessionPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "organization": {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+        },
+        "created_at": "17.05.2017",
+        "created_for": "17.05.2017",
+        "votes": {
+            "maxPG": [{
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            }],
+            "organization_value": 92.7485210066434,
+            "average": 73.4046479186465,
+            "maximum": 92.7485210066434
+        },
+        "sessions": {
+            "maxPG": [{
+                "acronym": "DeSUS",
+                "is_coalition": true,
+                "id": 3,
+                "name": "PS Demokratska Stranka Upokojencev Slovenije"
+            }],
+            "organization_value": 93.5318406140705,
+            "average": 84.0306159427153,
+            "maximum": 93.5866013071896
+        }
+    }
+    """
     card = getPGCardModelNew(PercentOFAttendedSession, pg_id, date_)
 
     # uprasi ce isto kot pri personu razdelimo
@@ -193,6 +385,86 @@ def setMPsOfPG(request, pg_id, date_=None):
     return JsonResponse({'alliswell': True})
 
 def getMPsOfPG(request, pg_id, date_=None):
+    """
+    * @api {get} getPercentOFAttendedSessionPG/{pg_id}/{?date} Get percentage of attended sessions
+    * @apiName getPercentOFAttendedSessionPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the percentage of attended sessions and voting events for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} party The PG with the most attended voting events.
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} results List of MPs
+    * @apiSuccess {Boolean} results.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.name MP's full name.
+    * @apiSuccess {String} results.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.party.name The party's name.
+    * @apiSuccess {String} results.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} results.id The person's Parladata id.
+    * @apiSuccess {Boolean} results.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing). 
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getMPsOfPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getMPsOfPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "party": {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "id": 2,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+        },
+        "created_at": "28.02.2017",
+        "created_for": "13.02.2017",
+        "results": [{
+            "is_active": false,
+            "district": [91],
+            "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+            "gov_id": "P117",
+            "gender": "m",
+            "party": {
+                "acronym": "IMNS",
+                "is_coalition": false,
+                "id": 2,
+                "name": "PS italijanske in mad\u017earske narodne skupnosti"
+            },
+            "type": "mp",
+            "id": 24,
+            "has_function": false
+        }, {
+            "is_active": false,
+            "district": [90],
+            "name": "Roberto Battelli",
+            "gov_id": "P005",
+            "gender": "m",
+            "party": {
+                "acronym": "IMNS",
+                "is_coalition": false,
+                "id": 2,
+                "name": "PS italijanske in mad\u017earske narodne skupnosti"
+            },
+            "type": "mp",
+            "id": 4,
+            "has_function": false
+        }]
+    }
+    """
 
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -210,6 +482,481 @@ def getMPsOfPG(request, pg_id, date_=None):
 
 
 def getSpeechesOfPG(request, pg_id, date_=False):
+    """
+    * @api {get} getSpeechesOfPG/{pg_id}/{?date} Get PG's speeches
+    * @apiName getSpeechesOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the list of last 21 days of speeches for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} party The PG with the most attended voting events.
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} results List of Speeches
+    * @apiSuccess {date} date The date in question
+    * @apiSuccess {Object[]} sessions List of sessions on that day
+    * @apiSuccess {String} sessions.session_name Name of the session
+    * @apiSuccess {String} sessions.session_org The organization in which the session took place.
+    
+    * @apiSuccess {Object[]} sessions.speakers List of speakers from this PG who spoke at the session.
+
+    * @apiSuccess {Object} sessions.speaker.person Person object for this speaker
+    * @apiSuccess {Boolean} sessions.speaker.person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} sessions.speaker.person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} sessions.speaker.person.name MP's full name.
+    * @apiSuccess {String} sessions.speaker.person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} sessions.speaker.person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} sessions.speaker.person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} sessions.speaker.person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} sessions.speaker.person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} sessions.speaker.person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} sessions.speaker.person.party.name The party's name.
+    * @apiSuccess {String} sessions.speaker.person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} sessions.speaker.person.id The person's Parladata id.
+    * @apiSuccess {Boolean} sessions.speaker.person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing). 
+    
+    * @apiSuccess {Integer} sessions.speeches List of speech ids for that speaker.
+
+    * @apiSuccess {Integer} sessions.session_id Parladata id of the session in question
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getSpeechesOfPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getSpeechesOfPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "party": {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "id": 2,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+        },
+        "created_at": "14.06.2017",
+        "created_for": "14. 6. 2016",
+        "results": [{
+            "date": "10. 2. 2017",
+            "sessions": [{
+                "session_name": "87. redna seja",
+                "session_org": "Kolegij predsednika dr\u017eavnega zbora",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [1110405]
+                }],
+                "session_id": 9155
+            }]
+        }, {
+            "date": "2. 2. 2017",
+            "sessions": [{
+                "session_name": "33. redna seja",
+                "session_org": "Odbor za finance in monetarno politiko",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1158590, 1158570]
+                }],
+                "session_id": 8966
+            }]
+        }, {
+            "date": "20. 12. 2016",
+            "sessions": [{
+                "session_name": "25. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1248602, 1248590, 1248543]
+                }],
+                "session_id": 7654
+            }]
+        }, {
+            "date": "15. 12. 2016",
+            "sessions": [{
+                "session_name": "25. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [1247957]
+                }],
+                "session_id": 7654
+            }]
+        }, {
+            "date": "6. 12. 2016",
+            "sessions": [{
+                "session_name": "7. redna seja",
+                "session_org": "Komisija za narodni skupnosti",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1216615, 1216613, 1216611, 1216609, 1216607, 1216605, 1216604, 1216603, 1216602, 1216601, 1216600, 1216599, 1216598, 1216596, 1216594, 1216592, 1216588, 1216586, 1216585, 1216584, 1216583, 1216582, 1216580, 1216578, 1216577, 1216575, 1216572, 1216571, 1216569, 1216568, 1216566, 1216564, 1216562, 1216560, 1216558, 1216556, 1216554]
+                }],
+                "session_id": 8908
+            }]
+        }, {
+            "date": "17. 11. 2016",
+            "sessions": [{
+                "session_name": "24. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1256385, 1256379]
+                }],
+                "session_id": 5572
+            }]
+        }, {
+            "date": "16. 11. 2016",
+            "sessions": [{
+                "session_name": "24. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1256240]
+                }],
+                "session_id": 5572
+            }]
+        }, {
+            "date": "12. 11. 2016",
+            "sessions": [{
+                "session_name": "68. nujna seja",
+                "session_org": "Odbor za finance in monetarno politiko",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [633823]
+                }],
+                "session_id": 5970
+            }]
+        }, {
+            "date": "3. 11. 2016",
+            "sessions": [{
+                "session_name": "22. redna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [634797]
+                }],
+                "session_id": 6307
+            }]
+        }, {
+            "date": "12. 10. 2016",
+            "sessions": [{
+                "session_name": "6. redna seja",
+                "session_org": "Komisija za narodni skupnosti",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [595799, 595798, 595797, 595795, 595793, 595791, 595789, 595787, 595784, 595782, 595780, 595779, 595777, 595775, 595773, 595771, 595769, 595767, 595765, 595763, 595762, 595760, 595758, 595756]
+                }],
+                "session_id": 7425
+            }, {
+                "session_name": "7. nujna seja",
+                "session_org": "Komisija za odnose s Slovenci v zamejstvu in po svetu",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [876273]
+                }],
+                "session_id": 7414
+            }]
+        }, {
+            "date": "1. 10. 2016",
+            "sessions": [{
+                "session_name": "25. nujna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558096]
+                }],
+                "session_id": 6308
+            }]
+        }, {
+            "date": "28. 9. 2016",
+            "sessions": [{
+                "session_name": "24. nujna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558345]
+                }],
+                "session_id": 6311
+            }]
+        }, {
+            "date": "15. 7. 2016",
+            "sessions": [{
+                "session_name": "21. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [890570]
+                }],
+                "session_id": 5575
+            }]
+        }, {
+            "date": "28. 6. 2016",
+            "sessions": [{
+                "session_name": "18. redna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558602]
+                }],
+                "session_id": 6315
+            }]
+        }, {
+            "date": "14. 6. 2016",
+            "sessions": [{
+                "session_name": "20. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [625866, 625828, 625815]
+                }],
+                "session_id": 5576
+            }]
+        }]
+    }
+    """
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -310,183 +1057,6 @@ def getSpeechesOfPG(request, pg_id, date_=False):
         "party": Organization.objects.get(id_parladata=pg_id).getOrganizationData()
         }
     return JsonResponse(result, safe=False)
-
-
-def howMatchingThem(request, pg_id, type_of, date_=None):
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-    else:
-        date_of = datetime.now().date()
-        date_ = date_of.strftime(API_DATE_FORMAT)
-
-    pg_score, membersInPGs, votes, all_votes = getRangeVotes([pg_id],
-                                                             date_,
-                                                             'logic')
-
-    # most match them
-    if type_of == 'match':
-        for voter in membersInPGs[str(pg_id)]:
-            votes.pop(str(voter))
-
-    # deviation in PG
-    if type_of == 'deviation':
-        del membersInPGs[str(pg_id)]
-        for pgs in membersInPGs.keys():
-            for voter in membersInPGs[str(pgs)]:
-                # WORKAROUND: if one person is in more then one PG
-                if str(voter) in votes:
-                    votes.pop(str(voter))
-
-    members = getMPsList(request, date_)
-    membersDict = {str(mp['id']): mp for mp in json.loads(members.content)}
-
-    # calculate euclidean
-    out = {person: (euclidean(list(pg_score), [votes[str(person)][str(val)]
-                    for val in all_votes]))
-           for person in sorted(votes.keys())}
-
-    for person in out.keys():
-        if math.isnan(out[person]):
-            out.pop(person, None)
-
-    keys = sorted(out, key=out.get)
-    key4remove = []
-    for key in keys:
-        # if members isn't member in this time skip him
-        if key not in membersDict.keys():
-            key4remove.append(key)
-            continue
-        membersDict[str(key)].update({'ratio': out[str(key)]})
-        person = Person.objects.get(id_parladata=int(key))
-        membersDict[key].update({'person': person, 'id': key})
-
-    # remove keys of members which isn't member in this time
-    for key in key4remove:
-        keys.remove(key)
-    return membersDict, keys, date_of
-
-
-@lockSetter
-def setMostMatchingThem(request, pg_id, date_=None):
-    if date_:
-        isNewVote = tryHard(API_URL + '/isVoteOnDay/'+date_).json()['isVote']
-        print isNewVote
-        if not isNewVote:
-            return JsonResponse({'alliswell': True,
-                                 'status': 'Ni glasovanja na ta dan',
-                                 'saved': False})
-        members, keys, date_of = howMatchingThem(request, pg_id,
-                                                 date_=date_,
-                                                 type_of='match')
-    else:
-        members, keys, date_of = howMatchingThem(request,
-                                                 pg_id,
-                                                 type_of='match')
-
-    out = {index: members[key]
-           for key, index in zip(keys[:5], [1, 2, 3, 4, 5])}
-
-    try:
-        org = Organization.objects.get(id_parladata=int(pg_id))
-        result = saveOrAbortNew(model=MostMatchingThem,
-                                created_for=date_of,
-                                organization=org,
-                                person1=out[1]['person'],
-                                votes1=out[1]['ratio'],
-                                person2=out[2]['person'],
-                                votes2=out[2]['ratio'],
-                                person3=out[3]['person'],
-                                votes3=out[3]['ratio'],
-                                person4=out[4]['person'],
-                                votes4=out[4]['ratio'],
-                                person5=out[5]['person'],
-                                votes5=out[5]['ratio'])
-        return JsonResponse({'alliswell': True})
-    except:
-        return JsonResponse({'alliswell': False})
-
-
-@lockSetter
-def setLessMatchingThem(request, pg_id, date_=None):
-    if date_:
-        isNewVote = tryHard(API_URL + '/isVoteOnDay/' + date_).json()['isVote']
-        print isNewVote
-        if not isNewVote:
-            return JsonResponse({'alliswell': True,
-                                 'status': 'Ni glasovanja na ta dan',
-                                 'saved': False})
-        members, keys, date_of = howMatchingThem(request,
-                                                 pg_id,
-                                                 date_=date_,
-                                                 type_of='match')
-    else:
-        members, keys, date_of = howMatchingThem(request,
-                                                 pg_id,
-                                                 type_of='match')
-
-    out = {index: members[key]
-           for key, index in zip(keys[-6:-1], [5, 4, 3, 2, 1])}
-    org = Organization.objects.get(id_parladata=int(pg_id))
-    try:
-        result = saveOrAbortNew(model=LessMatchingThem,
-                                created_for=date_of,
-                                organization=org,
-                                person1=out[1]['person'],
-                                votes1=out[1]['ratio'],
-                                person2=out[2]['person'],
-                                votes2=out[2]['ratio'],
-                                person3=out[3]['person'],
-                                votes3=out[3]['ratio'],
-                                person4=out[4]['person'],
-                                votes4=out[4]['ratio'],
-                                person5=out[5]['person'],
-                                votes5=out[5]['ratio'])
-        return JsonResponse({'alliswell': True})
-    except:
-        return JsonResponse({'alliswell': False})
-
-
-@lockSetter
-def setDeviationInOrg(request, pg_id, date_=None):
-    if date_:
-        isNewVote = tryHard(API_URL + '/isVoteOnDay/'+date_).json()['isVote']
-        print isNewVote
-        if not isNewVote:
-            return JsonResponse({'alliswell': True,
-                                 'status': 'Ni glasovanja na ta dan',
-                                 'saved': False})
-        members, keys, date_of = howMatchingThem(request,
-                                                 pg_id,
-                                                 date_=date_,
-                                                 type_of='deviation')
-    else:
-        members, keys, date_of = howMatchingThem(request,
-                                                 pg_id,
-                                                 type_of='deviation')
-
-    numOfKeys = len(keys)
-
-    out = []
-    for member, data in members.items():
-        if member in keys:
-            print member, data
-            data.pop('person')
-            out.append(data)
-    out = sorted(out, key=lambda k, : k['ratio'], reverse=True)
-    print 'out', out
-    try:
-        org_data = Organization.objects.get(id_parladata=int(pg_id))
-        result = saveOrAbortNew(model=DeviationInOrganization,
-                                created_for=date_of,
-                                organization=org_data,
-                                data=json.dumps(out)
-                                )
-
-        return JsonResponse({'alliswell': True,
-                             'status': 'OK',
-                             'saved': result})
-    except:
-        return JsonResponse({'alliswell': False})
 
 
 def getMPStaticPersonData(id_, date_):
@@ -600,182 +1170,6 @@ def getDeviationInOrg(request, pg_id, date_=None):
     return JsonResponse(out, safe=False)
 
 
-@lockSetter
-def setCutVotes(request, pg_id, date_=None):
-    def getMaxOrgData(data, ids):
-        d = {str(pg): data[pg] for pg in ids}
-        keys =  ','.join([key for key,val in d.iteritems() if val == max(d.values())])
-        return keys, max(d.values())
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
-    else:
-        date_of = datetime.now().date()
-        date_ = date_of.strftime(API_DATE_FORMAT)
-
-    isNewVote = tryHard(API_URL +'/isVoteOnDay/'+date_).json()['isVote']
-    print isNewVote
-    if not isNewVote:
-        return JsonResponse({'alliswell': True, 'status':'Ni glasovanja na ta dan', 'saved': False})
-
-    r = tryHard(API_URL+'/getCoalitionPGs/')
-    coalition = r.json()
-
-    pgs_for = {}
-    pgs_against = {}
-    pgs_abstain = {}
-    pgs_absent = {}
-    pgs_abstain = {}
-    pgs_absent = {}
-
-    coal_avg = {}
-    oppo_avg = {}
-
-    coal_pgs = [str(pg) for pg in coalition["coalition"]]
-    oppo_pgs = [str(pg) for pg in coalition["opposition"]]
-
-    pg_score_C, membersInPGs, votes, all_votes = getRangeVotes(coal_pgs, date_, "plain")
-    pg_score_O, membersInPGs, votes, all_votes = getRangeVotes(oppo_pgs, date_, "plain")
-
-
-    # Calculate coalition and opposition average
-    coal_avg["for"] = (float(sum(map(voteFor, pg_score_C)))/float(len(pg_score_C)))*100
-    oppo_avg["for"] = (float(sum(map(voteFor, pg_score_O)))/float(len(pg_score_O)))*100
-    coal_avg["against"] = (float(sum(map(voteAgainst, pg_score_C)))/float(len(pg_score_C)))*100
-    oppo_avg["against"] = (float(sum(map(voteAgainst, pg_score_O)))/float(len(pg_score_O)))*100
-    coal_avg["abstain"] = (float(sum(map(voteAbstain, pg_score_C)))/float(len(pg_score_C)))*100
-    oppo_avg["abstain"] = (float(sum(map(voteAbstain, pg_score_O)))/float(len(pg_score_O)))*100
-    coal_avg["absent"] = (float(sum(map(voteAbsent, pg_score_C)))/float(len(pg_score_C)))*100
-    oppo_avg["absent"] = (float(sum(map(voteAbsent, pg_score_O)))/float(len(pg_score_O)))*100
-
-    # get votes against
-    for pg in membersInPGs:
-        votesOfPG = [votes[str(member)][b] for member in membersInPGs[str(pg)] for b in sorted(votes[str(member)])]
-        # get votes for of PGs
-        try:
-            pgs_for[str(pg)] = (float(sum(map(voteFor, votesOfPG)))/float(len(votesOfPG)))*100
-        except:
-            pgs_for[str(pg)] = 0
-        # get votes against of PGs
-        try:                 
-            pgs_against[str(pg)] = (float(sum(map(voteAgainst, votesOfPG)))/float(len(votesOfPG)))*100
-        except:
-            pgs_against[str(pg)] = 0
-
-        # get votes abstain of PGs
-        try:
-            pgs_abstain[str(pg)] = (float(sum(map(voteAbstain, votesOfPG)))/float(len(votesOfPG)))*100
-        except:
-            pgs_abstain[str(pg)] = 0
-
-        # get votes obsent of PGs
-        try:
-            pgs_absent[str(pg)] = (float(sum(map(voteAbsent, votesOfPG)))/float(len(votesOfPG)))*100
-        except:
-            pgs_absent[str(pg)] = 0
-
-    final_response = saveOrAbortNew(
-        CutVotes,
-        created_for=date_of,
-        organization=Organization.objects.get(id_parladata=pg_id),
-        this_for=pgs_for[pg_id],
-        this_against=pgs_against[pg_id],
-        this_abstain=pgs_abstain[pg_id],
-        this_absent=pgs_absent[pg_id],
-        coalition_for=coal_avg["for"],
-        coalition_against=coal_avg["against"],
-        coalition_abstain=coal_avg["abstain"],
-        coalition_absent=coal_avg["absent"],
-        coalition_for_max=getMaxOrgData(pgs_for, coal_pgs)[1],
-        coalition_against_max=getMaxOrgData(pgs_against, coal_pgs)[1],
-        coalition_abstain_max=getMaxOrgData(pgs_abstain, coal_pgs)[1],
-        coalition_absent_max=getMaxOrgData(pgs_absent, coal_pgs)[1],
-        coalition_for_max_org=getMaxOrgData(pgs_for, coal_pgs)[0],
-        coalition_against_max_org=getMaxOrgData(pgs_against, coal_pgs)[0],
-        coalition_abstain_max_org=getMaxOrgData(pgs_abstain, coal_pgs)[0],
-        coalition_absent_max_org=getMaxOrgData(pgs_absent, coal_pgs)[0],
-        opposition_for=oppo_avg["for"],
-        opposition_against=oppo_avg["against"],
-        opposition_abstain=oppo_avg["abstain"],
-        opposition_absent=oppo_avg["absent"],
-        opposition_for_max=getMaxOrgData(pgs_for, oppo_pgs)[1],
-        opposition_against_max=getMaxOrgData(pgs_against, oppo_pgs)[1],
-        opposition_abstain_max=getMaxOrgData(pgs_abstain, oppo_pgs)[1],
-        opposition_absent_max=getMaxOrgData(pgs_absent, oppo_pgs)[1],
-        opposition_for_max_org=getMaxOrgData(pgs_for, oppo_pgs)[0],
-        opposition_against_max_org=getMaxOrgData(pgs_against, oppo_pgs)[0],
-        opposition_abstain_max_org=getMaxOrgData(pgs_abstain, oppo_pgs)[0],
-        opposition_absent_max_org=getMaxOrgData(pgs_absent, oppo_pgs)[0]
-    )
-
-    return JsonResponse({'alliswell': True, "status":'OK', "saved": final_response})
-
-
-def getCutVotes(request, pg_id, date=None):
-    cutVotes = getPGCardModelNew(CutVotes, pg_id, date)
-    this_org = Organization.objects.get(id_parladata=int(pg_id))
-    out = {
-        'organization': this_org.getOrganizationData(),
-        'created_at': cutVotes.created_at.strftime(API_DATE_FORMAT),
-        'created_for': cutVotes.created_for.strftime(API_DATE_FORMAT),
-        'results': {
-            'abstain': {
-                'score': cutVotes.this_abstain,
-                'maxCoalition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.coalition_abstain_max_org.split(',')])],
-                    'score': cutVotes.coalition_abstain_max
-                },
-                'maxOpposition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.opposition_abstain_max_org.split(',')])],
-                    'score': cutVotes.opposition_abstain_max
-                },
-                "avgOpposition": {'score': cutVotes.opposition_abstain},
-                "avgCoalition": {'score': cutVotes.coalition_abstain},
-            },
-            "against": {
-                'score': cutVotes.this_against,
-                'maxCoalition': {
-                    'parties': [org.getOrganizationData()for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.coalition_against_max_org.split(',')])],
-                    'score': cutVotes.coalition_against_max
-                },
-                'maxOpposition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.opposition_against_max_org.split(',')])],
-                    'score': cutVotes.opposition_against_max
-                },
-                "avgOpposition": {'score': cutVotes.opposition_against},
-                "avgCoalition": {'score': cutVotes.coalition_against},
-            },
-            "absent": {
-                'score': cutVotes.this_absent,
-                'maxCoalition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.coalition_absent_max_org.split(',')])],
-                    'score': cutVotes.coalition_absent_max
-                },
-                'maxOpposition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.opposition_absent_max_org.split(',')])],
-                    'score': cutVotes.opposition_absent_max
-                },
-                "avgOpposition": {'score': cutVotes.opposition_absent},
-                "avgCoalition": {'score': cutVotes.coalition_absent},
-            },
-            'for': {
-                'score': cutVotes.this_for,
-                'maxCoalition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.coalition_for_max_org.split(',')])],
-                    'score': cutVotes.coalition_for_max
-                },
-                'maxOpposition': {
-                    'parties': [org.getOrganizationData() for org in Organization.objects.filter(id_parladata__in=[int(textid) for textid in cutVotes.opposition_for_max_org.split(',')])],
-                    'score': cutVotes.opposition_for_max
-                },
-                "avgOpposition": {'score': cutVotes.opposition_for},
-                "avgCoalition": {'score': cutVotes.coalition_for},
-            },
-        }
-    }
-    return JsonResponse(out)
-
-
-@lockSetter
 def setWorkingBodies(request, org_id, date_=None):
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -933,7 +1327,7 @@ def getTaggedBallots(request, pg_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
-#Depricated
+#Deprecated
 @lockSetter
 def setVocabularySizeALL_(request, date_):
     if date_:
@@ -1123,6 +1517,7 @@ def setAllPGsStyleScoresFromSearch(request):
     else:
         return JsonResponse({"status": "It wasnt POST"})
 
+
 def getStyleScoresPG(request, pg_id, date_=None):
     card = getPGCardModelNew(StyleScores, int(pg_id), date_)
 
@@ -1132,10 +1527,10 @@ def getStyleScoresPG(request, pg_id, date_=None):
 
     if card.privzdignjeno != 0 and card.privzdignjeno_average != 0:
         privzdignjeno = card.privzdignjeno/card.privzdignjeno_average
-    
+
     if card.problematicno != 0 and card.problematicno_average != 0:
         problematicno = card.problematicno/card.problematicno_average
-    
+
     if card.preprosto != 0 and card.preprosto_average != 0:
         preprosto = card.preprosto/card.preprosto_average
 
@@ -1193,24 +1588,6 @@ def setAllPGsTFIDFsFromSearch(request):
             return JsonResponse({"status": "There's not data"})
     else:
         return JsonResponse({"status": "It wasnt POST"})
-
-
-@lockSetter
-def setTFIDF(request, party_id, date_=None):
-    if date_:
-        date_of = datetime.strptime(date_, API_DATE_FORMAT)
-    else:
-        date_of = datetime.now().date()
-        date_ = date_of.strftime(API_DATE_FORMAT)
-    print "TFIDF", party_id
-    data = tryHard("https://isci.parlameter.si/tfidf/ps/"+party_id).json()
-    is_saved = saveOrAbortNew(Tfidf,
-                              organization=Organization.objects.get(id_parladata=party_id),
-                              created_for=date_of,
-                              data=data["results"])
-
-    return JsonResponse({"alliswell": True,
-                         "saved": is_saved})
 
 
 def getTFIDF(request, party_id, date_=None):
