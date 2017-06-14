@@ -62,6 +62,129 @@ def setBasicInfOfPG(request, pg_id, date_):
 
 
 def getBasicInfOfPG(request, pg_id, date=None):
+    """
+    * @api {get} getBasicInfOfPG/{pg_id} Get basic info of a PG
+    * @apiName getBasicInfOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns basic data of a selected PG
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+
+    * @apiSuccess {Integer} allVoters [WRONG] Calculated number of voters who voted for this PG. This number is not reliable, do not use it.
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+    
+    * @apiSuccess {Object} headOfPg The president of the PG
+    * @apiSuccess {Boolean} headOfPg.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} headOfPg.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} headOfPg.name MP's full name.
+    * @apiSuccess {String} headOfPg.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} headOfPg.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} headOfPg.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} headOfPg.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} headOfPg.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} headOfPg.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} headOfPg.party.name The party's name.
+    * @apiSuccess {String} headOfPg.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} headOfPg.id The person's Parladata id.
+    * @apiSuccess {Boolean} headOfPg.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiSuccess {Object} social Social media links for this PG
+    * @apiSuccess {String} social.twitter Url to PG's Twitter account (or null)
+    * @apiSuccess {String} social.facebook Url to PG's Facebook account (or null)
+    * @apiSuccess {String} social.email The email address of the primary contact for this PG
+
+    * @apiSuccess {Integer} numberOfSeats The number of seats this PG holds in the parliament.
+    
+    * @apiSuccess {Object} party The party object
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} viceOfPg List of objects representing PG's vice presidents.
+    * @apiSuccess {Boolean} viceOfPg.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} viceOfPg.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} viceOfPg.name MP's full name.
+    * @apiSuccess {String} viceOfPg.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} viceOfPg.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} viceOfPg.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} viceOfPg.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} viceOfPg.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} viceOfPg.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} viceOfPg.party.name The party's name.
+    * @apiSuccess {String} viceOfPg.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} viceOfPg.id The person's Parladata id.
+    * @apiSuccess {Boolean} viceOfPg.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing).
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getBasicInfOfPG/1
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "allVoters": 119061,
+        "created_for": "13.02.2017",
+        "headOfPG": {
+            "is_active": false,
+            "district": [102],
+            "name": "Simona Kustec Lipicer",
+            "gov_id": "P266",
+            "gender": "f",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 48,
+            "has_function": false
+        },
+        "social": {
+            "twitter": "https://twitter.com/strankasmc",
+            "facebook": "https://www.facebook.com/StrankaSMC/",
+            "email": "monika.mandic@dz-rs.si"
+        },
+        "numberOfSeats": 35,
+        "party": {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+        },
+        "created_at": "28.02.2017",
+        "viceOfPG": [{
+            "is_active": false,
+            "district": [30],
+            "name": "Anita Kole\u0161a",
+            "gov_id": "P260",
+            "gender": "f",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 40,
+            "has_function": false
+        }, {
+            "is_active": false,
+            "district": [99],
+            "name": "Du\u0161an Verbi\u010d",
+            "gov_id": "P296",
+            "gender": "m",
+            "party": {
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            },
+            "type": "mp",
+            "id": 92,
+            "has_function": false
+        }]
+    }
+    """
     card = getPGCardModel(PGStatic, pg_id, date)
     headOfPG = 0
     viceOfPG = []
@@ -148,7 +271,76 @@ def setPercentOFAttendedSessionPG(request, pg_id, date_=None):
     return JsonResponse({'alliswell': True})
 
 def getPercentOFAttendedSessionPG(request, pg_id, date_=None):
+    """
+    * @api {get} getPercentOFAttendedSessionPG/{pg_id}/{?date} Get percentage of attended sessions
+    * @apiName getPercentOFAttendedSessionPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the percentage of attended sessions and voting events for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
 
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} votes Presence at voting events
+    * @apiSuccess {Object[]} votes.maxPG The PG with the most attended voting events.
+    * @apiSuccess {String} votes.maxPG.acronym PG's acronym
+    * @apiSuccess {Boolean} votes.maxPG.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} votes.maxPG.id PG's Parladata id.
+    * @apiSuccess {String} votes.maxPG.name PG's name.
+    * @apiSuccess {Float} votes.organization_value The percentage of attended voting events for the organization in question.
+    * @apiSuccess {Float} votes.average The average percentage of attended voting events.
+    * @apiSuccess {Float} votes.maximum The maximum percentage of attended voting events.
+
+    * @apiSuccess {Object} sessions Presence at sessions
+    * @apiSuccess {Object[]} sessions.maxPG The PG with the most attended sessions.
+    * @apiSuccess {String} sessions.maxPG.acronym PG's acronym
+    * @apiSuccess {Boolean} sessions.maxPG.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} sessions.maxPG.id PG's Parladata id.
+    * @apiSuccess {String} sessions.maxPG.name PG's name.
+    * @apiSuccess {Float} sessions.organization_value The percentage of attended sessions for the organization in question.
+    * @apiSuccess {Float} sessions.average The average percentage of attended sessions.
+    * @apiSuccess {Float} sessions.maximum The maximum percentage of attended sessions.
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getPercentOFAttendedSessionPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getPercentOFAttendedSessionPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "organization": {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+        },
+        "created_at": "17.05.2017",
+        "created_for": "17.05.2017",
+        "votes": {
+            "maxPG": [{
+                "acronym": "SMC",
+                "is_coalition": true,
+                "id": 1,
+                "name": "PS Stranka modernega centra"
+            }],
+            "organization_value": 92.7485210066434,
+            "average": 73.4046479186465,
+            "maximum": 92.7485210066434
+        },
+        "sessions": {
+            "maxPG": [{
+                "acronym": "DeSUS",
+                "is_coalition": true,
+                "id": 3,
+                "name": "PS Demokratska Stranka Upokojencev Slovenije"
+            }],
+            "organization_value": 93.5318406140705,
+            "average": 84.0306159427153,
+            "maximum": 93.5866013071896
+        }
+    }
+    """
     card = getPGCardModelNew(PercentOFAttendedSession, pg_id, date_)
 
     # uprasi ce isto kot pri personu razdelimo
@@ -193,6 +385,86 @@ def setMPsOfPG(request, pg_id, date_=None):
     return JsonResponse({'alliswell': True})
 
 def getMPsOfPG(request, pg_id, date_=None):
+    """
+    * @api {get} getPercentOFAttendedSessionPG/{pg_id}/{?date} Get percentage of attended sessions
+    * @apiName getPercentOFAttendedSessionPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the percentage of attended sessions and voting events for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} party The PG with the most attended voting events.
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} results List of MPs
+    * @apiSuccess {Boolean} results.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} results.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} results.name MP's full name.
+    * @apiSuccess {String} results.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} results.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} results.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} results.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} results.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} results.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} results.party.name The party's name.
+    * @apiSuccess {String} results.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} results.id The person's Parladata id.
+    * @apiSuccess {Boolean} results.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing). 
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getMPsOfPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getMPsOfPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "party": {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "id": 2,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+        },
+        "created_at": "28.02.2017",
+        "created_for": "13.02.2017",
+        "results": [{
+            "is_active": false,
+            "district": [91],
+            "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+            "gov_id": "P117",
+            "gender": "m",
+            "party": {
+                "acronym": "IMNS",
+                "is_coalition": false,
+                "id": 2,
+                "name": "PS italijanske in mad\u017earske narodne skupnosti"
+            },
+            "type": "mp",
+            "id": 24,
+            "has_function": false
+        }, {
+            "is_active": false,
+            "district": [90],
+            "name": "Roberto Battelli",
+            "gov_id": "P005",
+            "gender": "m",
+            "party": {
+                "acronym": "IMNS",
+                "is_coalition": false,
+                "id": 2,
+                "name": "PS italijanske in mad\u017earske narodne skupnosti"
+            },
+            "type": "mp",
+            "id": 4,
+            "has_function": false
+        }]
+    }
+    """
 
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
@@ -210,6 +482,481 @@ def getMPsOfPG(request, pg_id, date_=None):
 
 
 def getSpeechesOfPG(request, pg_id, date_=False):
+    """
+    * @api {get} getSpeechesOfPG/{pg_id}/{?date} Get PG's speeches
+    * @apiName getSpeechesOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns the list of last 21 days of speeches for a specific PG.
+    * @apiParam {Integer} pg_id Parladata id for the PG in question.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {date} created_for The date this card was created for
+    * @apiSuccess {date} created_at The date on which this card was created
+
+    * @apiSuccess {Object} party The PG with the most attended voting events.
+    * @apiSuccess {String} party.acronym PG's acronym
+    * @apiSuccess {Boolean} party.is_coalition Is this PG a member of the coalition?
+    * @apiSuccess {Integer} party.id PG's Parladata id.
+    * @apiSuccess {String} party.name PG's name.
+
+    * @apiSuccess {Object[]} results List of Speeches
+    * @apiSuccess {date} date The date in question
+    * @apiSuccess {Object[]} sessions List of sessions on that day
+    * @apiSuccess {String} sessions.session_name Name of the session
+    * @apiSuccess {String} sessions.session_org The organization in which the session took place.
+    
+    * @apiSuccess {Object[]} sessions.speakers List of speakers from this PG who spoke at the session.
+
+    * @apiSuccess {Object} sessions.speaker.person Person object for this speaker
+    * @apiSuccess {Boolean} sessions.speaker.person.is_active Answer the question: Is this MP currently active?
+    * @apiSuccess {Integer[]} sessions.speaker.person.district List of Parladata ids for districts this person was elected in.
+    * @apiSuccess {String} sessions.speaker.person.name MP's full name.
+    * @apiSuccess {String} sessions.speaker.person.gov_id MP's id on www.dz-rs.si
+    * @apiSuccess {String} sessions.speaker.person.gender MP's gender (f/m) used for grammar
+    * @apiSuccess {Object} sessions.speaker.person.party This MP's standard party objects (comes with most calls).
+    * @apiSuccess {String} sessions.speaker.person.party.acronym The MP's party's acronym.
+    * @apiSuccess {Boolean} sessions.speaker.person.party.is_coalition Answers the question: Is this party in coalition with the government?
+    * @apiSuccess {Integer} sessions.speaker.person.party.id This party's Parladata (organization) id.
+    * @apiSuccess {String} sessions.speaker.person.party.name The party's name.
+    * @apiSuccess {String} sessions.speaker.person.type The person's parlalize type. Always "mp" for MPs.
+    * @apiSuccess {Integer} sessions.speaker.person.id The person's Parladata id.
+    * @apiSuccess {Boolean} sessions.speaker.person.has_function Answers the question: Is this person the president or vice president of the national assembly (speaker of the house kind of thing). 
+    
+    * @apiSuccess {Integer} sessions.speeches List of speech ids for that speaker.
+
+    * @apiSuccess {Integer} sessions.session_id Parladata id of the session in question
+
+    * @apiExample {curl} Example:
+        curl -i https://analize.parlameter.si/v1/pg/getSpeechesOfPG/1
+    * @apiExample {curl} Example with date:
+        curl -i https://analize.parlameter.si/v1/pg/getSpeechesOfPG/1/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "party": {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "id": 2,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+        },
+        "created_at": "14.06.2017",
+        "created_for": "14. 6. 2016",
+        "results": [{
+            "date": "10. 2. 2017",
+            "sessions": [{
+                "session_name": "87. redna seja",
+                "session_org": "Kolegij predsednika dr\u017eavnega zbora",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [1110405]
+                }],
+                "session_id": 9155
+            }]
+        }, {
+            "date": "2. 2. 2017",
+            "sessions": [{
+                "session_name": "33. redna seja",
+                "session_org": "Odbor za finance in monetarno politiko",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1158590, 1158570]
+                }],
+                "session_id": 8966
+            }]
+        }, {
+            "date": "20. 12. 2016",
+            "sessions": [{
+                "session_name": "25. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1248602, 1248590, 1248543]
+                }],
+                "session_id": 7654
+            }]
+        }, {
+            "date": "15. 12. 2016",
+            "sessions": [{
+                "session_name": "25. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [1247957]
+                }],
+                "session_id": 7654
+            }]
+        }, {
+            "date": "6. 12. 2016",
+            "sessions": [{
+                "session_name": "7. redna seja",
+                "session_org": "Komisija za narodni skupnosti",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1216615, 1216613, 1216611, 1216609, 1216607, 1216605, 1216604, 1216603, 1216602, 1216601, 1216600, 1216599, 1216598, 1216596, 1216594, 1216592, 1216588, 1216586, 1216585, 1216584, 1216583, 1216582, 1216580, 1216578, 1216577, 1216575, 1216572, 1216571, 1216569, 1216568, 1216566, 1216564, 1216562, 1216560, 1216558, 1216556, 1216554]
+                }],
+                "session_id": 8908
+            }]
+        }, {
+            "date": "17. 11. 2016",
+            "sessions": [{
+                "session_name": "24. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1256385, 1256379]
+                }],
+                "session_id": 5572
+            }]
+        }, {
+            "date": "16. 11. 2016",
+            "sessions": [{
+                "session_name": "24. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [1256240]
+                }],
+                "session_id": 5572
+            }]
+        }, {
+            "date": "12. 11. 2016",
+            "sessions": [{
+                "session_name": "68. nujna seja",
+                "session_org": "Odbor za finance in monetarno politiko",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [633823]
+                }],
+                "session_id": 5970
+            }]
+        }, {
+            "date": "3. 11. 2016",
+            "sessions": [{
+                "session_name": "22. redna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [634797]
+                }],
+                "session_id": 6307
+            }]
+        }, {
+            "date": "12. 10. 2016",
+            "sessions": [{
+                "session_name": "6. redna seja",
+                "session_org": "Komisija za narodni skupnosti",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [595799, 595798, 595797, 595795, 595793, 595791, 595789, 595787, 595784, 595782, 595780, 595779, 595777, 595775, 595773, 595771, 595769, 595767, 595765, 595763, 595762, 595760, 595758, 595756]
+                }],
+                "session_id": 7425
+            }, {
+                "session_name": "7. nujna seja",
+                "session_org": "Komisija za odnose s Slovenci v zamejstvu in po svetu",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [876273]
+                }],
+                "session_id": 7414
+            }]
+        }, {
+            "date": "1. 10. 2016",
+            "sessions": [{
+                "session_name": "25. nujna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558096]
+                }],
+                "session_id": 6308
+            }]
+        }, {
+            "date": "28. 9. 2016",
+            "sessions": [{
+                "session_name": "24. nujna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558345]
+                }],
+                "session_id": 6311
+            }]
+        }, {
+            "date": "15. 7. 2016",
+            "sessions": [{
+                "session_name": "21. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [890570]
+                }],
+                "session_id": 5575
+            }]
+        }, {
+            "date": "28. 6. 2016",
+            "sessions": [{
+                "session_name": "18. redna seja",
+                "session_org": "Odbor za izobra\u017eevanje, znanost, \u0161port in mladino",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [91],
+                        "name": "L\u00e1szl\u00f3 G\u00f6ncz",
+                        "gov_id": "P117",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 24,
+                        "has_function": false
+                    },
+                    "speeches": [558602]
+                }],
+                "session_id": 6315
+            }]
+        }, {
+            "date": "14. 6. 2016",
+            "sessions": [{
+                "session_name": "20. redna seja",
+                "session_org": "Dr\u017eavni zbor",
+                "speakers": [{
+                    "person": {
+                        "is_active": false,
+                        "district": [90],
+                        "name": "Roberto Battelli",
+                        "gov_id": "P005",
+                        "gender": "m",
+                        "party": {
+                            "acronym": "IMNS",
+                            "is_coalition": false,
+                            "id": 2,
+                            "name": "PS italijanske in mad\u017earske narodne skupnosti"
+                        },
+                        "type": "mp",
+                        "id": 4,
+                        "has_function": false
+                    },
+                    "speeches": [625866, 625828, 625815]
+                }],
+                "session_id": 5576
+            }]
+        }]
+    }
+    """
     if date_:
         date_of = datetime.strptime(date_, API_DATE_FORMAT).date()
     else:
@@ -580,7 +1327,7 @@ def getTaggedBallots(request, pg_id, date_=None):
     return JsonResponse(result, safe=False)
 
 
-#Depricated
+#Deprecated
 @lockSetter
 def setVocabularySizeALL_(request, date_):
     if date_:

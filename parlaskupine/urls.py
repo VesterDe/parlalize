@@ -38,7 +38,6 @@ urlpatterns = patterns('',
     url(r'^getSpeechesOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfPG),
     url(r'^getSpeechesOfPG/(?P<pg_id>\d+)', getSpeechesOfPG),
     
-    url(r'^getBasicInfOfPG/(?P<pg_id>\d+)', getBasicInfOfPG),
     url(r'^getPercentOFAttendedSessionPG/(?P<pg_id>\d+)', getPercentOFAttendedSessionPG),
 
     url(r'^getMPsOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)', getMPsOfPG),
