@@ -8,7 +8,7 @@ The Parlalize API serves calculated and organized data and metrics. The calculat
 
 ### API documentation
 
-https://dev.parlameter.si/doc/parlaize
+https://dev.parlameter.si/doc/parlalize/
 
 ## Installation
 
